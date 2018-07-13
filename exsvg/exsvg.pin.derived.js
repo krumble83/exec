@@ -142,6 +142,32 @@ exSVG.PinWildcards = SVG.invent({
 /*********************************************
 	Structure Pin
 *********************************************/
+exSVG.PinNolink = SVG.invent({
+    create: 'g', 
+    inherit: exSVG.Pin,
+	
+    extend: {
+		drawPin: function(x, y, color, size){
+			var me = this
+			, ret;
+			
+			if(!me.mGfx.pin){
+				me.mGfx.pin = me.polygon('0,0 5,0 10,5 5,10 0,10')
+					.translate(x || 0, y || 0)
+					.addClass('pin')
+					.fill(color || me.mColor)
+					.style('pointer-events', 'none')
+					.hide();
+			}
+			ret = me.mGfx.pin.bbox();
+			return ret
+		}
+	}
+});
+
+/*********************************************
+	Structure Pin
+*********************************************/
 exSVG.PinStructure = SVG.invent({
     create: 'g', 
     inherit: exSVG.Pin,

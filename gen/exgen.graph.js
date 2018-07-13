@@ -127,6 +127,16 @@ exGRAPH.Package = exGEN.invent({
 			return ret;
 		},
 
+		NodeTpl: function(id, title){
+			var ret = this.querySelector('nodetpl[id="' + this.attr('id') + '.' + id + '"]') || this.create('Nodetpl');
+			ret.init.apply(ret, arguments);
+			ret.attr('id', this.attr('id') + '.' + id)
+			ret.Color(this.Color());
+			ret.Symbol(this.Symbol());
+			ret.Category(this.Category());
+			return ret;
+		},
+		
 		Type: function(id){
 			var ret = this.querySelector('type[id="' + this.attr('id') + '.' + id + '"]') || this.create('Type');
 			ret.init.apply(ret, arguments);
@@ -542,7 +552,7 @@ exGRAPH.Type = exGEN.invent({
 		MakeLiteralNode: function(package){
 			var pack = this.parent(exGRAPH.Library).Package(package);
 			var n = pack.Node('make', 'Make literal (' + this.Label() + ')')
-				.Import('core.function')
+				.Import('tpl.node.pure')
 				.Id(this.Id() + '.' + 'makeliteral')
 				.Keywords('make ' + this.Label());
 			n.Input('in', this.Id());
@@ -624,7 +634,7 @@ exGRAPH.Enum = exGEN.invent({
 
 
 /**************************************************************************************
-	NODE
+	NODE / CATEGORY / NODETPL
 **************************************************************************************/
 exGRAPH.Node = exGEN.invent({
     create: 'node',
@@ -778,7 +788,21 @@ exGRAPH.Category = exGEN.invent({
 	}
 });
 
-
+exGRAPH.Nodetpl = exGEN.invent({
+    create: 'Nodetpl',
+	inherit: exGRAPH.Node,
+	
+    extend: {
+		init: function(id, title){
+			this.Id(id);
+			this.Title(title);
+		},
+		
+		Create: function(type, title){
+			
+		}
+	}
+});
 
 /**************************************************************************************
 	PIN / INPUT / OUTPUT
