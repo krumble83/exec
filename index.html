@@ -1,0 +1,224 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<title>SVG.js</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script type="text/javascript" src="tinysort.min.js"></script>
+	<script type="text/javascript" src="jeasyui/jquery.min.js"></script>
+	<script type="text/javascript" src="jeasyui/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="defs.js"></script>
+	<script type="text/javascript" src="menu.js"></script>
+	<script type="text/javascript" src="project.js"></script>
+	<script type="text/javascript" src="svgjs/svg.js"></script>
+	<script type="text/javascript" src="exsvg/exsvg.worksheet.js"></script>
+	<script type="text/javascript" src="ui/ui.workspace.js"></script>
+	<script type="text/javascript" src="lib/library.base.js"></script>
+	<link rel="stylesheet" type="text/css" href="jeasyui/themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="jeasyui/themes/black/easyui.css">
+	<link rel="stylesheet" type="text/css" href="css.css">
+	<link rel="stylesheet" type="text/css" href="menu.css">
+ </head>
+<body class="easyui-layout" data-options="border:false" >
+        <div data-options="region:'north',border:true" style="height:30px">
+			<a href="#" class="easyui-menubutton" data-options="menu:'#uiMenuFile',plain:true,hasDownArrow:false">File</a>
+			<a href="#" class="easyui-menubutton" data-options="menu:'#uiMenuEdit',plain:true,hasDownArrow:false">Edit</a>
+			<a href="#" class="easyui-menubutton" data-options="hasDownArrow:false">Help</a>
+			<a href="#" class="easyui-menubutton" data-options="hasDownArrow:false" style="clear:both">About</a>
+			<div style="float:right;padding:5px"><img src="img/bar_south.png"></div>
+		</div>
+		
+		
+		<div id="uiMenuFile" style="width:150px;">
+			<div data-options="" onclick="ws.createProject()">New Project...</div>
+			<div data-options="" onclick="ws.openProject()">Open Project...</div>
+			<div data-options="iconCls:'icon-redo'">Save</div>
+			<div class="menu-sep"></div>
+			<div>
+				<span>Toolbar</span>
+				<div>
+					<div>Address</div>
+					<div>Link</div>
+					<div>Navigation Toolbar</div>
+					<div>Bookmark Toolbar</div>
+					<div class="menu-sep"></div>
+					<div>New Toolbar...</div>
+				</div>
+			</div>
+			<div data-options="iconCls:'icon-remove'">Delete</div>
+			<div>Select All</div>
+		</div>		
+
+		<div id="uiMenuEdit" style="width:150px;">
+			<div data-options="iconCls:'icon-undo'">Undo</div>
+			<div data-options="iconCls:'icon-redo'">Redo</div>
+			<div class="menu-sep"></div>
+			<div>Cut</div>
+			<div>Copy</div>
+			<div>Paste</div>
+			<div class="menu-sep"></div>
+			<div>
+				<span>Toolbar</span>
+				<div>
+					<div>Address</div>
+					<div>Link</div>
+					<div>Navigation Toolbar</div>
+					<div>Bookmark Toolbar</div>
+					<div class="menu-sep"></div>
+					<div>New Toolbar...</div>
+				</div>
+			</div>
+			<div data-options="iconCls:'icon-remove'">Delete</div>
+			<div>Select All</div>
+		</div>		
+
+
+        <div data-options="region:'east',split:true,border:false" style="width:300px;">
+			<table id="uiPropertyGrid" class="easyui-propertygrid" data-options="
+						showGroup:true,
+						scrollbarSize:0,
+						fit: true,
+						columns: [[
+							{field:'name', title:'Name', width:100},
+							{field:'value', title:'Value', width:200}
+						]]
+					">
+			</table>		
+		</div>
+        <div data-options="region:'west',split:true,border:true" style="width:200px;">
+			<div class="easyui-panel" title="Devices" data-options="iconCls:'icon-device',tools:'#devicestt'" style="width:100%;height:200px" class="uiTrtitle">
+				<div id="uiDevicesList" title="Group DataList" style="width:99%;height:250px;display:none;position:relative;top:1px;left:1px" data-options=""></div>
+				<ul id="uiDeviceTree" class="easyui-tree" style="padding-bottom:20px"></ul>
+			</div>
+			<div id="devicestt"><a href="javascript:void(0)" class="test" style="width:64px!important;height: 18px!important" onclick="ws.addDevice()">zzz</a></div>
+			<ul id="uiTree"></ul>
+		</div>
+        <div data-options="region:'center',border:false">
+			<div id="uiCenterLayout" class="easyui-layout" data-options="fit:true">
+				<div data-options="region:'north'" style="height:65px; padding-right:5px">
+					<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-large-picture',size:'large',iconAlign:'top'">Compile</a>
+					<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-large-picture',size:'large',iconAlign:'top'">Refresh</a>
+					<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-large-picture',size:'large',iconAlign:'top'">Search</a>
+					<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-large-picture',size:'large',iconAlign:'top'" style="clear:both">Print</a>
+					<div style="float:right">
+						<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-large-picture',size:'large',iconAlign:'top'">Print</a>
+						<a href="#" class="easyui-linkbutton" data-options="
+							iconCls:'icon-fullscreen',
+							size:'large',
+							iconAlign:'top'
+						" style="" onclick="
+							$(body).layout('collapse', 'west');
+							$(body).layout('collapse', 'east');
+							$('#uiCenterLayout').layout('collapse', 'south');
+						">Full Screen</a>
+					</div>
+				</div>
+				<div data-options="region:'center'">
+					<div id="uiTabs" class="easyui-tabs" data-options="fit:true,plain:false,narrow:false,pill:false"></div>			
+				</div>
+				<div data-options="region:'south',
+					split:true,
+					border:false">
+					<div class="easyui-tabs" data-options="fit:true,
+						plain:true,
+						narrow:true,
+						tools:[{
+							iconCls:'icon-mini-refresh',
+							handler:function(){
+								$('#uiCenterLayout').layout('collapse', 'south');
+							}
+						}]">
+						<div title="Console" style="padding:10px" data-options="iconCls:'icon-compiler-result',closable:true">
+							<ul>
+								<li>easyui is a collection of user-interface plugin based on jQuery.</li>
+								<li>easyui provides essential functionality for building modem, interactive, javascript applications.</li>
+								<li>using easyui you don't need to write many javascript code, you usually defines user-interface by writing some HTML markup.</li>
+								<li>complete framework for HTML5 web page.</li>
+								<li>easyui save your time and scales while developing your products.</li>
+								<li>easyui is very easy but powerful.</li>
+							</ul>
+						</div>
+						<div title="Find Results" style="padding:10px" data-options="iconCls:'icon-find-result',closable:true">
+						</div>
+					</div>
+				</div>
+			</div>
+        </div>
+    <div id="uiProjectCreateWin" class="easyui-window" title="Create new Project" data-options="
+			collapsible:false,
+			minimizable:false,
+			maximizable:false,
+			modal:true,
+			closed:true" style="width:800px;height:600px;padding:0px;display:none">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'center',border:false" style="padding:10px;">
+				<div class="easyui-tabs" style="width:700px;height:250px" data-options="tabPosition:'left',fit:true">
+					<div title="Arduino" style="padding:10px"></div>
+				</div>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align:right;padding:5px 10px 10px;height:50px">
+                <a class="easyui-linkbutton" data-button="ok" data-options="iconCls:'icon-ok'" href="javascript:void(0)" onclick="" style="width:80px">Create</a>
+                <a class="easyui-linkbutton" data-button="cancel" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" onclick="$('#uiProjectCreateWin').window('close')" style="width:80px">Close</a>
+            </div>
+        </div>
+    </div>
+	<script>
+
+	exLIB.init();
+	
+	$(function(){
+		$.extend($.fn.datagrid.defaults.editors, {
+			pins: {
+				init: function(container, options){
+					var input = $('<input type="text" class="datagrid-editable-input">').appendTo(container);
+					return input;
+				},
+				destroy: function(target){
+					$(target).remove();
+				},
+				getValue: function(target){
+					return $(target).val();
+				},
+				setValue: function(target, value){
+					$(target).val(value);
+				},
+				resize: function(target, width){
+					$(target)._outerWidth(width);
+				}
+			}
+		});
+		
+		$(document).ready(function(){
+			ws = new Workspace();
+			ws.init();
+			setTimeout(function(){
+				var svg = ws.addGraph('test');
+				setTimeout(function(){
+					svg.addNode('core.array.set', {x: 800, y: 500});
+					svg.addNode('core.flow.sequence', {x: 300, y: 400});
+					svg.addNode('core.array.get', {x: 500, y: 200});
+					svg.addNode('core.string.contains', {x: 100, y: 100});
+				},200);
+			},500);
+
+		
+		});
+	});		
+
+	var ws;
+	$(document).ready(function(){
+
+		/*
+		var draw = SVG('drawing').worksheet(function(){
+			var me = this;
+			me.addNode('core.flow.if', {x: 800, y: 500});
+			me.addNode('core.string.equal', {x: 300, y: 400});
+			me.addNode('core.array.get', {x: 500, y: 200});
+			me.addNode('javascript.string.split', {x: 100, y: 100});
+			//me.clearUndo();
+		});
+		*/
+	});
+	
+	</script>
+</body>
+</html>
