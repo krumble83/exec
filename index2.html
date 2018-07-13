@@ -38,7 +38,6 @@
 	function exportTest(){
 		var g = new exGRAPH.Graph().init()
 		draw.exportGraph(g);
-		//console.log(d);
 		var exprt = g.Generate();
 		document.body.querySelector('#exClipboardData').innerHTML = exprt.ExportC();
 	}
