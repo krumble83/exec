@@ -70,15 +70,15 @@ SVG.extend(exSVG.Node, {
 					.gaussianBlur(3);
 
 				add.blend('SourceGraphic', blur);
-				this.size(2,2).move(-0.5,-0.5)
+				this.size(2,2)//.move(-0.5,-0.5)
 			})
 
 			me.mGfx.body.back();				
 		}
 
-		if(me.mGfx.expand)
+		/*if(me.mGfx.expand)
 			me.mGfx.expand.hide();
-		
+		*/
 		me.mGfx.body.size(1, 1);
 		box = me.bbox();
 		

@@ -86,7 +86,7 @@ SVG.extend(exSVG.Pin, {
 		else
 			pbox = me.drawPin();
 		
-		me.drawLabel(20, pbox.cy+4, me.getData('label') || ((me.getId()) ? me.getId().capitalize() : false) || '');
+		me.drawLabel(20, pbox.cy+4, me.getData('label') || ((me.getId()) ? me.getId().capitalize(true).split(/(?=[A-Z])/).join(" ") : false) || '');
 		me.drawBackground();
 		me.drawEditor();		
 		me.fire('paint');

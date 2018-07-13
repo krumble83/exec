@@ -26,6 +26,7 @@ exSVG.Worksheet = SVG.invent({
 				.size('100%', '100%')
 				.panZoom({zoomMin: 0.05, zoomMax: 1, zoomFactor: 0.08})
 
+			me.startAutoScroll();
 			return me;
         },
 		
@@ -218,58 +219,6 @@ exSVG.Worksheet = SVG.invent({
 			this.mTitle.text(title);
 			return this;
 		},
-		/*
-		addNode: function(name, pos, parent){
-			//console.log('worksheet.addNode()');
-			var me = this
-			, node
-			, data;
-			
-			if(typeof name === "string"){
-				node = exLIB.createNode(name);
-				data = exLIB.getNode(name);
-			}
-			else {
-				node = exLIB.createNode(name);
-				data = name;
-			}
-
-			if(!parent)
-				parent = me;
-			
-			parent.put(node);
-			node.init(data);
-			node.addTo(parent);
-
-			if(pos){
-				if(pos instanceof MouseEvent)
-					pos = me.point(pos);
-				if(me.snapToGrid && me.getGrid())
-					pos = me.snapToGrid(pos.x, pos.y);
-				node.x(pos.x);
-				node.y(pos.y);
-			}
-			else if(data.pos){
-				if(me.snapToGrid && me.getGrid())
-					pos = me.snapToGrid(data.pos.x, data.pos.y);
-				node.x(pos.x);
-				node.y(pos.y);
-			}
-			
-			if(me.doc().event().defaultPrevented){
-				node.remove();
-				return;
-			}
-			return node;			
-		},
-
-		
-		deleteNode: function(node){
-			//console.log('worksheet.deleteNode()');
-			var me = this;
-		},
-
-		*/
 		
 		import: function(data, parent){
 			var me = this;
@@ -326,10 +275,46 @@ exSVG.Worksheet = SVG.invent({
 			, x = 0
 			, y = 0
 			, amount = 5
-			, vb; 
+			, vb
+			, timer
 			
-			SVG.on(document, 'mousemove.worksheet-autoscraoll', function(e){
-				//console.log(me.viewbox());
+			//console.log(me);
+			return;
+			
+			SVG.on(document, 'mousemove.worksheet-autoscroll', function(e){
+				if(e.buttons != 1)
+					return;
+				if(e.clientX < bound.x+bound.width && e.clientY < bound.y+bound.height && e.clientX > bound.x && e.clientY > bound.y)
+					return;
+				
+				if(e.clientX > bound.x+bound.width)
+					x = 1;
+				if(e.clientY > bound.y+bound.height)
+					y = 1;
+				
+				
+				timer = setInterval(function(){
+					//console.log('ok');
+					vb = me.viewbox();
+					vb.x += x;
+					vb.y += y;
+					me.viewbox(vb);
+					
+				}, 1);
+				
+				me.doc().on('mousemove.worksheet-autoscroll', function(e){
+					console.log('rrr');
+					clearInterval(timer);
+					x = y = 0;
+				});
+
+				//console.log(e, bound);
+			});
+			
+			
+			return; 	
+			SVG.on(document, 'mousemove.worksheet-autoscroll', function(e){
+				//console.log(e.clientX, bound.x);
 				x = 0;
 				y = 0;
 				if(e.target.instance)
@@ -355,7 +340,7 @@ exSVG.Worksheet = SVG.invent({
 		},
 		
 		stopAutoScroll: function(){
-			SVG.off(document, '.worksheet-autoscraoll');
+			SVG.off(document, '.worksheet-autoscroll');
 		},
 		
 		startSequence: function(){

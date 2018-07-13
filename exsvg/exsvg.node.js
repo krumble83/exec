@@ -50,8 +50,11 @@ exSVG.Node = SVG.invent({
 				if(!Object.prototype.hasOwnProperty.call(attrs, key) || key.substr(0,5) != 'data-')
 					continue;
 				node.attr(key.substr(5), attrs[key]);
+				//node.attr('pos', '');
 			}
-			
+
+			var p = me.rbox(me.parent(exSVG.Worksheet));
+			node.attr('pos', p.x + ',' + p.y);
 			me.fire('export', {parent: node});
 			return node;
 		},

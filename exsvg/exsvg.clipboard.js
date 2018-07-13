@@ -77,20 +77,17 @@ SVG.extend(SVG.Doc, SVG.Nested, {
 	
 	copy: function(data){
 		var me = this
-		, out = [];
+		, out = []
+		, expt = new exGRAPH.Graph;
 		
-		if(data instanceof exSVG.Node){
-			clipboardData.value = JSON.stringify(data.export());
-		}
-		else if(data instanceof SVG.Set){
+		if(data instanceof SVG.Set){
 			data.each(function(){
-				out.push(this.export());
+				expt.add(this.export());
 			});
-			clipboardData.value = JSON.stringify(out);
-			console.log(out);
+			clipboardData.value = expt.node.outerHTML;
 		}
-		else if(typeof data === 'object')
-			clipboardData.value = JSON.stringify(data);
+		else
+			console.log(typeof data);
 		
 	},
 	

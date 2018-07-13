@@ -63,11 +63,25 @@ exSVG.PinEditorInput = SVG.invent({
 					e.stopImmediatePropagation();
 					e.stopPropagation();
 				})
+				.on('mousemove', function(e){
+					e.stopImmediatePropagation();
+					e.stopPropagation();
+				});
 
 			me.getChild(0).setAttribute('class', 'textareaWrapper');
 			me.input = me.getChild(0).appendChild(document.createElement('div'));
 			me.input.setAttribute('contenteditable', 'true');
 			me.input.setAttribute('class', 'textarea');
+			
+			me.input.onfocus = function(e) {
+				requestAnimationFrame(function() {
+					var range = document.createRange();
+					range.selectNodeContents(me.input);
+					var sel = window.getSelection();
+					sel.removeAllRanges();
+					sel.addRange(range);
+				});
+			};
 
 			SVG.on(me.input, 'keydown', function(e){
 				if(typeof editor.data('keydown') === 'function')

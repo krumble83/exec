@@ -118,7 +118,13 @@ SVG.extend(exSVG.Worksheet, {
 			, nodes = false
 			, box
 			, x1
-			, x2;
+			, x2
+			
+			, bound = me.doc().parent().getBoundingClientRect()
+			, scrollX = 0
+			, scrollY = 0
+			, viewb
+			, scrollTimer
 			
 			me.setFocus();
 
@@ -128,9 +134,6 @@ SVG.extend(exSVG.Worksheet, {
 			if(e.buttons != 1 || selectionRect || (me.getGrid() && e.target != me.mGrid.node))
 				return;
 
-			//e.stopPropagation()
-			//e.stopImmediatePropagation()
-			
 			if(!e.ctrlKey && !e.shiftKey)
 				me.unselectNode();
 			
@@ -164,9 +167,15 @@ SVG.extend(exSVG.Worksheet, {
 				//nodes.removeClass('unfocusable'); // remove class unfocusable on all nodes
 				me.doc().off('.selection-rectangle-handler');  // remove this event handler from doc()
 			});
+
+
+			selectionRect.on('drawupdate.selection', function(e){
+
+			
+			});
 			
 			// handler when the selection rectangle is updated, see drawing svg plugin
-			selectionRect.on('drawupdate.selection', function(){
+			selectionRect.on('drawupdate.selection', function(e){
 				// here we check if each node is in the selection rectangle
 				// actually we check only if one of it's four corners is in
 				// in future we can check for middle point border too
@@ -183,6 +192,34 @@ SVG.extend(exSVG.Worksheet, {
 						me.unselectNode(this);
 				});
 				selectionRect.front();
+				
+
+
+				//console.log(e.detail.p,e.detail.m);
+				e = e.detail.event;
+
+				if(e.clientX < bound.x+bound.width && e.clientY < bound.y+bound.height && e.clientX > bound.x && e.clientY > bound.y)
+					return;
+				//console.log('ok', e);
+
+				if(e.clientX > bound.x+bound.width)
+					scrollX = 10;
+				if(e.clientY > bound.y+bound.height)
+					scrollY = 10;
+				
+				var h = selectionRect.height();
+				
+				viewb = me.viewbox();
+				console.log(h,scrollY);
+				viewb.x += scrollX;
+				viewb.y += scrollY;
+				setTimeout(function(){
+					selectionRect.width(selectionRect.width() + scrollX);
+					selectionRect.height(h + scrollY);
+					
+				},100);
+				me.viewbox(viewb);
+					
 			});
 
 			//start drawing selection rectangle

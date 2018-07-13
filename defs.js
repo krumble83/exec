@@ -176,7 +176,9 @@ Number.prototype.clamp = function(min, max) {
   return Math.min(Math.max(this, min), max);
 };
 
-String.prototype.capitalize = function() {
+String.prototype.capitalize = function(firstOnly) {
+	if(firstOnly)
+		return this.charAt(0).toUpperCase() + this.slice(1);
     return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase();
 }
 
