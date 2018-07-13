@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+	<head>
+		<title>SVG.js</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<script type="text/javascript" src="gen/exgen.exgen.js"></script>
+		<script type="text/javascript" src="gen/exgen.code.js"></script>
+		<script type="text/javascript" src="gen/exgen.c.js"></script>
+		<script type="text/javascript" src="gen/exgen.project.js"></script>
+	</head>
+	<body>
+		<pre id="out" style="width:600px;height:500px"></pre>
+		<script>
+			var test = new exGEN.Module().init();
+			
+			test.Include('<string>');
+			
+			test.Declare('i', 0).Type('int');
+			
+			var setup = test.Function('setup', 'void');
+			setup.Argument('arg1', 'valz1').Type('String').Pointer();
+			setup.Body().Call('test');
+			
+			var decl = test.Declare('toto').Type('Class').Call();
+			decl.Argument().Value('val1');
+			decl.Argument().Value('val2');
+
+			var decl2 = test.Declare('toto').Type('Class').Pointer().Call('method');
+
+			var decl3 = test.Declare('instance').Type('Class').New().Pointer().Call().Object('Class');
+			decl3.Argument().Value('val1');
+			decl3.Argument().Value('val2');
+			
+			var loop = test.Function('loop').Type('void');
+			//console.log(loop);
+			//loop.Return('test');
+			
+			//test.Call('test', 'toto').Object('Object').Arguments().Call('callfunc').Object('Object');
+			
+			var iff = test.If('toto', '==', 'titi');
+			iff.Then().Call('test2');
+			iff.Else().Call('elsetest')
+			
+			var w = test.While();
+			w.Condition('test').Eq().Value('"tata"');
+			w.Do().Continue();
+			
+			var forr = test.For().Declare('i', 0).Type('int');
+			//console.log(test.select('function'));
+
+			String.prototype.replaceAll = function (find, replace) {
+				var result = this;
+				do {
+					var split = result.split(find);
+					result = split.join(replace);
+				} while (split.length > 1);
+				return result;
+			};
+			
+			var newline = String.fromCharCode(13, 10);
+			//document.body.innerHTML = test.ExportC().replaceAll('\n', '<br />').replaceAll('\t', '&nbsp;&nbsp;&nbsp;');
+			document.body.querySelector('#out').innerText = test.ExportC() + '\t//test'
+		</script>
+</body>
+</html>

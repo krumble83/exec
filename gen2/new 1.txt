@@ -1,0 +1,10 @@
+Test var(arg);
+Test* var = new Test(arg);
+
+Test var = object.method(arg);
+Test var = object->method(arg);
+
+Test* var = object.method(arg);
+Test* var = object->method(arg);
+
+Test* var = "value";

@@ -1,0 +1,76 @@
+<module [target=""]>
+	<import [from=""] [as=""]></import>
+	
+	<assign name="">
+		<value>[value]</value>
+		<index></index>
+		<instance class="" [new="true"]>
+			<param>
+				<value></value>
+			</param>
+			<param>
+				<constant></constant>
+			</param>
+		</instance>
+		<call name="">
+			<param></param>
+			<param></param>
+		</call>
+		<property object="" member="" [pointer="true|*false"]></property>
+	</assign>
+
+	<declare [type=""] [array="true"]>
+	</declare>
+
+	
+	<if>
+		<condition
+		<condition [var=""] [operator="(=|>|<|!=)"] [call=""] [value=""]>[value]</condition>
+		<then [call=""]></then>
+		<elseif (condition)>
+			<then></then>
+		</elseif>
+		<else></else>
+	</if>
+	
+	<fragment [id=""] [call=""]>
+	</fragment>
+	
+	<try>
+		<fragment [call=""]></fragment>
+		<except name=""  [call=""]></except>
+		<finally [call=""]></finally>
+	</try>
+
+	<throw>value</throw>
+		
+	<for var="" from="" to="" step="">
+		<fragment [call=""]></fragment>
+		<do [call=""]>
+			<break />
+		</do>
+	</for>
+	
+	<while>
+		<condition></condition>
+		<do>
+			<break />
+			<continue />
+		</do>
+	</while>
+	
+	<call name="name">
+		<arguments>
+			<argument name="">
+				[<lambda />|<fcall />|<property />|<constant />]
+			</argument>
+		</arguments>
+	</call>
+	
+	<function name="" [type=""]>
+		<arguments>
+			<argument name="" [type=""] [value=""]></argument>
+		</arguments>
+		<return>[value]</return>
+	</function>
+</module>

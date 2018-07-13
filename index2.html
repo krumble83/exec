@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>SVG.js</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script type="text/javascript" src="defs.js"></script>
+	<script type="text/javascript" src="tinysort.min.js"></script>
+	<script type="text/javascript" src="menu.js"></script>
+	<script type="text/javascript" src="svgjs/svg.js"></script>
+	<script type="text/javascript" src="exsvg/exsvg.worksheet.js"></script>
+	<script type="text/javascript" src="lib/library.base.js"></script>
+	<script type="text/javascript" src="generator/generator.base.js"></script>
+
+	<script type="text/javascript" src="gen/exgen.exgen.js"></script>
+	<script type="text/javascript" src="gen/exgen.graph.js"></script>
+	<script type="text/javascript" src="gen/excode.js"></script>
+	<script type="text/javascript" src="gen/excode.c.js"></script>
+	
+	<link rel="stylesheet" type="text/css" href="menu.css">
+ </head>
+
+ <body style="background-color:#262626;padding:0;margin:0">
+	<div id="drawing" style="height:700px"></div><a href="javascript: exportGraph()" style="color:#fff">export</a>&nbsp;&nbsp;<a href="javascript:exportTest()" style="color:#fff">generate</a><br />
+
+	<script>
+  
+	function exportGraph(){
+		var g = new exGRAPH.Graph;
+		draw.exportGraph(g);
+		console.log(g);
+		document.getElementById('exClipboardData').value = g.node.outerHTML;
+	}
+	
+	function importGraph(){
+		draw.importGraph(g);	
+	}
+	
+	function exportTest(){
+		var g = new exGRAPH.Graph().init()
+		draw.exportGraph(g);
+		//console.log(d);
+		var exprt = g.Generate();
+		document.body.querySelector('#exClipboardData').innerHTML = exprt.ExportC();
+	}
+	
+	var draw;
+	exLIB.init(function(){
+		draw = SVG('drawing').worksheet(function(){		
+			var me = this, inp, outp, n1, n2, seq, makearr, forloop;
+			
+			n1 = me.import(exLIB.getNode2('core.entrypoint').attr('pos', '100,100'));
+			n2 = seq = me.import(exLIB.getNode2('core.flow.sequence').attr('pos', '300,200'));
+			n2.getPin('add').addPin();
+			me.createLink(n2.getPin('entry'), n1.getPin('exit'));
+			
+			n1 = me.import(exLIB.getNode2('core.array.set').attr('pos', '1200,200'));
+			me.createLink(n1.getPin('entry'), n2.getPin('then_0'));
+
+			n2 = makearr = me.import(exLIB.getNode2('core.array.make').attr('pos', '700,100'));
+			n2.getPin('add').addPin();
+			me.createLink(n1.getPin('array'), n2.getPin('array'));
+
+			n1 = me.import(exLIB.getNode2('core.type.string.makeliteral').attr('pos', '400,100'));
+			me.createLink(n2.getPin('item_1'), n1.getPin('value'));
+
+			n1 = forloop = me.import(exLIB.getNode2('core.flow.forloop').attr('pos','500,360'));
+			me.createLink(seq.getPin('then_1'), n1.getPin('entry'));
+
+			n2 = me.import(exLIB.getNode2('core.int.add').attr('pos','900,450'));
+			me.createLink(n1.getPin('index'), n2.getPin('in1'));
+
+			n1 = me.import(exLIB.getNode2('core.array.set').attr('pos','1200,360'));
+			me.createLink(n1.getPin('index'), n2.getPin('out'));
+			
+			me.createLink(makearr.getPin('array'), n1.getPin('array'));
+			me.createLink(n1.getPin('entry'), forloop.getPin('loop'));
+
+			n2 = me.import(exLIB.getNode2('javascript.console.log').attr('pos','900,550'));
+			me.createLink(n2.getPin('entry'), forloop.getPin('complete'));
+			me.createLink(n2.getPin('param_0'), forloop.getPin('index'));
+
+			me.import(exLIB.getNode2('core.type.date.break').attr('pos','1500,300'));
+			
+			return;
+
+
+		}, '*');
+	});
+	</script>
+</body>
+</html>

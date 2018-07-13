@@ -1,0 +1,43 @@
+
+TODO:
+
+
+
+BUGS:
+	- Quand on créer un node via le librarymenu, en tirant un lien existant, si la pin target du lien est "optional", le lien n'est pas rattaché correctement.
+	- Quand on commence a deplacer un node et qu'on le remet a sa position initiale, une action undo/redo est créee.
+	- Dans certains cas, quand on supprime un lien dans un groupe de pin "wilcards", les pins restent sur l'ancien dataType au lieu de revenir en wilcards.
+	
+07/01:
+ - Refonte complète du librarymenu. Refonte surtout du code source, qui est plus clair et surtout evite la creation d'un element dans le DOM a chaque appel du menu. 
+   Maintent quand on fait defiler la liste, le champ de recherche reste toujours visible.
+   Le menu ne deborde plus de l'ecran si jamais on clique droit trop a droite ou trop en bas de l'ecran
+ - Grosse amélioration du 'dessinage' des pins/node.
+ - Librairie : Lorsque l'on déclare un nouveau type de données, si celui-ci herite de 'core.variable', les nodes 'Get/Set' son automatiquement ajoutés à la librairie, on peux directement les glisser depuis l'UI (voir ci-dessous).
+ - Depuis l'UI, on peux maintent glisser/deposer une variable sur le graph. Un menu apparait avec le choix Get/Set.
+ - Création de 2 nouvelle classes dérivé de Node pour les Get/Set des variables. Une nouvelle methode est disponible (SetName) pour changer le nom de la variable.
+ - Refonte de la pin 'Add Pin'. Simplification du code et l'on peux maintenant supprimer n'importe qu'elle pin du groupe, y compris celle de base. la suppression d'une pin renumérote les suivantes.
+ - Debut de l'implémentation du copier/coller. On peux couper/copier 1 ou plusieurs nodes. Pour l'instant les coller les positionne tous au même endroit, et les liens ne sont pas recrée.
+   Surcharge du callback des menus couper/copier dans la classe Selection, car l'implémentation dans la classe Cut/Copy n'est prevu que pour copier/couper q'un seul node.
+   Le undo/redo semble apporter quelques bug dans le système(comme d'hab...)
+ - Modification des methodes export() des nodes/pins pour faire fonctionner les copier/coller.
+ - Debut de l'implemetation du glisser/deposer des fonction depuis l'UI. Il va falloir trouver un hack de la propertyGrid de jeasyui pour afficher toutes les proprietes des entrées/sorties des functions
+ - Refonte complète des champs de saisie pour les pins 'input', il fonctionnent correctement maintenant et un controle de saisie est effectué, empechant des saisies incorrecte (ex des lettres dans un champ nombre)
+   Sous chrome les barres de defilement doivent etres supprimées (css - scroll-y: hidden). Un bug fait disparaitre le champ de saisie des que les barres apparaissent. Fonctionne bien sour firefox.
+ 
+ 
+08/01:
+ - Test d'une nouvelle classe 'Link' pour simplifier le processus, je voulais gérer tous les events directement depuis la classe Link. Echec, retour à l'ancienne classe avec quelques améliorations.
+ - Les tests de la nouvelle classe Link m'ont permis de découvrir un bug dans les sequences du undo/redo. L'odre lors d'un redo n'était pas bon, il était inversé, ce qui doit resoudre certains bugs, surtout au niveau des liens.
+ - Lorsque l'on tire une pin pour créer un nouveau node, le librarymenu ne créée plus de link orphelin si la creation du node échoue.
+ - création des smart-links. Lorsque l'on tire une pin pour créer un nouveau node, si les deux nodes reliés possèdent tous deux une pin entry/exit, un lien entre elles est automatiquement crée. Il reste a verifié que la pin 'exit' n'est pas deja reliée.
+ - amelioration visuelle : Lorsque l'on fait un 'pan', le curseur se change en 'petite main' pour indiquer qu'on peux deplacer le dessin. (bug de chrome, le curseur n'apparait pas si la console developpeur est ouverte...)
+ - refonte du système de désactivation des MouseEvents lorsque l'on drag un/des node ou lors d'un pan. Une class (blur) est ajouté directement sur le "worksheet" et non plus sur les nodes. Ce qui permet de desactiver tous les MouseEvents des autres classes (link par ex.).
+ - Correction d'un bug dans le librarymenu. Le champs de recherche ne se remettai pas a zero lors de l'appel suivant du menu.
+ 
+ 
+ 14/01:
+ - Refonte des 'mData' pour les nodes/pins. Maintenant, toutes les 'datas' pour les nodes/pins sont stockés directement dans les attributs de l'element SVG. Il n'y a plus de membre 'this.mData'.
+ - Refonte de certaines fonctions membre des nodes/pins qui utilisaient directement le membre 'this.mData'. Maintenant tout passe par un getter/setter (getData/setData), ce qui ecrit automatiquement la donnée dans un attribut (voir ci-dessus)
+ - Mise en place de l'heritage dans la librairie. Maintenant, on peux lier une pin output avec une pin input si le dataType de la pin Output hérite du dataType de la pin Input.
+ - Mise en place du champ 'accept' pour un dataType héritant de core.wildcards. Une pin de ce dataType ne pourra etre liée que si le dataType en entrée est prsent dans son champ 'accept'. Exemple le type 'core.scalars' qui accepte uniquement des datatype bool, int, float ou string.

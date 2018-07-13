@@ -1,0 +1,160 @@
+
+
+#librarymenu .highlight{
+	background-color: yellow;
+	color: red;
+} 
+
+#librarymenu .selected{
+	background-color: #888;
+	color: #fff;
+} 
+
+
+#librarymenu
+{
+    display: none;
+    position: absolute;
+	left: 100px;
+
+	width: 350px;
+	height: 300px;
+
+    z-index:1000;
+    background-color:#191919;
+	color:#eee;
+    border: 1px solid #000;
+	border-radius: 3px;
+
+	font-size: 12px;
+    font-family: sans-serif;
+
+	-webkit-box-shadow: 2px 2px 7px 0px rgba(50, 50, 50, 0.5);
+	-moz-box-shadow:    2px 2px 7px 0px rgba(50, 50, 50, 0.5);
+	box-shadow:         2px 2px 7px 0px rgba(50, 50, 50, 0.5);
+	
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+	
+	padding: 3px;
+
+}
+
+#librarymenu .head input[type=text] {
+	background-color: #ccc;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	height: 12px;
+	width: 98%;
+	outline: none;
+	padding-bottom: 3px;
+}
+
+#librarymenu .head > div {
+	padding: 3px;
+	font-size: 14px;
+}
+
+#librarymenu .body{
+	position: relative;
+	top: 3px;
+	overflow: auto;
+	height: 259px;
+}
+
+#librarymenu .body > ul{
+}
+
+#librarymenu ul,
+#librarymenu li
+{
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+#librarymenu li[child="1"]
+{
+    padding-left: 15px;
+}
+
+
+#librarymenu input[type=checkbox]
+{
+    position: absolute;
+    opacity: 0;
+}
+ 
+ 
+#librarymenu input[type=checkbox] + label + ul
+{
+    padding: 0 0 0 15px;
+}
+ 
+#librarymenu input[type=checkbox] ~ ul
+{
+    display: none;
+}
+ 
+#librarymenu input[type=checkbox]:checked ~ ul
+{
+    display: table-cell;
+}
+ 
+#librarymenu label::before
+{
+    background: url("../img/menu.png") no-repeat;
+    display: inline-block;
+    height: 16px;
+    line-height: 16px;
+    vertical-align: middle;
+    content: "";
+    width: 16px;
+    margin: 0;
+    vertical-align: middle;
+    background-position: 0 -32px;
+}
+ 
+
+ 
+#librarymenu input[type=checkbox]:checked + label::before
+{
+    background-position: 0 -16px;
+}
+
+
+
+#librarymenu .body::-webkit-scrollbar-track
+{
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	background-color: #191919;
+}
+
+#librarymenu .body::-webkit-scrollbar
+{
+	width: 10px;
+	background-color: #191919;
+}
+
+#librarymenu .body::-webkit-scrollbar-thumb
+{
+	background-color: #9b9b9b;
+	border: 0;
+}
+ 
+
+#librarymenu img{
+	vertical-align: -3px;
+}
+
+
+/*
+ 
+
+
+
+ 
+
+ */

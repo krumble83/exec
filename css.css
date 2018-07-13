@@ -1,0 +1,112 @@
+
+body{
+	font-family: sans-serif;
+	color: #eee;
+}
+
+/* easyui hacks */
+.tree,
+.tree ul,
+.tree div,
+.tree span,
+.tree li{
+	cursor: default !important;	
+	-webkit-user-select: none; /* Safari */        
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* IE10+/Edge */
+	user-select: none; /* Standard */
+}
+
+#uiTree .uiRoot{
+	background-color : #303030;
+	border-radius: 3px;
+	height: 24px;
+	display:flex;
+	align-items:center;
+	cursor: default !important;
+}
+
+#uiTree .uiRoot:hover{
+	background-color: #202020;
+}
+
+#uiTree .uiBody{
+	background-color: #3e3e3e;
+	margin-bottom: 1px;
+	cursor: default !important;
+}
+
+#uiTree .uiRoot .uiAdd{
+	height: 20px;
+	width:100%;
+	/*background-color: green; */
+	background-image: url("img/add.png");
+	background-repeat: no-repeat;
+	background-position: right;
+	text-align: right;
+	margin-right: 2px;
+}
+
+#uiTree .uiRoot .uiAdd.graphs:hover{
+	background-image: url("img/add_graph_e.png");
+}
+
+#uiTree .uiRoot .uiAdd.variables:hover{
+	background-image: url("img/add_variable_e.png");
+}
+
+#uiTree .uiRoot .uiAdd.functions:hover{
+	background-image: url("img/add_function_e.png");
+}
+
+.tabs-title,
+.tabs-narrow{
+	-webkit-user-select: none; /* Safari */        
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* IE10+/Edge */
+	user-select: none; /* Standard */	
+}
+
+.easyui-menubutton,
+.menu-item{
+	cursor: default;
+}
+/* end easyui hacks */
+
+
+
+.tree-icon.tree-folder{
+	display: none;
+	visibility: hidden
+}
+
+.test{
+	background-image: url("img/add_device.png");	
+}
+
+
+
+
+.icon-fullscreen{
+	background:url('img/fullscreen.png') no-repeat center center;
+}
+
+.icon-device{
+	background:url('img/device.png') no-repeat center center;
+}
+
+.icon-function{
+	background:url('img/function.png') no-repeat center center;
+}
+.icon-graph-small{
+	background:url('img/graph_icon.png') no-repeat center center;
+}
+
+.icon-compiler-result{
+	background:url('img/compiler_result.png') no-repeat center center;
+}
+
+
+.icon-find-result{
+	background:url('img/find_result.png') no-repeat center center;
+}

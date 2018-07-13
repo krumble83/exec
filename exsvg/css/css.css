@@ -1,0 +1,396 @@
+
+.worksheet{
+	background-color: #262626;
+	-webkit-user-select: none; /* Safari */        
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* IE10+/Edge */
+	user-select: none; /* Standard */	
+}
+
+.worksheet svg{
+	outline:none;	
+}
+
+.worksheet .medGrid{
+	stroke: #161616;
+	stroke-width: 1;
+}
+
+.worksheet .smallGrid{
+	stroke: #343434;
+	stroke-width: 1;
+}
+
+.worksheet .grid{
+	stroke: #000;
+	stroke-width: 1;
+}
+
+
+.worksheet .cross{
+	stroke: #000;
+}
+
+
+/********************************************************************************
+	Node
+********************************************************************************/
+.worksheet .exNode{
+	cursor: move;
+	stroke: black;
+	stroke-width: 1px;
+	-webkit-user-select: none; /* Safari */        
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* IE10+/Edge */
+	user-select: none; /* Standard */
+}
+
+.zzzzworksheet .exNode rect{
+	-webkit-filter: drop-shadow( 15px 15px 15px #000 ); 
+    filter: drop-shadow( 5px 5px 5px #000 );
+	-webkit-svg-shadow: 0 0 7px #53BE12;
+}
+
+.worksheet .exNode .tooltip{
+	opacity: 0.3;
+	pointer-events : all;
+}
+
+.worksheet .exNode text{
+	pointer-events : none;
+}
+
+.worksheet .exNode .expand{
+	pointer-events : all;
+}
+
+.worksheet .exNode .expand polygon{
+	fill: #fff;
+	stroke: none;
+	pointer-events : none;
+}
+
+.worksheet .exNode .expand rect{
+	fill: #666;
+	fill-opacity: 0;
+	stroke: none;
+}
+
+.worksheet .exNode .expand rect:hover{
+	fill-opacity: 1;
+	cursor: default;
+}
+
+.worksheet .exNode.exReroute{
+	fill-opacity: 0.5;
+	stroke: #fff;
+	stroke-width: 1;
+}
+
+.worksheet .blur .exNode,
+.worksheet .blur .exNode .exPin,
+.worksheet .blur .exNode .exPin .textarea,
+.worksheet .blur .exNode .expand,
+.worksheet .blur .exLink{
+	pointer-events : none;
+}
+
+
+/********************************************************************************
+	Pin
+********************************************************************************/
+.worksheet .exNode .exPin{
+	pointer-events : all;
+	cursor: default;	
+}
+
+.worksheet .exNode .exPin.linkable{
+	cursor: crosshair;	
+}
+
+.worksheet .exNode .exPin rect{
+	stroke-width: 0;
+	stroke-width: 0;
+	fill-opacity: 0;
+}
+
+.worksheet .exNode .exPin.linkable rect:hover{
+	fill-opacity: 1;
+}
+
+.worksheet .exNode .exPin .pin{
+	fill-opacity: 0;
+	pointer-events : none;
+}
+
+.worksheet .exNode .exPin.exPinAdd rect{
+	cursor: pointer;
+}
+
+.worksheet .exNode .exPin.exPinArray rect.pin{
+	stroke-width: 3;
+	stroke-dasharray: 3,2;
+	pointer-events : none;
+}
+
+.worksheet .exNode .exPin.exPinAdd rect.pin{
+	stroke-width: 0;
+	fill-opacity: 1;
+	pointer-events : none;
+}
+
+.worksheet .exNode .exPin circle.pin{
+	stroke-opacity:1;
+	stroke-width:2;
+}
+
+.worksheet .exNode .exPin.exPinExec polygon.pin{
+	stroke-width: 2;
+	stroke-linejoin: round;
+	stroke: #fff;
+	fill-opacity: 0;
+	pointer-events : none;
+}
+
+.worksheet .exNode .exPin.linked .pin{
+	fill-opacity: 1 !important;
+}
+
+.worksheet .exNode .exPin text.label{
+	stroke-width:0;
+	font-size: 12px;
+	fill: #fff;
+	pointer-events: none;
+}
+
+/********************************************************************************
+	Pin Editors
+********************************************************************************/
+
+/* Input */
+.worksheet .exNode .exPin.exPinTextInput .textareaWrapper {
+	max-height: 150px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding: 1px;
+	border: 1px solid #555;
+	background-color: #000;
+}
+
+.worksheet .exNode .exPin.exPinTextInput .textareaWrapper .textarea {
+	cursor: text;
+    display: table-cell;
+	height: 15px;
+	width: 19px;
+	color: #fff;
+	outline: none;
+	font-size: 12px;
+	font-weight: normal;
+	font-family:Arial;
+	pointer-events: all;
+	white-space: nowrap;
+	padding-right: 7px;
+	padding-top: 1px;
+	/*height: 17px;*/
+	
+}
+@media screen and (-webkit-min-device-pixel-ratio:0) { 
+
+	.worksheet .exNode .exPin.exPinTextInput .textareaWrapper {
+		overflow-y: hidden;
+	}
+
+}
+
+.worksheet .exNode .exPin.exPinTextInput:focus {
+	background-color: #555;
+}
+
+/* Select */
+.worksheet .exNode .exPin.exPinSelectInput select{
+	white-space: pre-wrap;
+	background-color:#000;
+	border: 1px solid #555;
+	color:#eee;
+	outline: none;
+	height: 20px;
+	font-size:10px;
+}
+
+
+
+
+
+
+/********************************************************************************
+	Link
+********************************************************************************/
+.worksheet .exLink {
+	fill: none;
+	pointer-events: all;
+}
+
+.worksheet .exLinkStart{
+	pointer-events: none;
+}
+
+.worksheet .exLink.over{
+	stroke-width: 6;
+}
+
+
+/********************************************************************************
+	Selection
+********************************************************************************/
+.worksheet .selection .exNode > rect:first-child {
+	stroke-width: 3px;
+	stroke: url(#selectionHandlerStroke);
+}
+
+/********************************************************************************
+	tooltip
+********************************************************************************/
+#exTooltip{
+	position: absolute;
+	min-height: 15px;
+	min-width: 100px;
+	max-width: 450px;
+	background-color: #555;
+	border: 1px solid #555;
+	pointer-events: none;
+	color: #999;
+	display: none;
+	padding: 5px;
+	font: 12px arial, sans-serif;
+	cursor: crosshair;
+}
+
+#exTooltip.visible{
+	display: block;
+}
+
+#exTooltip span{
+	display: block;
+}
+
+#exTooltip span:nth-of-type(2){
+	font-style:italic;
+	color:#fff;
+	padding-bottom: 6px;
+}
+
+/********************************************************************************
+	Other
+********************************************************************************/
+
+.worksheet .undoredo{
+	pointer-events: all;
+}
+
+.worksheet .undoredo:hover{
+	opacity: 0.5;
+}
+
+.worksheet .undoredo.disabled:hover,
+.worksheet .undoredo.disabled{
+	opacity: 0.1;
+}
+
+.worksheet .marquee{
+	fill: none;
+	stroke-dasharray: 5,5;
+	stroke: #fff;
+	stroke-width: 1;
+}
+
+.worksheet .header {
+	fill: #000;
+	opacity: 0.5;
+	pointer-events: none;
+	stroke-width: 0;
+}
+
+.header .title{
+	fill: #fff;
+	fill-opacity: 1;
+	font-size: 22px;
+}
+
+/*
+.context-menu {
+    display: none;
+	font-size: 12px;
+	list-style-type: none;
+	padding-left: 0px;
+	margin-left: 10px;
+	margin-right: 10px;
+    z-index:1000;
+    position: absolute;
+    background-color:#191919;
+	border-radius: 3px;
+	color:#fff;
+    border: 1px solid #000;
+    overflow: hidden;
+    white-space:nowrap;
+    font-family: sans-serif;
+	-webkit-box-shadow: 2px 2px 7px 0px rgba(50, 50, 50, 0.5);
+	-moz-box-shadow:    2px 2px 7px 0px rgba(50, 50, 50, 0.5);
+	box-shadow:         2px 2px 7px 0px rgba(50, 50, 50, 0.5);
+}
+
+.context-menu li {
+    padding: 2px 10px;
+}
+
+.context-menu li:hover {
+    background-color: #dea309;
+    color: #191919;
+    cursor: pointer;
+	border-radius: 2px;
+}
+
+.context-menu li.separator {
+    padding: 0px 0px;
+	height: 2px;
+	background-color: #666666;
+}
+
+.context-menu li.disabled {
+    color:#666666;
+}
+
+.context-menu li.disabled:hover, .context-menu li.title:hover {
+    background-color: #191919;
+    color: #666666;
+    cursor: default;
+}
+
+.context-menu li.title {
+	font-size: 16px;
+    color: #666666;
+}
+
+.libmenu input[type=text] {
+	background-color: #ccc;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	height: 12px;
+	width: 250px;
+}
+
+.libmenu li:hover{
+    background-color: #303030;
+    color: #dddddd;
+    cursor: default;
+}
+
+.tooltip rect{
+	fill: #fff;
+	fill-opacity: 1;
+	font-size: 18;
+	stroke: #999;
+	stroke-width: 1;
+	
+}
+*/
