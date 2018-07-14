@@ -36,7 +36,7 @@ SVG.extend(SVG.Doc, SVG.Nested, {
 	var initP = false // added
 
     var wheelZoom = function(ev) {
-      ev.preventDefault()
+      //ev.preventDefault()
 
       // touchpads can give ev.deltaY == 0, which skews the lvl calculation
       if(ev.deltaY == 0) return
@@ -62,7 +62,7 @@ SVG.extend(SVG.Doc, SVG.Nested, {
       if(this.fire('pinchZoomStart', {event: ev}).event().defaultPrevented)
         return
 
-      this.off('touchstart.panZoom', pinchZoomStart)
+      //this.off('touchstart.panZoom', pinchZoomStart)
 
       zoomInProgress = true
       SVG.on(document, 'touchmove.panZoom', pinchZoom, this, {passive:false})
@@ -77,7 +77,7 @@ SVG.extend(SVG.Doc, SVG.Nested, {
 
       SVG.off(document,'touchmove.panZoom', pinchZoom)
       SVG.off(document,'touchend.panZoom', pinchZoomStop)
-      this.on('touchstart.panZoom', pinchZoomStart)
+      //this.on('touchstart.panZoom', pinchZoomStart)
     }
 
     var pinchZoom = function(ev) {
@@ -181,6 +181,7 @@ SVG.extend(SVG.Doc, SVG.Nested, {
 		if(panButton != 3)
 			return;
 		var currentTouches = normalizeEvent(ev);
+		
 		if(initP.x != currentTouches[0].clientX || initP.y != currentTouches[0].clientY){
 			ev.preventDefault();
 			ev.stopPropagation();
@@ -188,8 +189,8 @@ SVG.extend(SVG.Doc, SVG.Nested, {
 		}
 	}
 
-    this.on('wheel.panZoom', wheelZoom)
-    this.on('touchstart.panZoom', pinchZoomStart, this, {passive:false})
+    this.on('wheel.panZoom', wheelZoom, this, {passive: true});
+    //this.on('touchstart.panZoom', pinchZoomStart, this, {passive:false})
     this.on('mousedown.panZoom', panStart, this)
 	this.on('contextmenu.panZoom', contextMenu, this, {passive:false, useCapture:true}) // added
 

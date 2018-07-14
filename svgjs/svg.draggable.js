@@ -16,7 +16,7 @@
     this.constraint = constraint
     this.value = val
     this.el.on('mousedown.drag', function(e){ _this.start(e) })
-    this.el.on('touchstart.drag', function(e){ _this.start(e) })
+    //this.el.on('touchstart.drag', function(e){ _this.start(e) })
   }
 
   // transforms one point from screen to user coords
@@ -236,7 +236,7 @@
 		this.mDragHandler.init(constraint || {}, value)
       else {
         this.off('mousedown.drag')
-        this.off('touchstart.drag')
+        //this.off('touchstart.drag')
       }
 
       return this
