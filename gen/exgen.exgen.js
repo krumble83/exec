@@ -6,15 +6,15 @@ function capitalize(s) {
 }
 
 function map(array, block) {
-    var i
-      , il = array.length
-      , result = [];
-    
-    for (i = 0; i < il; i++)
-      result.push(block(array[i]));
-    
-    return result
-  }
+	var i
+	  , il = array.length
+	  , result = [];
+
+	for (i = 0; i < il; i++)
+	  result.push(block(array[i]));
+
+	return result;
+}
 
 
 var exGEN = {};
@@ -23,25 +23,25 @@ ctx.exGEN = exGEN;
 exGEN.extend = function() {
   var modules, methods, key, i;
 
-  modules = [].slice.call(arguments)
+  modules = [].slice.call(arguments);
   methods = modules.pop();
 
   for (i = modules.length - 1; i >= 0; i--)
     if (modules[i])
       for (key in methods)
-        modules[i].prototype[key] = methods[key]
+        modules[i].prototype[key] = methods[key];
 
-}
+};
 
 exGEN.invent = function(config) {
   var initializer = typeof config.create == 'function' ?
     config.create :
     function() {
       this.constructor.call(this, exGEN.create(config.create));
-    }
+    };
 
   if(config.inherit)
-    initializer.prototype = new config.inherit;
+    initializer.prototype = new config.inherit();
 
   if(config.extend)
     exGEN.extend(initializer, config.extend);
@@ -50,11 +50,11 @@ exGEN.invent = function(config) {
     exGEN.extend(config.parent || exGEN.Fragment, config.construct);
 
   return initializer;
-}
+};
 
 exGEN.create = function(name) {
-  return document.createElement(name);
-}
+	return document.createElement(name);
+};
 
 exGEN.adopt = function(node, parent) {
 	if (!node) 
@@ -62,13 +62,13 @@ exGEN.adopt = function(node, parent) {
 
 	parent = parent || exGEN;
 	
-	if (node.instance) 
+	if(node.instance) 
 		return node.instance;
 
 	var element;
 
 	if (parent[capitalize(node.nodeName)])
-		element = new parent[capitalize(node.nodeName)];
+		element = new parent[capitalize(node.nodeName)]();
 	else
 		element = new parent.Element(node);
 
@@ -76,17 +76,13 @@ exGEN.adopt = function(node, parent) {
 	element.node  = node;
 	node.instance = element;
 	return element;
-}
+};
 
 
 // Select elements by query string
 exGEN.select = function(query, parent) {
-  return new exGEN.Set(
-    map((parent || document).querySelectorAll(query), function(node) {
-      return exGEN.adopt(node);
-    })
-  )
-}
+  return new exGEN.Set(map((parent || document).querySelectorAll(query), function(node){return exGEN.adopt(node);}));
+};
 
 
 exGEN.Element = exGEN.invent({
@@ -149,8 +145,10 @@ exGEN.Element = exGEN.invent({
 			return this;
 		},
 		
-		mergeAttrs: function(el){
+		mergeAttrs: function(el, overwrite){
 			for (var i = 0, atts = el.node.attributes, n = atts.length; i < n; i++){
+				if(typeof this.attr(atts[i].nodeName) != 'undefined' && overwrite !== false)
+					continue;
 				if(['id', 'import'].indexOf(atts[i].nodeName) > -1)
 					continue;
 				this.attr(atts[i].nodeName, atts[i].value);
@@ -158,8 +156,8 @@ exGEN.Element = exGEN.invent({
 			return this;
 		},
 		
-		select: function(query){
-			return exGEN.select(query, this.node);
+		select: function(query, parent){
+			return new exGEN.Set(map((this.node || document).querySelectorAll(query), function(node){return exGEN.adopt(node, parent);}));
 		},
 		
 		querySelector: function(query){
@@ -171,7 +169,7 @@ exGEN.Element = exGEN.invent({
 				return this.node.attributes;
 			else if(name && typeof value === 'undefined')
 				return this.node.getAttribute(name);
-			if(value == null || value == undefined)
+			if(value === null || value === undefined)
 				this.node.removeAttribute(name);
 			else
 				this.node.setAttribute(name, value);
@@ -187,7 +185,7 @@ exGEN.Element = exGEN.invent({
 		
 		create: function(type, args){
 			//console.log(args);
-			var ret = new exGEN[type];
+			var ret = new exGEN[type]();
 			this.add(ret);
 			if(typeof ret.init === 'function')
 				ret.init.apply(ret, args);
@@ -222,7 +220,7 @@ exGEN.Element = exGEN.invent({
 		clone: function(parent){
 			//console.log(capitalize(this.node.nodeName));
 			parent = parent || exGEN;
-			var element = new parent[capitalize(this.node.nodeName)];
+			var element = new parent[capitalize(this.node.nodeName)]();
 			element.type  = this.node.nodeName;
 			element.node  = this.node.cloneNode();
 			element.mergeAttrs(this);
@@ -259,7 +257,7 @@ exGEN.Set = exGEN.invent({
 		}, 
 		
 		remove: function(element) {
-			var i = this.index(element)
+			var i = this.index(element);
 			if (i > -1)
 				this.members.splice(i, 1);
 			return this;
@@ -267,7 +265,8 @@ exGEN.Set = exGEN.invent({
 		
 		each: function(block) {
 			for (var i = 0, il = this.members.length; i < il; i++)
-				block.apply(this.members[i], [i, this.members]);
+				if(block.apply(this.members[i], [i, this.members]) === false)
+					break;
 			return this;
 		}, 
 		
@@ -307,7 +306,7 @@ exGEN.Set = exGEN.invent({
 	
 	construct: {
 		set: function(members) {
-			return new exGEN.Set(members)
+			return new exGEN.Set(members);
 		}
 	}
 });

@@ -31,7 +31,6 @@ MenuObject.prototype.initEventHandlers = function(){
 		if(!p)
 			me.el.setAttribute('class', '');
 	});
-
 	return this;
 }
 

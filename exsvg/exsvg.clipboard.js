@@ -56,71 +56,51 @@ SVG.extend(SVG.Doc, SVG.Nested, {
 
 	cut: function(data){
 		var me = this
-		, out = [];
+		, expt = new exGRAPH.Graph();
 		
-		if(data instanceof exSVG.Node){
-			clipboardData.value = JSON.stringify(data.export());
-			data.remove();	
-		}
-		else if(data instanceof SVG.Set){
-			me.startSequence();
-			data.each(function(){
-				out.push(this.export());
-				this.remove();
-			});
-			me.stopSequence();
-			clipboardData.value = JSON.stringify(out);
-		}
-		else if(typeof data === 'object')
-			clipboardData.value = JSON.stringify(data);
+		console.assert(data instanceof SVG.Set)
+		me.startSequence();
+		data.each(function(){
+			expt.add(this.export());
+			//this.remove();
+		});
+		me.stopSequence();
+		clipboardData.value = expt.node.outerHTML;
+		data.each(function(){
+			this.remove();
+		});
+		return me;
 	},
 	
 	copy: function(data){
 		var me = this
-		, out = []
-		, expt = new exGRAPH.Graph;
+		, expt = new exGRAPH.Graph();
 		
-		if(data instanceof SVG.Set){
-			data.each(function(){
-				expt.add(this.export());
-			});
-			clipboardData.value = expt.node.outerHTML;
-		}
-		else
-			console.log(typeof data);
-		
+		console.assert(data instanceof SVG.Set)
+		data.each(function(){
+			expt.add(this.export());
+		});
+		clipboardData.value = expt.node.outerHTML;
+		return me;		
 	},
 	
 	paste: function(e){
 		console.log('Clipboard.paste()', e);
 		var me = this
-		, data;
+		, data = clipboardData.value;
 		
-		if(!clipboardData.value || clipboardData.value == '')
+		if(!data || data == '')
 			return;
-		data =  JSON.parse(clipboardData.value)
-		me.doc().fire('before-paste', {data: data});
 		
-		if(Array.isArray(data)){
-			console.log('array');
-			me.startSequence();
-			var group = new SVG.Set();
+		var graph = new exGRAPH.Graph();
+		graph.node.innerHTML = data;
+				
+		me.doc().fire('before-paste', {data: graph});
 
-			var pt = me.doc().point(e);
-			//group.translate(pt.x, pt.y);
-			//console.dir(group);
-
-			for(var i=0; i < data.length; i++){
-				if(data[i].ctorMethod && me[data[i].ctorMethod]){
-					var el = me[data[i].ctorMethod].call(me, data[i]);
-					group.add(el);
-				}
-			}
-			console.log(group.bbox());
-			group.move(pt.x, pt.y);
-			me.stopSequence();
-			me.doc().fire('paste', {data: group});
-		}
+		me.startSequence();
+		me.import(graph);
+		me.stopSequence();
+		return me;
 	}
 })
 

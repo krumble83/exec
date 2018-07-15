@@ -36,8 +36,6 @@ exSVG.NodeMacro = SVG.invent({
 });
 
 
-
-
 exSVG.NodeOp = SVG.invent({
     create: 'g', 
     inherit: exSVG.Node,
@@ -47,7 +45,7 @@ exSVG.NodeOp = SVG.invent({
 			var me = this;
 			
 			exSVG.Node.prototype.init.apply(me, arguments);
-			me.setData('ctor', 'Nodeop');
+			me.setData('ctor', 'NodeOp');
 			return me;
 		},
 

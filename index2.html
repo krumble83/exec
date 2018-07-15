@@ -4,19 +4,15 @@
 	<title>SVG.js</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<script type="text/javascript" src="defs.js"></script>
-	<script type="text/javascript" src="tinysort.min.js"></script>
-	<script type="text/javascript" src="menu.js"></script>
 	<script type="text/javascript" src="svgjs/svg.js"></script>
 	<script type="text/javascript" src="exsvg/exsvg.worksheet.js"></script>
 	<script type="text/javascript" src="lib/library.base.js"></script>
-	<script type="text/javascript" src="generator/generator.base.js"></script>
 
 	<script type="text/javascript" src="gen/exgen.exgen.js"></script>
 	<script type="text/javascript" src="gen/exgen.graph.js"></script>
 	<script type="text/javascript" src="gen/excode.js"></script>
 	<script type="text/javascript" src="gen/excode.c.js"></script>
 	
-	<link rel="stylesheet" type="text/css" href="menu.css">
  </head>
 
  <body style="background-color:#262626;padding:0;margin:0">
@@ -66,10 +62,10 @@
 			me.createLink(seq.getPin('then_1'), n1.getPin('entry'));
 
 			n2 = me.import(exLIB.getNode2('core.int.add').attr('pos','900,450'));
-			me.createLink(n1.getPin('index'), n2.getPin('in1'));
+			me.createLink(n1.getPin('index'), n2.getPin('input'));
 
 			n1 = me.import(exLIB.getNode2('core.array.set').attr('pos','1200,360'));
-			me.createLink(n1.getPin('index'), n2.getPin('out'));
+			me.createLink(n1.getPin('index'), n2.getPin('output'));
 			
 			me.createLink(makearr.getPin('array'), n1.getPin('array'));
 			me.createLink(n1.getPin('entry'), forloop.getPin('loop'));

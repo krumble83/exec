@@ -26,7 +26,6 @@ exSVG.Worksheet = SVG.invent({
 				.size('100%', '100%')
 				.panZoom({zoomMin: 0.05, zoomMax: 1, zoomFactor: 0.08})
 
-			me.startAutoScroll();
 			return me;
         },
 		
@@ -221,6 +220,7 @@ exSVG.Worksheet = SVG.invent({
 		},
 		
 		import: function(data, parent){
+			//console.log('worksheet.import()', data);
 			var me = this;
 			
 			if(typeof data === 'string')
@@ -232,6 +232,7 @@ exSVG.Worksheet = SVG.invent({
 
 			me.startSequence();
 			data.select(':scope > *').each(function(){
+				//console.log(this);
 				me.import(this);
 			});
 			me.stopSequence();
@@ -267,76 +268,6 @@ exSVG.Worksheet = SVG.invent({
 		exportGraph: function(graph){
 			var me = this;
 			me.fire('export', {parent: graph});
-		},
-		
-		startAutoScroll: function(callback){
-			var me = this
-			, bound = me.doc().parent().getBoundingClientRect()
-			, x = 0
-			, y = 0
-			, amount = 5
-			, vb
-			, timer
-			
-			//console.log(me);
-			return;
-			
-			SVG.on(document, 'mousemove.worksheet-autoscroll', function(e){
-				if(e.buttons != 1)
-					return;
-				if(e.clientX < bound.x+bound.width && e.clientY < bound.y+bound.height && e.clientX > bound.x && e.clientY > bound.y)
-					return;
-				
-				if(e.clientX > bound.x+bound.width)
-					x = 1;
-				if(e.clientY > bound.y+bound.height)
-					y = 1;
-				
-				
-				timer = setInterval(function(){
-					//console.log('ok');
-					vb = me.viewbox();
-					vb.x += x;
-					vb.y += y;
-					me.viewbox(vb);
-					
-				}, 1);
-				
-				me.doc().on('mousemove.worksheet-autoscroll', function(e){
-					console.log('rrr');
-					clearInterval(timer);
-					x = y = 0;
-				});
-
-				//console.log(e, bound);
-			});
-			
-			
-			return; 	
-			SVG.on(document, 'mousemove.worksheet-autoscroll', function(e){
-				//console.log(e.clientX, bound.x);
-				x = 0;
-				y = 0;
-				if(e.target.instance)
-					return;
-				
-				if(e.clientX < bound.x)
-					x = -(bound.x - e.clientX);
-				else if(e.clientX > bound.x + bound.width)
-					x = amount;
-
-				if(e.clientY < bound.y)
-					y = -amount;
-				else if(e.clientY > bound.y + bound.height)
-					y = amount;
-				
-				vb = me.viewbox();
-				vb.x += x;
-				vb.y += y;
-				me.viewbox(vb);
-				if(callback)
-					callback(vb, x, y, e);
-			});
 		},
 		
 		stopAutoScroll: function(){

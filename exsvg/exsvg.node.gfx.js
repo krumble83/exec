@@ -76,9 +76,9 @@ SVG.extend(exSVG.Node, {
 			me.mGfx.body.back();				
 		}
 
-		/*if(me.mGfx.expand)
+		if(me.mGfx.expand)
 			me.mGfx.expand.hide();
-		*/
+		
 		me.mGfx.body.size(1, 1);
 		box = me.bbox();
 		

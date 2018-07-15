@@ -29,6 +29,11 @@ exSVG.PinEditorBase = SVG.invent({
 			else
 				me.show();
 
+		},
+		
+		destroy: function(){
+			this.off();
+			this.remove();
 		}
 	}
 });
@@ -113,6 +118,13 @@ exSVG.PinEditorInput = SVG.invent({
 				me.width(20).height(22);
 			}
 			
+		},
+		
+		destroy: function(){
+			if(this.input)
+				SVG.off(this.input);
+			SVG.off(this.getChild(0));
+			return exSVG.PinEditorBase.prototype.destroy.apply(this, arguments);
 		}
 	}
 });
@@ -168,6 +180,11 @@ exSVG.PinEditorBool = SVG.invent({
 				me.width(20).height(22);
 			}
 			
+		},
+		
+		destroy: function(){
+			console.warn('TODO: implements exSVG.PinEditorSelect.destroy()');
+			return exSVG.PinEditorBase.prototype.destroy.apply(this, arguments);
 		}
 	}
 });
@@ -211,7 +228,8 @@ exSVG.PinEditorSelect = SVG.invent({
 					me.fire('field-change', {e: e});
 				});
 			me.input = me.getChild(0);
-			console.log(type.Values());
+			
+			//console.log(type.Values());
 			var o;
 			JSON.parse(type.Values()).forEach(function(val){
 				o = document.createElement('option');
@@ -242,6 +260,11 @@ exSVG.PinEditorSelect = SVG.invent({
 				me.width(20).height(22);
 			}
 			
+		},
+		
+		destroy: function(){
+			console.warn('TODO: implements exSVG.PinEditorSelect.destroy()');
+			return exSVG.PinEditorBase.prototype.destroy.apply(this, arguments);
 		}
 	}
 });

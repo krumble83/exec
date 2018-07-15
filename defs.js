@@ -1,5 +1,8 @@
 ;(function(ctx){
 
+if(ctx.define)
+	return;
+
 function def(obj, name, value){
 	Object.defineProperty(obj, name, {
 			enumerable: true,
@@ -121,7 +124,6 @@ function loadScript(){
 		loadScript.apply(this, args);
 	}
 }
-
 function loadCss(){
 	var args = Array.prototype.slice.call(arguments);
 
@@ -265,14 +267,14 @@ if (!Array.prototype.forEach) {
 
 
 
-
+/*
 var fnRegex = /^function(?:.+)?(?:\s+)?\((.+)?\)(?:\s+|\n+)?\{(?:\s+|\n+)?((?:.|\n)+)\}$/m;
 ctx.strToFunction = function (fnString){
   var fnMetadata = fnRegex.exec(fnString);
   var args = [];
   var fnArgs = fnMetadata[1];
   if (fnArgs){
-    fnArgs.split(',').forEach((item) => { 
+    fnArgs.split(',').forEach(function(item){ 
       args.push(item.trim()); 
     });
   };
@@ -280,7 +282,7 @@ ctx.strToFunction = function (fnString){
   args.push(fnMetadata[2]);
   return new Function(...args);
 };
-
+*/
 
 })(window);
 

@@ -25,11 +25,12 @@ exSVG.PinWildcards = SVG.invent({
 	extend: {
 	
 		init: function(data){
+			//console.log('exSVG.PinWildcards.init()', data);
 			var me = this;
 			
 			exSVG.Pin.prototype.init.apply(this, arguments);
-			me.setData('ctor', 'PinWildcards');
-			me.setData('isWildcards', 1);
+			//me.setData('ctor', 'PinWildcards');
+			me.setData('iswildcards', 1);
 			me.setDataType(exLIB.getWildcardsDataType());
 									
 			if(data.group)
@@ -122,7 +123,7 @@ exSVG.PinWildcards = SVG.invent({
 				return;
 			
 			if(me.mGfx.editor){
-				me.mGfx.editor.remove();
+				me.mGfx.editor.destroy();
 				me.mGfx.editor = undefined;
 			}
 			
@@ -133,6 +134,14 @@ exSVG.PinWildcards = SVG.invent({
 				datatypeid = exLIB.swapArrayDataType(datatypeid);
 			
 			exSVG.Pin.prototype.setDataType.call(this, datatypeid);
+		},
+		
+		export: function(graph){
+			var me = this
+			, pin = exSVG.Pin.prototype.export.apply(this, arguments);
+			
+			//pin.Type(exLIB.getWildcardsDataType(exLIB.isArrayDataType(pin.Type())));
+			return pin;
 		}
 	}
 });
@@ -140,7 +149,7 @@ exSVG.PinWildcards = SVG.invent({
 
 
 /*********************************************
-	Structure Pin
+	PinNoLink
 *********************************************/
 exSVG.PinNolink = SVG.invent({
     create: 'g', 
@@ -179,7 +188,7 @@ exSVG.PinStructure = SVG.invent({
 			, datatype
 			, type;
 			
-			me.setData('ctor', 'PinStructure');
+			//me.setData('ctor', 'PinStructure');
 			exSVG.Pin.prototype.init.apply(me, arguments);
 			
 			datatype = exLIB.getDataType2(me.getDataType());
@@ -339,6 +348,7 @@ exSVG.PinAdd = SVG.invent({
     extend: {
 		
 		init: function(data){
+			//console.log('exSVG.PinAdd.init()', data);
 			var me = this
 			, pin
 			, arrayId;
@@ -359,6 +369,7 @@ exSVG.PinAdd = SVG.invent({
 					pin.first().setData('arrayid', arrayId);
 				}
 				pin.first().setId(pin.first().getId() + '_0');
+				me.setData('target', pin.first().getId());
 			}
 			else
 				arrayId = me.getData('targetArray');
@@ -391,7 +402,7 @@ exSVG.PinAdd = SVG.invent({
 			, lastId = parseInt(pins.last().getId().match('\[\\d+\]')[0])
 			, pin = pins.first();
 			
-			var d = pin.exportGraph();
+			var d = pin.export();
 			d.Id(pins.last().getId().replace(new RegExp('\\d+', 'g'), lastId+1));
 			//console.log(d.node);
 			newPin = me.parent(exSVG.Node).addPin(d);
@@ -444,8 +455,7 @@ exSVG.PinAdd = SVG.invent({
 					.addClass('pin')
 			}
 			return me.mGfx.pin.bbox();
-		}
-		
+		}		
 	}
 });
 

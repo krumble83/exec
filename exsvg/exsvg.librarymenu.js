@@ -50,7 +50,6 @@ SVG.extend(exSVG.Worksheet, {
 			
 			function terminate(){
 				//console.log('terminate')
-				//me.hideMenu();
 				SVG.off(document, '.library-linkstart-temp');
 				link.off('.library-linkstart-temp'); // not needed ?
 				SVG.off(menu, '.mmenu');
@@ -62,21 +61,20 @@ SVG.extend(exSVG.Worksheet, {
 			
 			
 			SVG.on(document, 'mousemove.library-linkstart-temp', function(e){
-				if(e.target.className.baseVal == 'grid'){
+				if(e.target.className.baseVal == 'grid')
 					me.showTooltip(e, '<img src="exsvg/img/newnode.png" style="vertical-align:-3px"> Place a new node', 1);
-				}
-				//else {
-				//	me.hideTooltip();
 			});
 
 			//when user release the button on the grid, we displaying the library menu
 			SVG.on(document, 'mouseup.library-linkstart-temp', function(e){
 				//console.log('menulibrary.mouseup', e.button, e.buttons);
+				var startPin = link.getStartPin()  // Get the startPin of the link to get all nodes with a valid type (input or output) and valid datatype in the library
+				, dataType = startPin.getDataType()
+				, io = (startPin.getType() == exSVG.Pin.PIN_IN) ? 'output' : 'input'
+				, filters2;
+				
 				if(e.button != 0)
 					return;
-				//e.stopPropagation();
-				//e.stopImmediatePropagation();
-				//e.preventDefault();
 				
 				// We need to cancel some mouse event handlers
 				SVG.off(document, '.linkStart-link' + link.id());  // Link class to stop drawing and follow mouse cursor
@@ -85,24 +83,16 @@ SVG.extend(exSVG.Worksheet, {
 
 				// show the menu only id we leave mouse button on the grid and not anywhere
 				if(e.target.className.baseVal == 'grid'){					
-					var startPin
-					, filters
-					, filters2;
+					me.hideTooltip();
 					
-					me.hideTooltip()
-					// Get the startPin of the link to get all nodes with a valid type (input or output) and valid datatype in the library
-					startPin = link.getStartPin();
+					console.log(dataType);
 					
-					// before displaying menu, we get all nodes from library with a comptatible pin (with var startPin)
-					filters = {};
-					if(startPin.getType() == exSVG.Pin.PIN_IN){
-						filters = {output: {type: startPin.getDataType()}};
-						filters2 = 'output[type="' + startPin.getDataType() + '"]';
-					}
-					else{
-						filters = {input: {type: startPin.getDataType()}};
-						filters2 = 'input[type="' + startPin.getDataType() + '"]';
-					}
+					// before displaying menu, we get all nodes from library with a comptatible pin
+					filters2 = io + '[type="' + dataType + '"]';										
+					// widlcards dataType
+						filters2 += ',' + io + '[type="' + exLIB.getWildcardsDataType(exLIB.isArrayDataType(dataType)) + '"]';
+
+						
 					// Display the menu
 					//menu = me.showLibMenu(e, filters);
 					menu = me.showLibMenu(e, filters2);
@@ -218,7 +208,7 @@ SVG.extend(exSVG.Worksheet, {
 				if(!el.querySelector('label')){
 					if(parent.childNodes[i].querySelector('label'))
 						continue;
-					console.log(parent.childNodes[i].innerText, el.innerText, parent.childNodes[i].innerText > el.innerText);
+					//console.log(parent.childNodes[i].innerText, el.innerText, parent.childNodes[i].innerText > el.innerText);
 					if(parent.childNodes[i].innerText > el.innerText){
 						parent.insertBefore(el, parent.childNodes[i]);
 						return;
@@ -303,7 +293,7 @@ SVG.extend(exSVG.Worksheet, {
 					ul.appendChild(li);	
 				});
 			});
-			if(expended || nodes.length() < 20){
+			if(expended || nodes.length() < 100){
 				expended = parent.querySelectorAll('input');
 				for(var a=0; a < expended.length; a++)
 					expended[a].setAttribute('checked', true);
@@ -389,176 +379,6 @@ SVG.extend(exSVG.Worksheet, {
 		//me.fire('show' + menu.name, {menu: div});		
 	},
 
-/*	
-	showLibMenu2: function(ev, filters, callback){
-		console.log(ev, filters);
-		var me = this
-		, filters = filters || 'node'
-		, div
-		, input
-		, ul
-		, nodes;
-
-		//hide previously created menus
-		me.hideMenu();
-		
-		function genuid(){
-			function s4() {
-				return Math.floor((1 + Math.random()) * 0x10000)
-					.toString(16)
-					.substring(1);
-			}
-			return s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4();				
-		}
-		
-		function findUl(id, parent){
-			//console.log('findUl()', id, parent)
-			var el
-			, path = id.split('/')
-			, tid = path.shift()
-			, ul = parent.querySelector('ul[id="' + tid + '"]')
-			, li
-			, input
-			, lab
-			, uid = genuid()
-			
-			if(!ul){
-				li = document.createElement('li');
-				
-				input = document.createElement('input');
-				input.setAttribute('type', 'checkbox');
-				input.setAttribute('id', 'folder_' + uid);
-				li.appendChild(input);
-				
-				lab = document.createElement('label');
-				lab.setAttribute('for', 'folder_' + uid);
-				lab.innerText = tid;
-				li.appendChild(lab);
-				
-				ul = document.createElement('ul');
-				ul.setAttribute('id', tid);
-				li.appendChild(ul);
-				parent.appendChild(li);				
-			}
-			if(path.length > 0)
-				return findUl(path.join('/'), ul);
-			
-			return ul;	
-		}
-
-		function fill(parent, nodes, expended, highlight){
-			var reg = (highlight) ? new RegExp('(' + highlight + ')', 'gi') : null
-			while (parent.firstChild) {
-				parent.removeChild(parent.firstChild);
-			}
-
-			for(var a=0; a < nodes.length; a++){
-				var li
-				, ul
-				, cats
-
-				if(!nodes[a].categories)
-					continue;
-				for(var i=0; i < nodes[a].categories.length; i++){
-					ul = findUl(nodes[a].categories[i], parent);
-					
-					li = document.createElement('li');
-					if(nodes[a].symbol)
-						li.innerHTML = '<img src="' + nodes[a].symbol + '">';
-					if(reg)
-						li.innerHTML += '&nbsp;' + nodes[a].title.replace(reg, '<span class="highlight">$1</span>');
-					else
-						li.innerHTML += '&nbsp;' + nodes[a].title;
-					li.setAttribute('id', 'Node_' + nodes[a].id);
-
-					ul.appendChild(li);					
-				}
-			}			
-			if(expended || nodes.length < 20){
-				expended = parent.querySelectorAll('input');
-				for(var a=0; a < expended.length; a++)
-					expended[a].setAttribute('checked', true);
-			}
-		}
-
-		div = menuEl;
-		input = div.querySelector('input[type="text"]');	
-		ul = div.querySelector('ul.sortable');
-		div.querySelector('.body').scrollTop = 0;
-		input.value = '';
-		
-		
-		SVG.on(input, 'keyup.librarymenu', function(e){
-			var nodes
-			, flters = ((filters != 'node') ? filters : '')
-			
-			if(this.value){
-				nodes = exLIB.getNodes('node[title*="' + this.value + '" i] ' + flters + ', node[keywords*="' + this.value + '" i] ' + flters, ['id', 'symbol', 'title', 'categories']);
-				fill(ul, nodes, true, this.value);
-			}
-			else{
-				nodes = exLIB.getNodes(filters, ['id', 'symbol', 'title', 'categories']);
-				fill(ul, nodes);
-			}
-		});
-		
-		nodes = exLIB.getNodes(filters, ['id', 'symbol', 'title', 'categories']);
-		fill(ul, nodes);
-		
-		SVG.on(ul, 'click.librarymenu', function(e){
-			//when user click on a menu item, cancel all event listeners of the menu
-			var elem = e.target
-			, pt
-			, event
-					
-			if(elem.tagName == 'INPUT')
-				return;
-			
-			if(elem.tagName == 'SPAN' || elem.tagName == 'IMG')
-				elem = elem.parentNode;
-			if(elem.tagName != 'LI')
-				return;
-			
-			SVG.off(input, '.librarymenu');
-			SVG.off(ul, '.librarymenu');
-
-			pt = me.point(ev.clientX, ev.clientY);
-			event = new CustomEvent('itemclick', {detail: {elem: elem, e: ev, nodeid: elem.id.replace('Node_', '')}});
-			div.dispatchEvent(event);
-			me.hideMenu();
-		});
-		
-		me.doc().on('mousedown.librarymenu', function(ev){
-			var event = new CustomEvent('cancel', {detail: {e: ev}});
-			
-			SVG.off(input, '.librarymenu');
-			SVG.off(ul, '.librarymenu');
-			me.off('.librarymenu');
-			div.dispatchEvent(event);
-			me.hideMenu();
-		});
-		
-		tinysort('.sortable>li');
-		
-		if(!ev || !ev.clientX)
-			return;
-
-		if(ev.clientX + 360 > window.innerWidth)
-			div.style.left = window.innerWidth - 360 + 'px';
-		else
-			div.style.left = ev.clientX + 'px';
-
-		if(ev.clientY + 310 > window.innerHeight)
-			div.style.top = window.innerHeight - 310 + 'px';
-		else
-			div.style.top = ev.clientY + 'px';
-
-		div.style.display = 'block';
-		input.focus();
-		return div;
-		//me.fire('show' + menu.name, {menu: div});		
-	},
-*/	
 	hideMenu: function(menu){
 		var menu = document.querySelector('#librarymenu');
 		menu.style.display = 'none';

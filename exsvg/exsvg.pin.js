@@ -10,7 +10,7 @@ exSVG.Pin = SVG.invent({
 			var me = this;
 
 			this.getNode().on('export', function(e){
-				me.exportGraph(e.detail.parent);
+				me.export(e.detail.parent);
 			});
 
 			this.getNode().on('destroy', function(e){
@@ -119,32 +119,16 @@ exSVG.Pin = SVG.invent({
 			return this.getData('tooltip');
 		},
 		
-
-		export: function(full){
-			var me = this
-			, ret = {}
-			, attrs = me.attr();
-			
-			for (var key in attrs) {
-				if(!Object.prototype.hasOwnProperty.call(attrs, key))
-					continue;
-				if(key.substr(0,5) != 'data-')
-					continue;
-				ret[key.substr(5)] = attrs[key];
-			}
-			return ret;
-		},
-		
-		exportGraph: function(node){
+		export: function(graph){
 			var me = this
 			, ret = {}
 			, attrs = me.attr()
 			, pin;
 			
 			if(me.getType() == exSVG.Pin.PIN_IN)
-				pin = (node && node.Input) ? node.Input() : new exGRAPH.Input;
+				pin = (graph && graph.Input) ? graph.Input() : new exGRAPH.Input();
 			else
-				pin = (node && node.Output) ? node.Output() : new exGRAPH.Output;
+				pin = (graph && graph.Output) ? graph.Output() : new exGRAPH.Output();
 			
 			for (var key in attrs) {
 				if(!Object.prototype.hasOwnProperty.call(attrs, key) || key.substr(0,5) != 'data-')
@@ -197,7 +181,7 @@ SVG.extend(exSVG.Node, {
 		return me.createPin(data, me.mOutputPinGroup);
 	},
 	
-	createPin(data, parent){
+	createPin: function(data, parent){
 		var me = this
 		, type = exLIB.getDataType2(data.Type())
 		, pin = new exSVG[type.Ctor()];

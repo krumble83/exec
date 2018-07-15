@@ -165,6 +165,7 @@ define(window, 'READ_ONLY', 1);
 
 SVG.extend(exSVG.Worksheet, {
 	importNode: function(data, parent){
+		//console.log('exSVG.Worksheet.importNode()', data, data.Ctor());
 		var node = new exSVG[data.Ctor()]
 		, pos = data.attr('pos') ? data.attr('pos').split(',') : false;
 		
