@@ -9,7 +9,7 @@ console.warn('TODO: Quand on modifie le graph apres un undo, on doit détruire p
 console.warn('TODO: Ameliorer le rectangle de selection pour prendre en compte tout les point d\'un node.');
 
 
-/*
+/**
 
    x1,y1_____________________
 		|					|
