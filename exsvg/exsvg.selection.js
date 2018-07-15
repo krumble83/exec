@@ -45,71 +45,75 @@ SVG.extend(exSVG.Worksheet, {
 	initSelectionEventHandlers: function(){
 		//console.log('Selection.initSelectionEventHandlers()');
 		var me = this
-		, selectionRect
-		, dragPoint;
+		, selectionRect;
 
 		me.mSelection.on('dragstart.selection', function(e){
 			//console.log('Selection:dragstart.selection');
+			var dragPoint;
 			
 			// to check if nodes really moving and to get the delta of the drag movement, we need to store the start drag position
 			dragPoint = e.detail.p;
-		})
-		.on('dragmove.selection', function(e){
-			//console.log('selection.dragmove', e);
-			var selection = me.getSelection();
 			
-			// make all nodes to don't react a mouse events (over)
-			me.addClass('blur');
-			//me.select('.exNode').addClass('unfocusable');
+			// Add events to handle drag events
+			me.mSelection.on('dragmove.selection', function(ev){
+				//console.log('selection.dragmove', e);
+				var selection = me.getSelection();
+				
+				// make all nodes to don't react a mouse events (over)
+				me.addClass('blur');
 
-			selection.fire('move', {event:e});
-			if(!dragPoint.dragged)
-				selection.fire('move-start', {event:e});
-			
-			// because drag plugin suck, if the user press down the mouse button but not move it,
-			// the plugin still throw a dragend event when the mouse button is released
-			// if we don't be aware of this, the undo/redo framework register a move event but nothing was happened
-			dragPoint.dragged = true;
-		})
-		.on('dragend.selection', function(e){
-			//console.log('selection.dragend');
-			var selection
-			, movement;
+				selection.fire('move', {event:ev});
+				if(!dragPoint.dragged)
+					selection.fire('move-start', {event:ev});
+				
+				// because drag plugin suck, if the user press down the mouse button but not move mouse,
+				// the plugin still throw a dragend event when the mouse button is released
+				// if we don't be aware of this, the undo/redo framework register a move event but nothing was happened
+				dragPoint.dragged = true;
+			})
+			.on('dragend.selection', function(ev){
+				//console.log('selection.dragend');
+				var selection
+				, movement;
 
-			// make all nodes to react a mouse events (over)
-			me.removeClass('blur');
-			//me.select('.exNode').removeClass('unfocusable');			
-			
-			// first, we stop all propagation of the initial mouse event (mouse up)
-			// given by the drag plugin in e.detail.event
-			e.detail.event.stopImmediatePropagation();
-			e.detail.event.stopPropagation();
-			
-			//if no move happen, return (see on('dragmove') above)
-			if(!dragPoint.dragged){
+				// make all nodes to react a mouse events (over)
+				me.removeClass('blur');
+				//me.select('.exNode').removeClass('unfocusable');			
+				
+				// first, we stop all propagation of the initial mouse event (mouse up)
+				// given by the drag plugin in e.detail.event
+				ev.detail.event.stopImmediatePropagation();
+				ev.detail.event.stopPropagation();
+				
+				//if no move happen, return (see on('dragmove') above)
+				if(!dragPoint.dragged){
+					dragPoint = null;
+					return;
+				}
+				
+				// we get all moved nodes
+				// normaly it's all nodes in the SVG selection group
+				selection = me.getSelection();
+
+				// movement is the delta between start drag position and stop drag position
+				movement = me.snapToGrid(ev.detail.p.x - dragPoint.x, ev.detail.p.y - dragPoint.y);
+
+				//me.doc().fire('selection-moved', {selection: selection, movement: movement});
+				
+				// we start a sequence because we want only one undo/redo action for all moved nodes
+				// see undo/redo framework for more
+				me.startSequence();
+				selection.each(function(){
+					this.fire('dragend', {event: ev});
+					me.doc().fire('node-moved', {node: this, movement: movement});
+				});
+				me.stopSequence();
 				dragPoint = null;
-				return;
-			}
-			
-			// we get all moved nodes
-			// normaly it's all nodes in the SVG selection group
-			selection = me.getSelection();
+				me.mSelection.off('dragmove.selection').off('dragend.selection');
+			});			
+						
+		})
 
-			// movement is the delta between start drag position and stop drag position
-			movement = me.snapToGrid(e.detail.p.x - dragPoint.x, e.detail.p.y - dragPoint.y);
-
-			//me.doc().fire('selection-moved', {selection: selection, movement: movement});
-			
-			// we start a sequence because we want only one undo/redo action for all moved nodes
-			// see undo/redo framework for more
-			me.startSequence();
-			selection.each(function(){
-				this.fire('dragend', {event: e});
-				me.doc().fire('node-moved', {node: this, movement: movement});
-			});
-			me.stopSequence();
-			dragPoint = null;
-		});
 
 		// Rectangle selection stuff
 		me.doc().on('mousedown.selection-rectangle', function(e){

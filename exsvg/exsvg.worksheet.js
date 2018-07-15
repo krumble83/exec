@@ -61,7 +61,7 @@ exSVG.Worksheet = SVG.invent({
 				panEl.instance.style('cursor', panElCursor);
 				me.removeClass('blur');
 			});
-						
+				/*		
 			me.doc().on('contextmenu.worksheet', function(e){
 				if(panStart.pan){
 					e.preventDefault();
@@ -69,7 +69,7 @@ exSVG.Worksheet = SVG.invent({
 					e.stopPropagation();
 				}
 			});
-			
+			*/
 			me.doc().on('node-add.worksheet-dragnode', function(e){
 				console.log('worksheet:nodeadd.worksheet-drag');
 				var dragPoint = null

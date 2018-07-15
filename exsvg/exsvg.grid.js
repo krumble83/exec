@@ -33,10 +33,6 @@ SVG.extend(exSVG.Worksheet, {
 		me.line(-50000, 0, 50000, 0).stroke({width: 1, color: '#000'}).back();
 		me.mGrid.back();
 		
-		me.on('zoom', function(e){
-			
-		});
-		
 		return me;
 	},
 	

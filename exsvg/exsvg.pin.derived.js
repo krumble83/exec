@@ -29,7 +29,7 @@ exSVG.PinWildcards = SVG.invent({
 			var me = this;
 			
 			exSVG.Pin.prototype.init.apply(this, arguments);
-			//me.setData('ctor', 'PinWildcards');
+			me.setData('ctor', 'PinWildcards');
 			me.setData('iswildcards', 1);
 			me.setDataType(exLIB.getWildcardsDataType());
 									
@@ -97,8 +97,10 @@ exSVG.PinWildcards = SVG.invent({
 				pins.each(function(){
 					if(this.checkDataTypeChange)
 						this.checkDataTypeChange(datatype, set);
-					else if(this.getDataType() != datatype && exLIB.swapArrayDataType(me.getDataType()) != datatype)
+					else if(this.getDataType() != datatype && exLIB.swapArrayDataType(me.getDataType()) != datatype){
+						console.log('Prevented 1');
 						set.preventDefault();
+					}
 				});
 			}
 			
@@ -110,8 +112,10 @@ exSVG.PinWildcards = SVG.invent({
 				set.add(this);
 				if(pin.checkDataTypeChange)
 					pin.checkDataTypeChange(datatype, set);
-				else if(pin.getDataType() != datatype && exLIB.swapArrayDataType(pin.getDataType()) != datatype)
+				else if(pin.getDataType() != datatype && exLIB.swapArrayDataType(pin.getDataType()) != datatype){
+					console.log('Prevented 2');
 					set.preventDefault();
+				}
 			});
 		},
 		
@@ -173,6 +177,8 @@ exSVG.PinNolink = SVG.invent({
 		}
 	}
 });
+
+
 
 /*********************************************
 	Structure Pin
@@ -241,6 +247,7 @@ exSVG.PinStructure = SVG.invent({
 });
 
 
+
 /*********************************************
 	Exec pin
 *********************************************/
@@ -303,7 +310,7 @@ exSVG.PinExec = SVG.invent({
 	PinAdd pin
 *********************************************/
 function pinAddContextMenu(e, pin){
-	console.log(e);
+	//console.log(e);
 	var me = this
 	, menu = e.detail.menu
 	, pins = me.getNode().select('.exPin[data-arrayid="' + me.getData('targetArray') + '"]');
@@ -404,8 +411,11 @@ exSVG.PinAdd = SVG.invent({
 			
 			var d = pin.export();
 			d.Id(pins.last().getId().replace(new RegExp('\\d+', 'g'), lastId+1));
-			//console.log(d.node);
-			newPin = me.parent(exSVG.Node).addPin(d);
+			//console.log(d.Ctor());
+			newPin = me.parent(exSVG.Node).importPin(d);
+			newPin.setDataType(pin.getDataType());
+
+			//newPin = me.parent(exSVG.Node).addPin(d);
 			console.assert(newPin instanceof exSVG.Pin);
 			
 			pins.last().after(newPin); // bug? why insert after, shoul be before...

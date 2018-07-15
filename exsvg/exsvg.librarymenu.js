@@ -179,7 +179,6 @@ SVG.extend(exSVG.Worksheet, {
 				me.hideMenu();
 			});			
 		});
-		
 	},
 
 	showLibMenu: function(ev, filters, callback){

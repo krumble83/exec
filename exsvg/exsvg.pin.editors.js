@@ -39,6 +39,7 @@ exSVG.PinEditorBase = SVG.invent({
 });
 
 
+
 exSVG.PinEditorInput = SVG.invent({
     create: 'foreignObject', 
     inherit: exSVG.PinEditorBase,
@@ -128,7 +129,6 @@ exSVG.PinEditorInput = SVG.invent({
 		}
 	}
 });
-
 
 
 
@@ -231,7 +231,7 @@ exSVG.PinEditorSelect = SVG.invent({
 			
 			//console.log(type.Values());
 			var o;
-			JSON.parse(type.Values()).forEach(function(val){
+			JSON.parse(type.Values() || '[]').forEach(function(val){
 				o = document.createElement('option');
 				o.innerText = val;
 				me.input.appendChild(o);

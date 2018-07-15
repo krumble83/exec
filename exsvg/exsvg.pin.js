@@ -159,32 +159,37 @@ define(exSVG.Pin, 'PIN_LINK_ACCEPT_DATATYPE_ARRAY', 8);
 
 
 SVG.extend(exSVG.Node, {
-	importInput: function(data){
+	
+	importPin: function(data){
+		//console.log('exSVG.Node.importPin()', data);
 		var me = this;
 		
 		if(!me.mInputPinGroup)
 			me.mInputPinGroup = me.group();
 		if(!me.mOutputPinGroup)
 			me.mOutputPinGroup = me.group();
-
-		return me.createPin(data, me.mInputPinGroup);
+		
+		if(data.type.toLowerCase() == 'input')
+			return me.createPin(data, me.mInputPinGroup);
+			
+		else if(data.type.toLowerCase() == 'output')
+			return me.createPin(data, me.mOutputPinGroup);
+		
+	},
+	
+	importInput: function(data){
+		return this.importPin.apply(this, arguments);
 	},
 	
 	importOutput: function(data){
-		var me = this;
-		
-		if(!me.mInputPinGroup)
-			me.mInputPinGroup = me.group();
-		if(!me.mOutputPinGroup)
-			me.mOutputPinGroup = me.group();
-		
-		return me.createPin(data, me.mOutputPinGroup);
+		return this.importPin.apply(this, arguments);
 	},
 	
 	createPin: function(data, parent){
+		//console.log('exSVG.Node.createPin()', data);
 		var me = this
 		, type = exLIB.getDataType2(data.Type())
-		, pin = new exSVG[type.Ctor()];
+		, pin = new exSVG[(data.Ctor && data.Ctor()) ? data.Ctor() : type.Ctor()]();
 			
 		parent.put(pin);
 		pin.setColor(type.Color());
@@ -194,13 +199,14 @@ SVG.extend(exSVG.Node, {
 		return pin;	
 	},
 	
+	/*
 	addPin: function(data){
 		if(data.type == 'INPUT')
 			return this.importInput(data);
 		else if(data.type == 'OUTPUT')
 			return this.importOutput(data);
 	},
-        
+       */
 	getPin: function(id){
 		return this.select('.exPin.output[data-id="' + id + '"], .exPin.input[data-id="' + id + '"]').first();
 	},

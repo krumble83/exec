@@ -147,7 +147,7 @@ exGEN.Element = exGEN.invent({
 		
 		mergeAttrs: function(el, overwrite){
 			for (var i = 0, atts = el.node.attributes, n = atts.length; i < n; i++){
-				if(typeof this.attr(atts[i].nodeName) != 'undefined' && overwrite !== false)
+				if(this.node.getAttribute(atts[i].nodeName) !== null && overwrite !== false)
 					continue;
 				if(['id', 'import'].indexOf(atts[i].nodeName) > -1)
 					continue;
@@ -167,7 +167,7 @@ exGEN.Element = exGEN.invent({
 		attr: function(name, value){
 			if(typeof name === 'undefined')
 				return this.node.attributes;
-			else if(name && typeof value === 'undefined')
+			else if(name && typeof value === 'undefined' || value === undefined)
 				return this.node.getAttribute(name);
 			if(value === null || value === undefined)
 				this.node.removeAttribute(name);

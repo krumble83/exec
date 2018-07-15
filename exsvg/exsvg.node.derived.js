@@ -42,6 +42,7 @@ exSVG.NodeOp = SVG.invent({
     extend: {
 		
 		init: function(){
+			//console.log('exSVG.NodeOp.init()');
 			var me = this;
 			
 			exSVG.Node.prototype.init.apply(me, arguments);

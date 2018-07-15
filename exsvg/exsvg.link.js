@@ -142,6 +142,7 @@ exSVG.Link = SVG.invent({
 
 			me.fire('add');
 			SVG.off(document, '.linkStart-link' + me.id());
+			me.off('cancel');
 			
 			// send an event to the main SVG // this event is used by undo/redo
 			me.doc().fire('link-add', {link: me});
@@ -194,6 +195,7 @@ exSVG.Link = SVG.invent({
 			if(e instanceof MouseEvent){
 				me.fire('finish');
 				me.doc().fire('link-finish', {link: this});
+				me.off('finish');
 			}
 			//console.groupEnd();
 			return me;

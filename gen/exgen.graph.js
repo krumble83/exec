@@ -546,7 +546,7 @@ exGRAPH.Type = exGEN.invent({
 			// first, search in current package
 			parent = me.GetPackage();
 			args.forEach(function(val){
-				found = parent.select(me.type.toLowerCase() + '[id="' + val + '"]');
+				found = parent.select(me.type.toLowerCase() + '[id="' + parent.Id() + '.' + val + '"]');
 				switch(found.length()){
 					case 0:
 						return;
@@ -682,8 +682,13 @@ exGRAPH.Structure = exGEN.invent({
 		},
 		
 		Member: function(id, type, label){
-			var ret = this.querySelector('pin[id="' + id + '"]') || this.create('Pin');
-			return ret.init.apply(ret, arguments);
+			var package = this.GetPackage()
+			, ret = this.querySelector('pin[id="' + id + '"]') || this.create('Pin');
+			
+			ret.init.apply(ret, arguments);
+			if(package.select('[id="' + package.Id() + '.' + ret.Type() + '"]:not(node)').length() == 1)
+				ret.Type(package.Id() + '.' + ret.Type());
+			return ret;
 		},
 
 		
@@ -700,6 +705,12 @@ exGRAPH.Enum = exGEN.invent({
 	inherit: exGRAPH.Type,
 	
     extend: {
+		
+		init: function(){
+			exGRAPH.Type.prototype.init.apply(this, arguments);
+			this.Inherits('core.type.enum');
+			return this;
+		},
 				
 		Values: function(values){
 			return this.attr('values', Array.isArray(values) ? JSON.stringify(values) : values);
@@ -724,15 +735,24 @@ exGRAPH.Node = exGEN.invent({
 			return this;//.Color('#aaeea0');
 		},
 		
-
 		Input: function(id, type, label){
-			var ret = this.querySelector('input[id="' + id + '"]') || this.create('Input');
-			return ret.init.apply(ret, arguments);
+			var package = this.GetPackage()
+			, ret = this.querySelector('input[id="' + id + '"]') || this.create('Input');
+			
+			ret.init.apply(ret, arguments);
+			if(package.select('[id="' + package.Id() + '.' + ret.Type() + '"]:not(node)').length() == 1)
+				ret.Type(package.Id() + '.' + ret.Type());
+			return ret;
 		},
 		
 		Output: function(id, type, label){
-			var ret = this.querySelector('output[id="' + id + '"]') || this.create('Output');
-			return ret.init.apply(ret, arguments);
+			var package = this.GetPackage()
+			, ret = this.querySelector('output[id="' + id + '"]') || this.create('Output');
+			
+			ret.init.apply(ret, arguments);
+			if(package.select('[id="' + package.Id() + '.' + ret.Type() + '"]:not(node)').length() == 1)
+				ret.Type(package.Id() + '.' + ret.Type());
+			return ret;
 		},
 		
 		Id: function(id){
@@ -741,21 +761,19 @@ exGRAPH.Node = exGEN.invent({
 		
 		Import: function(name){
 			this.ImportAttrs(name);
-			
-			this.ImportInputs(name);
-			//this.ImportCategories(name);
-			return this.ImportOutputs(name);
+			return this.ImportPins(name);
 		},
 		
 		ImportTpl: function(tpl, type, title){
 			var me = this
 			, tpl = this.parent(exGRAPH.Library).GetNodeTpl(tpl)
 			, label
-			, clone
-			, orgtitle = this.Title()
+			, clone;
+
+			if(this.Ctor() == 'Node' && tpl.Ctor())
+				this.Ctor(null);
 			
 			this.mergeAttrs(tpl);
-			this.Title(orgtitle);
 			
 			tpl.select('input,output').each(function(){
 				clone = this.clone();
@@ -778,46 +796,18 @@ exGRAPH.Node = exGEN.invent({
 			return this.mergeAttrs(base);			
 		},
 		
-		ImportInputs: function(name){
+		ImportPins: function(name){
 			var me = this
 			, base = this.parent(exGRAPH.Library).GetNode(name, this.parent(exGRAPH.Package).Id())
 			, clone
 			
 			if(!base)
 				return console.log('can\'t find node ' + name);
-			base.select('input').each(function(){
+			base.select('input,output').each(function(){
 				clone = exGEN.adopt(this.node.cloneNode(true), exGRAPH);
 				me.add(clone);
 			});
 			return this;
-		},
-
-		ImportOutputs: function(name){
-			var me = this
-			, base = this.parent(exGRAPH.Library).GetNode(name, this.parent(exGRAPH.Package).Id())
-			, clone
-			
-			if(!base)
-				return console.log('can\'t find node ' + name);
-			base.select('output').each(function(){
-				clone = exGEN.adopt(this.node.cloneNode(true), exGRAPH);
-				me.add(clone);
-			});
-			return this;			
-		},
-
-		ImportCategories: function(name){
-			var me = this
-			, base = this.parent(exGRAPH.Library).GetNode(name, this.parent(exGRAPH.Package).Id())
-			, clone
-			
-			if(!base)
-				return console.log('can\'t find node ' + name);
-			base.select('category').each(function(){
-				clone = exGEN.adopt(this.node.cloneNode(true), exGRAPH);
-				me.add(clone);
-			});
-			return this;			
 		},
 
 		Ctor: function(name){
@@ -940,6 +930,10 @@ exGRAPH.Pin = exGEN.invent({
 		
 		Value: function(){
 			return this.attr('value', true);
+		},
+		
+		Ctor: function(name){
+			return this.attr('ctor', name);
 		}
 	}
 });
