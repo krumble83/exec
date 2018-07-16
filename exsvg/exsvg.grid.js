@@ -6,7 +6,12 @@ var DRAGSMALL;
 SVG.extend(exSVG.Worksheet, {
 
 	initGrid: function(options) {
-		var me = this;
+		var me = this
+		, workSpace = (me.getWorkspace) ? me.getWorkspace() : me.doc();
+		
+		if(!workSpace)
+			return;
+		console.log(workSpace);
 		var options = options || {};
 		options.small = options.small || 16;
 		options.big = options.big || 128;
@@ -23,26 +28,25 @@ SVG.extend(exSVG.Worksheet, {
 			add.path('M ' + (options.big) + ' 0 L 0 0 0 ' + (options.big)).fill('none')
 		}).attr('patternUnits', 'userSpaceOnUse').addClass('medGrid')
 		
-		me.mGrid = me.rect(100000,100000)
-			.fill('url(#' + m.id() + ')')
-			.x(-50000)
-			.y(-50000)
-			.back()
-			.addClass('grid')
-		me.line(0, -50000, 0, 50000).stroke({width: 1, color: '#000'}).back();
-		me.line(-50000, 0, 50000, 0).stroke({width: 1, color: '#000'}).back();
-		me.mGrid.back();
 		
+		workSpace.fill('url(#' + m.id() + ')')
+			.removeClass('workspace')
+			.addClass('grid');
+		
+		if(workSpace != me.doc())
+			workSpace.back();
 		return me;
 	},
 	
 	snapToGrid: function(x, y){
 		var small = DRAGSMALL;
+		if(x.x)
+			return {x:parseInt(x.x/small)*small, y:parseInt(x.y/small)*small};
 		return {x:parseInt(x/small)*small, y:parseInt(y/small)*small};
 	},
 	
 	getGrid: function(){
-		return this.mGrid;
+		return (this.getWorkspace) ? this.getWorkspace() : this;
 	}
 });
 

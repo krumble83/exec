@@ -81,75 +81,74 @@ SVG.extend(exSVG.Worksheet, {
 				SVG.off(document, 'mousemove.library-linkstart-temp'); // This class to stop displaying tooltip "add a new node" on the document
 				SVG.off(document, '.library-linkstart-temp'); // prevent to retrigger this event twice if we click on the document and not on the menu
 
-				// show the menu only id we leave mouse button on the grid and not anywhere
-				if(e.target.className.baseVal == 'grid'){					
-					me.hideTooltip();
+				// show the menu only if we leave mouse button on the grid and not anywhere
+				if(e.target.className.baseVal != 'workspace'){
+					//link.remove();
+					//return;
+				}
 					
-					console.log(dataType);
+				me.hideTooltip();
+				
+				console.log(dataType);
+				
+				// before displaying menu, we get all nodes from library with a comptatible pin
+				filters2 = io + '[type="' + dataType + '"]';										
+				// widlcards dataType
+					filters2 += ',' + io + '[type="' + exLIB.getWildcardsDataType(exLIB.isArrayDataType(dataType)) + '"]';
+
 					
-					// before displaying menu, we get all nodes from library with a comptatible pin
-					filters2 = io + '[type="' + dataType + '"]';										
-					// widlcards dataType
-						filters2 += ',' + io + '[type="' + exLIB.getWildcardsDataType(exLIB.isArrayDataType(dataType)) + '"]';
+				// Display the menu
+				//menu = me.showLibMenu(e, filters);
+				menu = me.showLibMenu(e, filters2);
+
+				SVG.on(menu, 'itemclick.mmenu', function(e){
+					// here is the event when the user click on a menu item 
+					// we create the node, get all compatibles pin on this new node 
+					// and attach the link to the first valid pin (input/output & datatype)
+					//console.log(e);
+					try{
+						me.startSequence();
+						var pt = me.point(e.detail.e.clientX, e.detail.e.clientY)
+						, node = me.import(exLIB.getNode2(e.detail.nodeid).attr('pos', pt.x + ',' + pt.y))
+						//, node = me.addNode(e.detail.nodeid, {x: pt.x, y: pt.y})
+						, pins;
+						
+						if(startPin.getType() == exSVG.Pin.PIN_IN) // if the startPin of the link is a input, we select all output pins
+							pins = node.getPins({output: {type: startPin.getDataType()}}, true);
+							//pins = node.select('.exPin.output[data-dataType="' + startPin.getDataType() + '"],.exPin.output[data-isWildcards="1"]');
+						else if(startPin.getType() == exSVG.Pin.PIN_OUT) // if the startPin of the link is a output, we select all input pins
+							pins = node.getPins({input: {type: startPin.getDataType()}}, true);
+							//pins = node.select('.exPin.input[data-dataType="' + startPin.getDataType() + '"],.exPin.output[data-isWildcards="1"]');
+
+						console.assert(pins.length() > 0);
 
 						
-					// Display the menu
-					//menu = me.showLibMenu(e, filters);
-					menu = me.showLibMenu(e, filters2);
-
-					SVG.on(menu, 'itemclick.mmenu', function(e){
-						// here is the event when the user click on a menu item 
-						// we create the node, get all compatibles pin on this new node 
-						// and attach the link to the first valid pin (input/output & datatype)
-						//console.log(e);
-						try{
-							me.startSequence();
-							var pt = me.point(e.detail.e.clientX, e.detail.e.clientY)
-							, node = me.import(exLIB.getNode2(e.detail.nodeid).attr('pos', pt.x + ',' + pt.y))
-							//, node = me.addNode(e.detail.nodeid, {x: pt.x, y: pt.y})
-							, pins;
-							
-							if(startPin.getType() == exSVG.Pin.PIN_IN) // if the startPin of the link is a input, we select all output pins
-								pins = node.getPins({output: {type: startPin.getDataType()}}, true);
-								//pins = node.select('.exPin.output[data-dataType="' + startPin.getDataType() + '"],.exPin.output[data-isWildcards="1"]');
-							else if(startPin.getType() == exSVG.Pin.PIN_OUT) // if the startPin of the link is a output, we select all input pins
-								pins = node.getPins({input: {type: startPin.getDataType()}}, true);
-								//pins = node.select('.exPin.input[data-dataType="' + startPin.getDataType() + '"],.exPin.output[data-isWildcards="1"]');
-
-							console.assert(pins.length() > 0);
-
-							
-						} catch(err){
-							link.remove();
-							console.log('Can\'t create link', err);
-							me.stopSequence();
-							return;
-							//throw e;
-						}
-						finally {
-							// disable menu event handlers
-							terminate();
-							//SVG.off(menu, '.mmenu');
-						}
-
-						// finally we finish the link beetween two pins node
-						//link.finish(pins.first(), e.detail.e);
-						pins.first().node.dispatchEvent(e.detail.e);
-						me.createSmartLink(link);
-						//pins.first().endLink(link, e.detail.e);
-						me.stopSequence();
-					});
-					
-					SVG.on(menu, 'cancel.mmenu', function(e){
+					} catch(err){
 						link.remove();
-						//SVG.off(menu, '.mmenu');
+						console.log('Can\'t create link', err);
+						me.stopSequence();
+						return;
+						//throw e;
+					}
+					finally {
+						// disable menu event handlers
 						terminate();
-					});
-				}
-				else {
-					// if user has leave mouse button somewhere else the grid, we delete the link
+						//SVG.off(menu, '.mmenu');
+					}
+
+					// finally we finish the link beetween two pins node
+					//link.finish(pins.first(), e.detail.e);
+					pins.first().node.dispatchEvent(e.detail.e);
+					me.createSmartLink(link);
+					//pins.first().endLink(link, e.detail.e);
+					me.stopSequence();
+				});
+				
+				SVG.on(menu, 'cancel.mmenu', function(e){
 					link.remove();
-				}
+					//SVG.off(menu, '.mmenu');
+					terminate();
+				});
 			});
 			
 			

@@ -312,6 +312,13 @@ exSVG.Link = SVG.invent({
 });
 
 
+SVG.extend(exSVG.Node, {
+	getLinks: function(){
+		var me = this;
+		return me.parent(exSVG.Worksheet).select('path[data-pinIn^="' + me.id() + '-"],path[data-pinOut^="' + me.id() + '-"]');
+	}
+});
+
 SVG.extend(exSVG.Worksheet, {
 
 	/*
@@ -320,11 +327,8 @@ SVG.extend(exSVG.Worksheet, {
 	initLinks: function() {
 		var me = this;
 		me.mLinks = me.group().addClass('exLinks');
-		if(me.getGrid())
-			me.getGrid().before(me.mLinks);
-			//me.mLinks.after(me.getGrid());
-		if(me.mGrid)
-			me.mGrid.back();
+		if(me.getWorkspace)
+			me.getWorkspace().back();
 		me.initLinkEventHandlers();
 		return me;
 	},

@@ -204,7 +204,7 @@ SVG.extend(exSVG.Pin, {
 		var me = this;
 		
 		me.getNode().on('move.linknode' + link.id(), function(e){
-			//console.log('nodemove', this.id())
+			//console.log('linknode.nodemove', this.id());
 			// track node move's to redraw the link.
 			link.draw();
 		});

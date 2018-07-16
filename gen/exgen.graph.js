@@ -156,6 +156,12 @@ exGRAPH.Package = exGEN.invent({
 			ret.init.apply(ret, arguments);
 			return ret.attr('id', this.attr('id') + '.' + id);
 		},
+
+		Interface: function(id){
+			var ret = this.querySelector('interface[id="' + this.attr('id') + '.' + id + '"]') || this.create('Interface');
+			ret.init.apply(ret, arguments);
+			return ret.attr('id', this.attr('id') + '.' + id);
+		},
 		
 		Class: function(id){
 			var ret = this.querySelector('class[id="' + this.attr('id') + '.' + id + '"]') || this.create('Class');
@@ -507,6 +513,7 @@ exGRAPH.Function = exGEN.invent({
 /**************************************************************************************
 	TYPE / CLASS / EDITOR / STRUCTURE / ENUM
 **************************************************************************************/
+
 exGRAPH.Type = exGEN.invent({
     create: 'type',
 	inherit: exGRAPH.Base,
@@ -628,24 +635,72 @@ exGRAPH.Type = exGEN.invent({
 	}
 });
 
-exGRAPH.Class = exGEN.invent({
-    create: 'class',
+exGRAPH.Object = exGEN.invent({
+    create: 'object',
 	inherit: exGRAPH.Type,
 	
     extend: {
-		Public: function(id, type, label){
-			
+		init: function(id, label){
+			this.Id(id);
+			this.Label(label);
+			return this.Ctor('Pin').Color('#fff');
 		},
 
-		Protected: function(id, type, label){
-			
-		},
+		Inherits: function(){
+			var me = this
+			, args = [].slice.call(arguments)
+			, orgTitle = this.Label()
+			, parent
+			, found
 
-		Private: function(id, type, label){
-			
-		}
+			// first, search in current package
+			parent = me.GetPackage();
+			args.forEach(function(val){
+				found = parent.select(me.type.toLowerCase() + '[id="' + parent.Id() + '.' + val + '"]');
+				switch(found.length()){
+					case 0:
+						return;
+						break;
+					case 1:
+						//console.log('found 1');
+						me.merge(found.first());
+						me.attr('inherits', '|' + val + ((me.attr('inherits')) ? me.attr('inherits') : '|'));
+						found = true;
+						return false;
+						break;
+					default:
+						console.error('error');
+				}
+			});
+			if(found !== true){
+				// now, search in all library
+				parent = me.parent(exGRAPH.Library);
+				args.forEach(function(val){
+					found = parent.select(me.type.toLowerCase() + '[id="' + val + '"]');
+					switch(found.length()){
+						case 0:
+							return;
+							break;
+						case 1:
+							//console.log('found 2');
+							me.merge(found.first());
+							me.attr('inherits', '|' + val + ((me.attr('inherits')) ? me.attr('inherits') : '|'));
+							return;
+							break;
+						default:
+							console.error('error');
+					}
+				});
+			}
+			//console.log('-----------------');
+
+			if(orgTitle)
+				me.Label(orgTitle);
+			return this;
+		},
+		
+		Editor: undefined
 	}
-	
 });
 
 exGRAPH.Editor = exGEN.invent({
@@ -718,6 +773,49 @@ exGRAPH.Enum = exGEN.invent({
 	}
 });
 
+exGRAPH.Interface = exGEN.invent({
+    create: 'interface',
+	inherit: exGRAPH.Object,
+	
+    extend: {
+		
+		init: function(){
+			exGRAPH.Type.prototype.init.apply(this, arguments);
+			this.Inherits('core.type.struct');
+			return this;
+		},
+		
+		Method: function(){
+			var package = this.GetPackage()
+			, ret = package.querySelector('method[id="' + id + '"]') || package.create('Method');
+			
+			ret.init.apply(ret, arguments);
+			ret.init.Input('target', this.Id());
+			return ret;
+		}
+	}
+});
+
+exGRAPH.Class = exGEN.invent({
+    create: 'class',
+	inherit: exGRAPH.Interface,
+	
+    extend: {
+		Member: function(id, type, title){
+			
+		},
+		
+		Implements: function(interface){
+			return this.attr('inherits', '|' + interface + ((this.attr('inherits')) ? this.attr('inherits') : '|'));
+		},
+		
+
+	}
+});
+
+
+
+
 
 
 /**************************************************************************************
@@ -740,7 +838,7 @@ exGRAPH.Node = exGEN.invent({
 			, ret = this.querySelector('input[id="' + id + '"]') || this.create('Input');
 			
 			ret.init.apply(ret, arguments);
-			if(package.select('[id="' + package.Id() + '.' + ret.Type() + '"]:not(node)').length() == 1)
+			if(package && package.select('[id="' + package.Id() + '.' + ret.Type() + '"]:not(node)').length() == 1)
 				ret.Type(package.Id() + '.' + ret.Type());
 			return ret;
 		},
@@ -750,7 +848,7 @@ exGRAPH.Node = exGEN.invent({
 			, ret = this.querySelector('output[id="' + id + '"]') || this.create('Output');
 			
 			ret.init.apply(ret, arguments);
-			if(package.select('[id="' + package.Id() + '.' + ret.Type() + '"]:not(node)').length() == 1)
+			if(package && package.select('[id="' + package.Id() + '.' + ret.Type() + '"]:not(node)').length() == 1)
 				ret.Type(package.Id() + '.' + ret.Type());
 			return ret;
 		},

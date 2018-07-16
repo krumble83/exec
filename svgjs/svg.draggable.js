@@ -189,10 +189,16 @@
         y = y - (y % c.snapToGrid)
       }
 
-      if(this.el instanceof SVG.G)
+	  // krumble
+	  /*
+      if(this.el instanceof SVG.G){
         this.el.matrix(this.startPoints.transform).transform({x:gx, y: gy}, true)
+	  }
       else
         this.el.move(x, y)
+	  */
+	  this.el.move(x, y)
+	  // end krumble
     }
 
     // so we can use it in the end-method, too

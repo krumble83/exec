@@ -177,24 +177,23 @@ SVG.extend(SVG.Doc, SVG.Nested, {
       lastP = currentP
     }
 	
-	var contextMenu = function(ev){ // added
+    this.on('wheel.panZoom', wheelZoom, this, {passive: true});
+    //this.on('touchstart.panZoom', pinchZoomStart, this, {passive:false})
+    this.on('mousedown.panZoom', panStart, this)
+	
+	//krumble
+	this.on('contextmenu.panZoom', function(ev){
 		if(panButton != 3)
 			return;
 		var currentTouches = normalizeEvent(ev);
 
 		if(Math.abs(initP.x - currentTouches[0].clientX) > 5 || Math.abs(initP.y - currentTouches[0].clientY) > 5){
-			//if(initP.x != currentTouches[0].clientX || initP.y != currentTouches[0].clientY){
 			ev.preventDefault();
 			ev.stopPropagation();
 			ev.stopImmediatePropagation();
 		}
-	}
-
-    this.on('wheel.panZoom', wheelZoom, this, {passive: true});
-    //this.on('touchstart.panZoom', pinchZoomStart, this, {passive:false})
-    this.on('mousedown.panZoom', panStart, this)
-	this.on('contextmenu.panZoom', contextMenu, this, {useCapture:true}) // added
-
+	},this, {useCapture:true}) // added
+	// end krumble
     return this
 
   },

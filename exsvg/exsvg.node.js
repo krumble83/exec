@@ -80,11 +80,12 @@ exSVG.Node = SVG.invent({
 		},
 		
 		x: function(){
-			//console.log('exnodebase.x');
+			//console.log('exSVG.Node.x()');
 			var me = this
 			, ret = SVG.G.prototype.x.apply(me, arguments);
 			
 			if(arguments.length > 0){
+				//console.log('zz');
 				me.fire('move');
 				me.doc().fire('node-move', {node:me});
 			}
@@ -164,6 +165,11 @@ define(window, 'READ_ONLY', 1);
 
 
 SVG.extend(exSVG.Worksheet, {
+	
+	getNodes: function(parent){
+		return (parent || this).select('.exNode');
+	},
+	
 	importNode: function(data, parent){
 		//console.log('exSVG.Worksheet.importNode()', data, data.Ctor());
 		var node = new exSVG[data.Ctor()]
@@ -174,8 +180,9 @@ SVG.extend(exSVG.Worksheet, {
 		node.init(data);
 		node.addTo(parent);
 		if(pos){
-			if(parent.snapToGrid && parent.getGrid())
-				pos = parent.snapToGrid(pos[0], pos[1]);
+			pos = {x: Number.parseInt(pos[0]), y: Number.parseInt(pos[1])};
+			if(parent.snapToGrid && parent.getGrid)
+				pos = parent.snapToGrid(pos);
 			node.x(pos.x);
 			node.y(pos.y);
 		}

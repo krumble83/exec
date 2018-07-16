@@ -9,28 +9,6 @@ function removeFromTo(array, from, to) {
 	return array.length;
 }
 
-function startSeq(name){
-	if(typeof name === 'function'){
-		undoManager.startSequence();
-		name();
-		undoManager.stopSequence();
-	}
-	else
-		undoManager.startSequence();
-}
-
-function stopSeq(name){
-	undoManager.stopSequence();
-}
-
-function doSeq(func){
-	if(typeof func === 'function'){
-		undoManager.startSequence();
-		func();
-		undoManager.stopSequence();
-	}	
-}
-
 var UndoManager = function() {
 
 	var commands = [],
@@ -165,10 +143,7 @@ SVG.extend(exSVG.Worksheet, {
 
 	initUndo: function() {
 		var me = this;
-		
-		me.startSequence = startSeq;
-		me.stopSequence = stopSeq;
-		me.doSequence = doSeq;
+		me.sequenceEnabled = true;
 				
 		if(me.getTitleBar){
 			var bar = me.getTitleBar();
@@ -190,7 +165,7 @@ SVG.extend(exSVG.Worksheet, {
 					e.stopPropagation();
 					e.stopImmediatePropagation();
 				});
-
+			bar.select('text').move(100,0);
 		}
 
 		me.doc().on('keyup.selection', function(e){
@@ -308,6 +283,34 @@ SVG.extend(exSVG.Worksheet, {
 		});
 		
 		return this;
+	},
+	
+	startSequence: function(name){
+		var me = this;
+		if(!me.sequenceEnabled)
+			return;
+		if(typeof name === 'function'){
+			undoManager.startSequence();
+			name();
+			undoManager.stopSequence();
+		}
+		else
+			undoManager.startSequence();
+		return me;
+	},
+	
+	stopSequence: function(){
+		var me = this;
+		if(!me.sequenceEnabled)
+			return;
+		undoManager.stopSequence();
+		return me;
+	},
+	
+	enableSequence: function(enable){
+		var me = this;
+		me.sequenceEnabled = (typeof enable !== 'undefined') ? enable : true;
+		return me;
 	},
 
 /*	

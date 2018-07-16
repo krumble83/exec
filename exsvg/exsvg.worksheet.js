@@ -2,6 +2,17 @@
 "use strict";
 
 
+var pluginsList = [
+	'exsvg/exsvg.workspace.js'
+	, 'exsvg/exsvg.grid.js'
+	, 'exsvg/exsvg.selection.js'
+	, 'exsvg/exsvg.undo.js'
+	, 'exsvg/exsvg.clipboard.js'
+	, 'exsvg/exsvg.menu.js'
+	, 'exsvg/exsvg.librarymenu.js'
+	];
+
+
 exSVG.Worksheet = SVG.invent({
     create: 'svg', 
     inherit: SVG.Nested ,
@@ -13,25 +24,23 @@ exSVG.Worksheet = SVG.invent({
 			me.doc().addClass('worksheet');			
 			me.createTooltip();
 			me.createHeader();
-			me.doc().size('100%', '100%')
-			
-
+			me.doc().size('100%', '100%');
+	
 			//PinArray pattern
 			me.pattern(10, 10, function(add) {
-				add.rect(3,3).move(2,2)
-			}).id('pinArrayPattern').attr('patternUnits', 'userSpaceOnUse')			
+				add.rect(3,3).move(2,2);
+			}).id('pinArrayPattern').attr('patternUnits', 'userSpaceOnUse');
 			
-			me
-				.initWorksheetEventHandlers()
-				.size('100%', '100%')
-				.panZoom({zoomMin: 0.05, zoomMax: 1, zoomFactor: 0.08})
+			me.initWorksheetEventHandlers()
+				
+				
 
 			return me;
         },
 		
 		doLayout: function(){
-			console.log(this.mTitle.bbox().width, this.doc().parent().clientWidth);
-			this.mTitle.x((this.doc().parent().clientWidth/2)-this.mTitle.bbox().width);
+			//console.log(this.mTitle.bbox().width, this.doc().parent().clientWidth);
+			this.mTitleGroup.select('text').x((this.doc().parent().clientWidth/2)-this.mTitle.bbox().width);
 			
 		},
 		
@@ -42,36 +51,8 @@ exSVG.Worksheet = SVG.invent({
 			, panEl
 			, panElCursor;
 
-			me.on('panStart.worksheet', function(e){
-				panStart.x = e.detail.event.clientX;
-				panStart.y = e.detail.event.clientY;
-				panEl = e.detail.event.target;
-				panElCursor = panEl.instance.style('cursor');
-				panEl.instance.style('cursor', 'url("exsvg/img/pancursor.png"), default');
-				me.addClass('blur');
-			});
-			
-			me.on('panEnd.worksheet', function(e){
-				if (e.detail.event.clientX != panStart.x || e.detail.event.clientY != panStart.y)
-					panStart.pan = true;
-				else
-					panStart.pan = false;
-				e.stopPropagation();
-				e.stopImmediatePropagation();
-				panEl.instance.style('cursor', panElCursor);
-				me.removeClass('blur');
-			});
-				/*		
-			me.doc().on('contextmenu.worksheet', function(e){
-				if(panStart.pan){
-					e.preventDefault();
-					e.stopImmediatePropagation();
-					e.stopPropagation();
-				}
-			});
-			*/
 			me.doc().on('node-add.worksheet-dragnode', function(e){
-				console.log('worksheet:nodeadd.worksheet-drag');
+				//console.log('worksheet:nodeadd.worksheet-drag');
 				var dragPoint = null
 				, node = e.detail.node;
 
@@ -80,30 +61,20 @@ exSVG.Worksheet = SVG.invent({
 				node.draggable(me.snapToGrid);
 				
 				node.on('dragstart.worksheet-dragnode', function(e){
-					console.log('node.dragstart', e);
+					//console.log('node.dragstart', e);
 					this.fire('startmove', e);
 					dragPoint = e.detail.p;
 				})
 				node.on('dragend.worksheet-dragnode', function(e){
-					console.log('node.dragend', e);
-					var m = me.snapToGrid(e.detail.p.x - dragPoint.x, e.detail.p.y - dragPoint.y);
+					//console.log('node.dragend', e);
+					var m = {x: e.detail.p.x - dragPoint.x, y: e.detail.p.y - dragPoint.y};
+					if(me.snapToGrid)
+						m = me.snapToGrid(e.detail.p.x - dragPoint.x, e.detail.p.y - dragPoint.y);
 					e.detail.event.stopImmediatePropagation();
 					e.detail.event.stopPropagation();
 					me.doc().fire('node-moved', {node: this, movement: m});
 					this.fire('moved', {event: e});
 					dragPoint = null;
-				});				
-			});
-
-			me.doc().on('node-add.worksheet', function(e){
-				//console.log('worksheet:nodeadd');
-				var node = e.detail.node;
-				node.on('contextmenu.worksheet', function(e){
-					if(panStart.pan){
-						e.preventDefault();
-						e.stopImmediatePropagation();
-						e.stopPropagation();
-					}
 				});
 			});
 			
@@ -155,12 +126,16 @@ exSVG.Worksheet = SVG.invent({
 				if(links.length()  == 1){
 					var p = links.last().getOtherPin(pin);
 					menu.addItem('Jump to `' + p.getNode().getData('title') + '`', 'jumpto', function(){
-							console.warn('TODO : Jump to node', me.zoom());
-							var pt = me.doc().point(p.x(), p.y());
-							me.zoom(0.1, pt.x, pt.y);
-							me.zoom(1, pt.x, pt.y);
-							console.log(pt);
-							
+							console.warn('TODO : Jump to node');
+							var nodeCenter = p.getNode().getCenter()
+							, vb = me.viewbox()
+
+							, p1 = nodeCenter
+							, p2 = vb
+							, deltaP = [p2.x - p1.x, p2.y - p1.y]
+							, box = new SVG.Box(vb).transform(new SVG.Matrix().translate(deltaP[0], deltaP[1]));
+
+							me.viewbox(box);
 						})
 						.setMeta('Jump to node `' + p.getNode().getData('title') + '`');
 				}
@@ -172,6 +147,7 @@ exSVG.Worksheet = SVG.invent({
 						console.assert(p instanceof exSVG.Pin, 'instanceof "exSVG.Pin expected" but "' + p.constructor.name + '" found');
 						jumps.addItem('Jump to `' + p.getNode().getData('title') + '`', 'jumpto', function(){
 							console.warn('TODO : Jump to node');
+							p.getNode().getCenter();
 						})
 							.setMeta('Jump to node `' + p.getNode().getData('title') + '`');	
 					});
@@ -186,15 +162,16 @@ exSVG.Worksheet = SVG.invent({
 			me.mTitleGroup = me.doc()
 				.group()
 				.id('gtitle')
-				.addClass('header')
+				.addClass('header');
+				
 			me.mTitleGroup.rect()
 				.front()
-				.size('100%', 40)
+				.size('100%', 40);
 			
-			me.mTitle = me.mTitleGroup.text('test')
+			me.mTitleGroup.text('test')
 				.addClass('title')
 				.front()
-				.translate(100, 5)
+				.translate(3, 7);
 		},
 		
 		createTooltip: function(){
@@ -215,7 +192,7 @@ exSVG.Worksheet = SVG.invent({
 		
 		setTitle: function(title){
 			//console.log('worksheet.setTitle()');
-			this.mTitle.text(title);
+			this.mTitleGroup.select('text').text(title);
 			return this;
 		},
 		
@@ -275,58 +252,50 @@ exSVG.Worksheet = SVG.invent({
 		},
 		
 		startSequence: function(){
-			//not used in the base class, but by the undo/redo frameworks
-			console.log('Worksheet.startSequence(), should not be called without undo/redo framework');
+			return this;
 		},
 		
 		stopSequence: function(){
-			//not used in the base class, but by the undo/redo frameworks
-			console.log('Worksheet.stopSequence(), should not be called without undo/redo framework');
+			return this;
 		},
 
-		doSequence: function(){
-			//not used in the base class, but by the undo/redo frameworks
-			console.log('Worksheet.doSequence(), should not be called without undo/redo framework');
+		enableSequence: function(){
+			return this;
 		}
 		
 	}, 
 	construct: {
 		worksheet: function(callback, plugins) {
-			var ret = new exSVG.Worksheet;
+			var ret = new exSVG.Worksheet()
+			, plugins = plugins || pluginsList;
 			
 			this.put(ret);
-			if(typeof plugins === 'undefined')
-				var plugins = '*';
-
 			loadCss('exsvg/css/css.css');
 			
-			loadScript('exsvg/exsvg.extend.js', 'svgjs/svg.draggable.js', 'svgjs/svg.panzoom.js', 'svgjs/svg.foreignobject.js', 'svgjs/svg.draw.js', 'svgjs/svg.filter.js', 
-				'exsvg/exsvg.grid.js', 'exsvg/exsvg.selection.js', 'exsvg/exsvg.undo.js', 'exsvg/exsvg.clipboard.js', 'exsvg/exsvg.menu.js',  
-				'exsvg/exsvg.node.js', 'exsvg/exsvg.node.gfx.js', 'exsvg/exsvg.node.derived.js', 'exsvg/exsvg.node.properties.js', 
-				'exsvg/exsvg.pin.js', 'exsvg/exsvg.pin.gfx.js', 'exsvg/exsvg.pin.link.js',  'exsvg/exsvg.pin.derived.js', 'exsvg/exsvg.pin.editors.js', 
-				'exsvg/exsvg.link.js',
-				'exsvg/exsvg.librarymenu.js',
-				
-				function(){
+			console.log(plugins);
+			
+			loadScript(
+				'exsvg/exsvg.extend.js', 'svgjs/svg.draggable.js', 'svgjs/svg.panzoom.js', 'svgjs/svg.foreignobject.js', 'svgjs/svg.draw.js', 'svgjs/svg.filter.js'
+				, plugins
+				, 'exsvg/exsvg.node.js', 'exsvg/exsvg.node.gfx.js', 'exsvg/exsvg.node.derived.js', 'exsvg/exsvg.node.properties.js'
+				, 'exsvg/exsvg.pin.js', 'exsvg/exsvg.pin.gfx.js', 'exsvg/exsvg.pin.link.js',  'exsvg/exsvg.pin.derived.js', 'exsvg/exsvg.pin.editors.js'
+				, 'exsvg/exsvg.link.js'
+				, function(){
 					ret.init();
-
-					if(plugins == '*'){
-						for (var key in ret.plugins) {
-							//console.log('--', key);
-							if (!Object.prototype.hasOwnProperty.call(ret.plugins, key))
-								continue;
-							if(ret.plugins[key].initor)
-								ret[ret.plugins[key].initor].call(ret);
-							else
-								console.log(key);
-						}
-						//console.log(ret.plugins);
+					for (var key in ret.plugins) {
+						console.log('--', key);
+						if (!Object.prototype.hasOwnProperty.call(ret.plugins, key))
+							continue;
+						if(ret.plugins[key].initor)
+							ret[ret.plugins[key].initor].call(ret);
+						else
+							console.log(key);
 					}
 					ret.doc().fire('plugins-init');
 					if(typeof callback === "function")
 						callback.call(ret);
-				}
-			);
+				
+			});
 			return ret;
 		}
 	}

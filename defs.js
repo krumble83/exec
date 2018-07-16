@@ -117,7 +117,7 @@ function loadScript(){
 		loadScript.apply(this, args);
 	}
 	else if(tok instanceof Array){
-		loadScript.apply(this, tok, args);
+		loadScript.apply(this, tok.concat(args));
 	}
 	else{
 		console.log('loadScript: Argument ignored (not string or function)');

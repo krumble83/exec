@@ -39,11 +39,12 @@ SVG.extend(exSVG.Worksheet, {
 			
 			// bind event for node context menu
 			node.on('contextmenu.node', function(ev){
+				console.log('menu')
 				me.showNodeContextMenu(this, ev);
 				ev.preventDefault();
 				ev.stopPropagation();
 				ev.stopImmediatePropagation();
-			});
+			}, node);
 			
 			node.on('move-start.menu', function(){
 				me.mMenuRoot.close();
@@ -58,21 +59,11 @@ SVG.extend(exSVG.Worksheet, {
 	},
 
 	showNodeContextMenu: function(node, e){
-		var me = this
-		, menuObject = {
-			getMenu: function(id){}
-		};
+		var me = this;
 
 		me.mMenuRoot.clear()
 			.addTitleItem('Node Actions');
 		
-		var ren = me.mMenuRoot.addItem('Rename', 'rename', function(){
-				//this.remove();
-			})
-			.setMeta('Rename selected node', 'F2');
-		if(node.hasFlag(READ_ONLY))
-			ren.enabled(false);
-
 		var del = me.mMenuRoot.addItem('Delete', 'delete', function(){
 				this.remove();
 			})
@@ -80,15 +71,35 @@ SVG.extend(exSVG.Worksheet, {
 		if(node.hasFlag(READ_ONLY))
 			del.enabled(false);
 		
-		var dup = me.mMenuRoot.addItem('Duplicate', 'duplicate', function(){
+		me.mMenuRoot.addItem('Duplicate', 'duplicate', function(){
 				console.warn('TODO : Duplicate node');
 			})
 			.setMeta('Duplicate selected node', 'Ctrl+W');
 		
-		var breaq = me.mMenuRoot.addItem('Break Link(s)', 'breaklinks', function(){
-				console.warn('TODO : Break all links');
+		me.mMenuRoot.sep();
+		
+		me.mMenuRoot.addItem('Break Link(s)', 'breaklinks', function(){
+				if(me.sequenceStart)
+					me.sequenceStart();
+				me.startSequence();
+				this.getLinks().each(function(){
+					this.remove();
+				});
+				if(me.sequenceStop)
+					me.sequenceStop();
+				me.stopSequence();
 			})
 			.setMeta('Remove all link to this node');
+
+		if(me.selectNode){
+			me.mMenuRoot.addItem('Select All linked nodes', 'selectlinked', function(){
+					var links = this.getLinks();
+					links.each(function(){
+						me.selectNode(this.getInputPin().getNode());
+						me.selectNode(this.getOutputPin().getNode());
+					});
+				});
+		}
 
 		node.fire('before-menu', {menu: me.mMenuRoot});
 		if(me.doc().event().isPrevented)

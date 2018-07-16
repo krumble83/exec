@@ -26,6 +26,16 @@ SVG.extend(exSVG.Node, {
 		me.mExpand = (me.mExpand) ? false : true;
 		me.paint();
 	},
+	
+	getCenter: function(){
+		var me = this
+		, box = this.mGfx.body.rbox();
+		box.x += box.width/2;
+		box.y += box.height/2;
+		var ret = me.parent(exSVG.Worksheet).point(box);
+		console.log(ret);
+		return ret;
+	},
 
 	paint: function(){
 		var me = this;
@@ -145,7 +155,7 @@ SVG.extend(exSVG.Node, {
 		
 		if(!me.mGfx.subtitle && me.getData('subtitle')){
 			me.mGfx.subtitle = me.plain(me.getData('subtitle'))
-				.fill('#999')
+				.fill('#bbb')
 				.translate(offset, 35)
 				.font({size:13, 'font-style': 'italic'})
 				.stroke({width:0})
