@@ -31,8 +31,7 @@ exSVG.plugin(exSVG.Pin, {
 		});
 		
 		me.on('destroy', me.destroyGfx, me);
-		
-					
+						
 		me.updateTooltip();
 		me.paint();
 		return me;
@@ -94,7 +93,7 @@ exSVG.plugin(exSVG.Pin, {
 	drawEditor: function(){
 		var me = this
 		, dataType = exLIB.getDataType2(me.getDataType())
-		, labelbox = me.mGfx.label.bbox();
+		, labelbox = (me.mGfx.label) ? me.mGfx.label.bbox() : {x: 0, y:0};
 		
 		if(me.getType() == exSVG.Pin.PIN_OUT || exLIB.isArrayDataType(me.getDataType()) || !dataType.Editor().Name())
 			return;
@@ -147,7 +146,11 @@ exSVG.plugin(exSVG.Pin, {
 				me.mGfx.bg.fill(grad);
 			});
 		}
-		me.mGfx.bg.width(me.mGfx.label.bbox().w+36);
+		if(me.mGfx.label)
+			me.mGfx.bg.width(me.mGfx.label.bbox().w+36);
+		else
+			me.mGfx.bg.width(me.mGfx.pin.bbox().w+20);
+		
 		if(me.getType() == exSVG.Pin.PIN_OUT && me.mGfx.label){
 			me.mGfx.bg.x(-(me.mGfx.label.bbox().w+5));
 		}

@@ -170,10 +170,10 @@ exSVG.Worksheet = SVG.invent({
 			if(typeof data === 'string')
 				data = exLIB.getNode2(data);
 			
-
 			if(me['import' + data.type.capitalize()])
 				return me['import' + data.type.capitalize()](data, me);
 
+			console.log('test');
 			me.startSequence();
 			data.select(':scope > *').each(function(){
 				//console.log(this);
@@ -241,10 +241,10 @@ exSVG.Worksheet = SVG.invent({
 			
 			loadScript(
 				'exsvg/exsvg.extend.js', 'svgjs/svg.draggable.js', 'svgjs/svg.panzoom.js', 'svgjs/svg.foreignobject.js', 'svgjs/svg.draw.js', 'svgjs/svg.filter.js'
-				, plugins
 				, 'exsvg/exsvg.node.js', 'exsvg/exsvg.node.gfx.js', 'exsvg/exsvg.node.derived.js', 'exsvg/exsvg.node.properties.js'
 				, 'exsvg/exsvg.pin.js', 'exsvg/exsvg.pin.gfx.js', 'exsvg/exsvg.pin.link.js',  'exsvg/exsvg.pin.derived.js', 'exsvg/exsvg.pin.editors.js'
-				, 'exsvg/exsvg.link.js'
+				, 'exsvg/exsvg.link.js', 'exsvg/exsvg.node.reroute.js'
+				, plugins
 				, function(){
 					ret.init();
 					exSVG.execPlugins(ret, ret, exSVG.Worksheet);

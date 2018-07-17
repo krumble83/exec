@@ -2,7 +2,6 @@
 "use strict";
 
 exSVG.Link = SVG.invent({
-    //create: 'path', 
     inherit: SVG.Path,
 
 	create: function() {
@@ -19,7 +18,7 @@ exSVG.Link = SVG.invent({
 			var me = this;
 			
 			me.setDataType(startPin.getDataType());
-			me.stroke({color: startPin.getColor(), width: 3});
+			me.stroke({color: startPin.getColor(), width: 2});
 			me.mColor = startPin.getColor();
 			me.addClass('exLink');
 			me.data('startPin', startPin.id());
@@ -32,15 +31,9 @@ exSVG.Link = SVG.invent({
 				me.initMouseEvents(out, startPin);
 			}
 			
-			me.on('mouseenter', me.focusLink, me);
-			
 			exSVG.execPlugins(this, arguments, exSVG.Link);
 			return me;
         },
-		
-		focusLink: function(e){
-			//console.log('ok', this);
-		},
 		
 		getStartPin: function(){
 			if(!this.data('startPin'))
@@ -175,8 +168,8 @@ exSVG.Link = SVG.invent({
 			console.assert(worksheet);
 			console.assert(startPin instanceof exSVG.Pin);
 			console.assert(endPin instanceof exSVG.Pin);
-			console.assert(startPin.acceptLink(endPin, me) == 0, 'result: ' + startPin.acceptLink(endPin, me));
-			console.assert(endPin.acceptLink(startPin, me) == 0, 'result: ' + endPin.acceptLink(startPin, me));
+			//console.assert(startPin.acceptLink(endPin, me) == 0, 'result: ' + startPin.acceptLink(endPin, me) + ', ' + me.id());
+			//console.assert(endPin.acceptLink(startPin, me) == 0, 'result: ' + endPin.acceptLink(startPin, me) + ', ' + me.id());
 			console.assert(startPin.getType() != endPin.getType());
 			
 			// register start pin / end pin ids directly in the link node
@@ -236,12 +229,14 @@ exSVG.Link = SVG.invent({
 				worksheet.select('.exPin:not([data-type="' + type + '"]):not([data-type="' + exLIB.getWildcardsDataType(true) + '"])').animate(100).opacity(0.2);
 			else
 				worksheet.select('.exPin:not([data-type="' + type + '"]):not([data-type="' + exLIB.getWildcardsDataType() + '"])').animate(100).opacity(0.2);
-			
-			if(startPin.getType() == exSVG.Pin.PIN_IN)
-				worksheet.select('.exPin.input').animate(100).opacity(0.2);
-			else
-				worksheet.select('.exPin.output').animate(100).opacity(0.2);
 
+			if(startPin.getType() == exSVG.Pin.PIN_IN)
+				worksheet.select('.exPin.input:not(.outpout)').animate(100).opacity(0.2);
+			else
+				worksheet.select('.exPin.output:not(.input)').animate(100).opacity(0.2);
+
+			worksheet.select('.exPin.output.input').animate(100).opacity(1);
+			
 			//console.groupEnd();
 			return me;
 		},
@@ -291,15 +286,85 @@ exSVG.Link = SVG.invent({
 			, cp1
 			, cp2
 			, startPin
+			, stopPin
 			, smooth = 60;
 			
 			// if a mouse event is passed as first argument of the function, the user currently drawing a new link
-			if(e) {
+			if(e instanceof MouseEvent) {
 				startPin = me.getStartPin();
 				stoppos = me.parent(exSVG.Worksheet).point(e);
 			} else {
-				startPin = (me.getInputPin()) ? me.getInputPin() : me.getOutputPin();
-				stoppos = (startPin.getType() == exSVG.Pin.PIN_IN) ? me.getOutputPin().getCenter() : me.getInputPin().getCenter();
+				startPin = me.getInputPin();
+				stopPin = me.getOutputPin();
+				stoppos = me.getOutputPin().getCenter();
+			}
+			
+			// Calculate the path coordinates
+			startpos = startPin.getCenter();
+			
+			// check the way of drawing (left to right, right to left, top to bottom ...)
+			var w = (startpos.y > stoppos.y) ? (startpos.y - stoppos.y) / 2 : (stoppos.y - startpos.y) / 2;
+			
+			if(startPin.getType() == exSVG.Pin.PIN_IN || (stopPin && stopPin.getType() == exSVG.Pin.PIN_OUT)){
+				cp1 = {x: Math.min(startpos.x - w, startpos.x - smooth), y: startpos.y};
+				cp2 = {x: Math.max(stoppos.x + w, stoppos.x + smooth), y: stoppos.y};
+			}
+			else if(startPin.getType() == exSVG.Pin.PIN_OUT || (stopPin && stopPin.getType() == exSVG.Pin.PIN_IN)){
+				cp1 = {x: Math.max(startpos.x + w, startpos.x + smooth), y: startpos.y};
+				cp2 = {x: Math.min(stoppos.x - w, stoppos.x - smooth), y: stoppos.y};				
+			}
+			else if(startPin.getType() == exSVG.Pin.PIN_INOUT && e instanceof MouseEvent){
+				stoppos = me.parent(exSVG.Worksheet).point(e);
+				//console.log(e.x, startPin.x());
+				if(e.x < startpos.x){
+					cp1 = {x: Math.min(startpos.x - w, startpos.x - smooth), y: startpos.y};
+					cp2 = {x: Math.max(stoppos.x + w, stoppos.x + smooth), y: stoppos.y};
+				} else {
+					cp1 = {x: Math.max(startpos.x + w, startpos.x + smooth), y: startpos.y};
+					cp2 = {x: Math.min(stoppos.x - w, stoppos.x - smooth), y: stoppos.y};					
+				}
+			}
+			else if(startPin.getType() == exSVG.Pin.PIN_INOUT && stopPin.getType() == exSVG.Pin.PIN_INOUT){
+				//console.log(stoppos.x, startpos.x);
+				if(stoppos.x < startpos.x){
+					cp1 = {x: Math.min(startpos.x - w, startpos.x - smooth), y: startpos.y};
+					cp2 = {x: Math.max(stoppos.x + w, stoppos.x + smooth), y: stoppos.y};
+				} else {
+					cp1 = {x: Math.max(startpos.x + w, startpos.x + smooth), y: startpos.y};
+					cp2 = {x: Math.min(stoppos.x - w, stoppos.x - smooth), y: stoppos.y};					
+				}
+			}
+			else{
+				console.error('can\'t calculate link coords');
+				return;
+			}
+			
+			//me.parent(exSVG.Worksheet).line(startpos.x, startpos.y, cp1.x, cp1.y).stroke({width:1});
+			//me.parent(exSVG.Worksheet).line(stoppos.x, stoppos.y, cp2.x, cp2.y).stroke({width:1});
+			
+			// drawing the path
+			me.plot('M' + startpos.x + ',' + startpos.y + ' C' + (cp1.x) + ',' + cp1.y + ' ' + (cp2.x) + ',' + cp2.y + ' ' + stoppos.x + ',' + stoppos.y);
+
+			return me;
+		},
+		
+		draw2: function(e){
+			//console.log('exlink.draw', e);
+			var me = this
+			, startpos
+			, stoppos
+			, cp1
+			, cp2
+			, startPin
+			, smooth = 60;
+			
+			// if a mouse event is passed as first argument of the function, the user currently drawing a new link
+			if(e instanceof MouseEvent) {
+				startPin = me.getStartPin();
+				stoppos = me.parent(exSVG.Worksheet).point(e);
+			} else {
+				startPin = me.getInputPin();
+				stoppos = me.getOutputPin().getCenter();
 			}
 			
 			// Calculate the path coordinates
@@ -324,7 +389,7 @@ exSVG.Link = SVG.invent({
 			me.plot('M' + startpos.x + ',' + startpos.y + ' C' + (cp1.x) + ',' + cp1.y + ' ' + (cp2.x) + ',' + cp2.y + ' ' + stoppos.x + ',' + stoppos.y);
 
 			return me;
-		},
+		}
 	}
 });
 
@@ -347,15 +412,15 @@ exSVG.plugin(exSVG.Worksheet, {
 		return me;
 	},
 
-	createLink: function(pin, e){
+	createLink: function(pin, e, className){
 		//console.log('worksheet.createLink()', arguments[0]);
 		var me = this
-		, link = new exSVG.Link;
+		, link = new (className || exSVG.Link)();
 		
 		me.mLinks.put(link);
-		link.init.apply(link, arguments);
+		link.init.call(link, pin, e);
+		pin.startLink(link);
 		if(e instanceof exSVG.Pin){
-			pin.startLink(link);
 			e.endLink(link);			
 		}
 		return link;

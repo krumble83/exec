@@ -192,7 +192,7 @@ SVG.extend(SVG.Doc, SVG.Nested, {
 			ev.stopPropagation();
 			ev.stopImmediatePropagation();
 		}
-	},this, {useCapture:true}) // added
+	},this, {useCapture:true})
 	// end krumble
     return this;
 

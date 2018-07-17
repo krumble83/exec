@@ -98,13 +98,13 @@ exSVG.plugin(exSVG.Pin, {
 	/* start a link when user mousedown and drag this pin
 	/* called from init in mousedown.pin event on pin
 	*/
-	startLink: function(target){
+	startLink: function(target, className){
 		//console.group('Pin.startLink()');
 		var me = this
 		, link;
 		
 		if(target instanceof MouseEvent){
-			link = me.parent(exSVG.Worksheet).createLink(me, target);
+			link = me.parent(exSVG.Worksheet).createLink(me, target, className);
 			if(!link instanceof exSVG.Link)
 				return link;
 		}
@@ -147,8 +147,8 @@ exSVG.plugin(exSVG.Pin, {
 	acceptLink: function(otherPin){
 		//console.log('pinBase.acceptLink()');
 		console.assert(otherPin instanceof exSVG.Pin)
-		var me = this;
-		var ret = 0;
+		var me = this
+		, ret = 0;
 					
 		if(otherPin.getType() == me.getType())
 			ret += exSVG.Pin.PIN_LINK_ACCEPT_SAME_DIRECTION;
@@ -163,7 +163,16 @@ exSVG.plugin(exSVG.Pin, {
 			ret += exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE;
 		
 		else if(me.getType() == exSVG.Pin.PIN_IN && !exLIB.isDataTypeCompatible(me.getDataType(), otherPin.getDataType()))
-			ret += exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE;		
+			ret += exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE;
+		
+		else if(me.getType() == exSVG.Pin.PIN_INOUT && otherPin.getType() == exSVG.Pin.PIN_IN
+			&& !exLIB.isDataTypeCompatible(otherPin.getDataType(), me.getDataType()))
+				ret += exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE;
+
+		else if(me.getType() == exSVG.Pin.PIN_INOUT && otherPin.getType() == exSVG.Pin.PIN_OUT
+			&& !exLIB.isDataTypeCompatible(me.getDataType(), otherPin.getDataType()))
+				ret += exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE;
+		
 		return ret;
 	},
 	
@@ -174,11 +183,21 @@ exSVG.plugin(exSVG.Pin, {
 		, links = me.getLinks();
 
 		me.addClass('linked');
+		
+		//if the pin is optional, maybe she is hidden, so show it
+		if(!me.visible()){
+			me.show();
+			me.getNode().paint();
+			link.draw();
+		}
+		
 		if(links.length() > me.mMaxLink && me.mMaxLink != -1){
+			console.log('>>> Max links');
 			links.first().remove();
 		}
 		me.paint();
 		me.initLinkEvents(link);
+		//console.groupEnd();
 		return me;
 	},
 	
@@ -207,12 +226,10 @@ exSVG.plugin(exSVG.Pin, {
 		//console.warn('Pin.initLinkEvents()');
 		var me = this;
 		
-		me.getNode().on('move.linknode' + link.id(), function(){
-			link.draw();
-		});		
-		me.getNode().on('resize.linknode' + link.id(), function(){
-			link.draw();
-		});
+		console.assert(link instanceof exSVG.Link, 'link should be instance of exSVGLink, but "' + link.constructor.name + '" found');
+		
+		me.getNode().on('move.linknode' + link.id(), link.draw, link);
+		me.getNode().on('resize.linknode' + link.id(), link.draw, link);
 		me.getNode().on('before-remove.linknode' + link.id(), link.remove, link);
 		
 		link.on('remove.linknode' + me.id(), function(){

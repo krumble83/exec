@@ -1,6 +1,8 @@
 ;(function() {
 "use strict";
 
+var menuRoot;
+
 exSVG.plugin(exSVG.Worksheet, {
 	
 	init: function(){
@@ -8,152 +10,108 @@ exSVG.plugin(exSVG.Worksheet, {
 		, menuEl = document.querySelector('#exMenu');
 		
 		if(menuEl && menuEl.instance)
-			me.mMenuRoot = menuEl.instance;
+			menuRoot = menuEl.instance;
 		else if(menuEl) {
-			me.mMenuRoot = new MenuObject(menu);
-			me.mMenuRoot.initEventHandlers();
+			menuRoot = new MenuObject(menu);
+			menuRoot.initEventHandlers();
 		}
 		else
-			me.mMenuRoot = new MenuObject;
+			menuRoot = new MenuObject;
 
-		me.doc().on('node-add.menu', function(e){
-			var node = e.detail.node;
-			
-			//bind event listener on each new created pin
-			node.on('pin-add.menu', function(e){
-				var pin = e.detail.pin;
-				
-				pin.on('contextmenu.menu', function(e){
-					me.showPinContextMenu(this, e);
-				});
-			});
-			
-			// bind event on all already created pins
-			node.select('.exPin').each(function(){
-				this.on('contextmenu.menu', function(e){
-					var pin = e.detail.pin;
-					
-					me.showPinContextMenu(this, e);
-				});
-			});
-			
-			// bind event for node context menu
-			node.on('contextmenu.node', function(ev){
-				console.log('menu')
-				me.showNodeContextMenu(this, ev);
-				ev.preventDefault();
-				ev.stopPropagation();
-				ev.stopImmediatePropagation();
-			}, node);
-			
-			node.on('move-start.menu', me.mMenuRoot.close, me.mMenuRoot);
-		});
-		
-		me.doc().on('link-start.menu', me.mMenuRoot.close, me.mMenuRoot);
-				
+		me.doc().on('link-start.menu', menuRoot.close, menuRoot);				
 		return me;
-	},
+	}
+})
 
-	showNodeContextMenu: function(node, e){
+
+exSVG.plugin(exSVG.Link, {
+	init: function(){
 		var me = this;
+		me.on('contextmenu', function(e){
+			me.showLinkContextMenu(me, e);
+		}, me, {capture: true});
+	},
+	
+	showLinkContextMenu: function(link, e){
+		var me = this
+		, worksheet = me.parent(exSVG.Worksheet);
 
-		me.mMenuRoot.clear()
-			.addTitleItem('Node Actions');
+		e.preventDefault();
+		e.stopPropagation();
+		//ev.stopImmediatePropagation();
 		
-		var del = me.mMenuRoot.addItem('Delete', 'delete', function(){
-				this.remove();
-			})
-			.setMeta('Delete selected node', 'Delete');
-		if(node.hasFlag(READ_ONLY))
-			del.enabled(false);
+		menuRoot.clear()
+		.addTitleItem('Link Actions');
 		
-		me.mMenuRoot.addItem('Duplicate', 'duplicate', function(){
-				console.warn('TODO : Duplicate node');
-			})
-			.setMeta('Duplicate selected node', 'Ctrl+W');
-		
-		me.mMenuRoot.sep();
-		
-		me.mMenuRoot.addItem('Break Link(s)', 'breaklinks', function(){
-				if(me.sequenceStart)
-					me.sequenceStart();
-				me.startSequence();
-				this.getLinks().each(function(){
-					this.remove();
-				});
-				if(me.sequenceStop)
-					me.sequenceStop();
-				me.stopSequence();
-			})
-			.setMeta('Remove all link to this node');
+		menuRoot.addItem('Add Reroute Node', 'reroute', function(){
+			me.addRerouteNode.call(me, e);
+		});
+			
+		menuRoot.addItem('Delete Link', 'delete', function(){
+			this.remove();
+		});
 
-		if(me.selectNode){
-			me.mMenuRoot.addItem('Select All linked nodes', 'selectlinked', function(){
-					var links = this.getLinks();
-					links.each(function(){
-						me.selectNode(this.getInputPin().getNode());
-						me.selectNode(this.getOutputPin().getNode());
-					});
-				});
-		}
-
-		node.fire('before-menu', {menu: me.mMenuRoot});
+		link.fire('before-menu', {menu: menuRoot});
 		if(me.doc().event().isPrevented)
 			return;
 		
-		me.mMenuRoot.node = node;
+		//menuRoot.node = node;
 		var pt = {x: e.pageX, y: e.pageY};
-		me.mMenuRoot.showAt(pt, node);
-		node.fire('menu', {menu: me.mMenuRoot});
+		menuRoot.showAt(pt, link);
+		link.fire('menu', {menu: menuRoot});
 		
-		return me.mMenuRoot;
+		return menuRoot;
+	}
+});
+
+
+exSVG.plugin(exSVG.Pin, {
+	init: function(){
+		var me = this;
+		me.on('contextmenu', function(e){
+			me.showPinContextMenu(this, e);			
+		});
 	},
 	
-
 	showPinContextMenu: function(pin, e){		
-		var me = this;
+		var me = this
+		, worksheet = me.parent(exSVG.Worksheet);
+		
 		e.preventDefault();
 		e.stopPropagation();
 		e.stopImmediatePropagation();
 		
-		me.hideTooltip();
+		worksheet.hideTooltip();
 		
-		me.mMenuRoot.clear()
+		menuRoot.clear()
 			.addTitleItem('Pin Actions');
 		
 		var breaq;
 		var links = pin.getLinks();
 		
 		if(links.length() == 0){
-			breaq = me.mMenuRoot.addItem('Break Link(s)', 'breaklink')
+			breaq = menuRoot.addItem('Break Link(s)', 'breaklink')
 				.setMeta('Remove link(s) to this pin')
 				.enabled(false);
 		}
 		else if(links.length() == 1){
 			var p = links.last().getOtherPin(pin);
 			console.assert(p instanceof exSVG.Pin, 'instanceof "exSVG.Pin expected" but "' + p.constructor.name + '" found');
-			me.mMenuRoot.addItem('Break Link to `' + p.getNode().getData('title') + '`', 'breaklink', function(){
+			menuRoot.addItem('Break Link to `' + p.getNode().getData('title') + '`', 'breaklink', function(){
 					links.last().remove();
 				})
 				.setMeta('Remove link to this pin');
-			/*
-			me.mMenuRoot.addItem('Jump to `' + p.getNode().getData('title') + '`', 'jumpto', function(){
-					console.warn('TODO : Jump to node');
-				})
-				.setMeta('Jump to node `' + p.getNode().getData('title') + '`');
-			*/
 		}
 		else{
-			breaq = me.mMenuRoot.addItem('Break all Links', 'breaklinks', function(){
-					me.startSequence();
+			breaq = menuRoot.addItem('Break all Links', 'breaklinks', function(){
+					worksheet.startSequence();
 					links.each(function(){
 						this.remove();
 					});
-					me.stopSequence();
+					worksheet.stopSequence();
 				})
 				.setMeta('Remove links to this pin');
-			var breaks = me.mMenuRoot.addSubMenu('Break Link to... ');
-			//var jumps = me.mMenuRoot.addSubMenu('Jump to... ');
+			var breaks = menuRoot.addSubMenu('Break Link to... ');
 
 			links.each(function(){
 				var link = this
@@ -168,21 +126,87 @@ exSVG.plugin(exSVG.Worksheet, {
 		}
 			
 
-		pin.fire('before-menu', {menu: me.mMenuRoot});
-		me.doc().fire('before-pin-menu', {menu: me.mMenuRoot, pin: pin});
+		pin.fire('before-menu', {menu: menuRoot});
+		me.doc().fire('before-pin-menu', {menu: menuRoot, pin: pin});
 		if(me.doc().event().isPrevented)
 			return;
 		
-		me.mMenuRoot.pin = pin;
+		menuRoot.pin = pin;
 		var pt = {x: e.pageX, y: e.pageY};
-		me.mMenuRoot.showAt(pt, pin);
-		pin.fire('menu', {menu: me.mMenuRoot});
-		me.doc().fire('pin-menu', {menu: me.mMenuRoot, pin: pin});
-		
-		return me.mMenuRoot;
+		menuRoot.showAt(pt, pin);
+		pin.fire('menu', {menu: menuRoot});
+		me.doc().fire('pin-menu', {menu: menuRoot, pin: pin});	
+		return menuRoot;
 	}
-})
+});
 
-//exSVG.Worksheet.prototype.plugins.menu = {name: 'Context Menu', initor: 'initMenu'}
+
+exSVG.plugin(exSVG.Node, {
+	init: function(){
+		var me = this;
+
+		me.on('contextmenu.nodez', function(ev){
+			me.showNodeContextMenu(this, ev);
+		}, me);
+		
+		me.on('move-start.menu', menuRoot.close, menuRoot);
+	},
+
+	showNodeContextMenu: function(node, e){
+		var me = this
+		, worksheet = me.parent(exSVG.Worksheet);
+
+		e.preventDefault();
+		e.stopPropagation();
+		//ev.stopImmediatePropagation();
+
+		menuRoot.clear()
+		.addTitleItem('Node Actions');
+		
+		var del = menuRoot.addItem('Delete', 'delete', function(){
+				this.remove();
+			})
+			.setMeta('Delete selected node', 'Delete');
+		if(node.hasFlag(READ_ONLY))
+			del.enabled(false);
+		
+		menuRoot.addItem('Duplicate', 'duplicate', function(){
+				console.warn('TODO : Duplicate node');
+			})
+			.setMeta('Duplicate selected node', 'Ctrl+W');
+		
+		menuRoot.sep();
+		
+		menuRoot.addItem('Break Link(s)', 'breaklinks', function(){
+				worksheet.startSequence();
+				this.getLinks().each(function(){
+					this.remove();
+				});
+				worksheet.stopSequence();
+			})
+			.setMeta('Remove all link to this node');
+
+		if(worksheet.selectNode){
+			menuRoot.addItem('Select All linked nodes', 'selectlinked', function(){
+					var links = this.getLinks();
+					links.each(function(){
+						worksheet.selectNode(this.getInputPin().getNode());
+						worksheet.selectNode(this.getOutputPin().getNode());
+					});
+				});
+		}
+
+		node.fire('before-menu', {menu: menuRoot});
+		if(me.doc().event().isPrevented)
+			return;
+		
+		menuRoot.node = node;
+		var pt = {x: e.pageX, y: e.pageY};
+		menuRoot.showAt(pt, node);
+		node.fire('menu', {menu: menuRoot});
+		
+		return menuRoot;
+	}
+});
 
 }());

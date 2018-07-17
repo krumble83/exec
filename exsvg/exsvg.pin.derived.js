@@ -11,8 +11,15 @@ exSVG.WildcardsSet = SVG.invent({
 	},
 	inherit : SVG.Set,
 	extend: {
-		preventDefault: function(){
+		preventDefault: function(dataType){
 			this.defaultPrevented = true;
+			this.mDataType = dataType;
+		},
+		
+		reset: function(){
+			this.clear();
+			this.defaultPrevented = false;
+			//this.mDataType = undefined;
 		}
 	}
 });
@@ -55,8 +62,24 @@ exSVG.PinWildcards = SVG.invent({
 				set.each(function(){
 					this.setDataType(datatype);
 				});
+				me.getNode().paint();
+				return true;
+			}/*
+			else{
+				set.reset();
+				me.checkDataTypeChange(set.mDataType, set);
+				console.log(set.defaultPrevented);
+				if(!set.defaultPrevented){
+					set.each(function(){
+						this.setDataType(set.mDataType);
+					});
+					me.getNode().paint();
+					return true;
+				}
 			}
+			*/
 			me.getNode().paint();
+			return false;			
 		},
 		
 		removeLink: function(link){
@@ -99,7 +122,7 @@ exSVG.PinWildcards = SVG.invent({
 						this.checkDataTypeChange(datatype, set);
 					else if(this.getDataType() != datatype && exLIB.swapArrayDataType(me.getDataType()) != datatype){
 						console.log('Prevented 1');
-						set.preventDefault();
+						set.preventDefault(this.getDataType());
 					}
 				});
 			}
@@ -113,8 +136,8 @@ exSVG.PinWildcards = SVG.invent({
 				if(pin.checkDataTypeChange)
 					pin.checkDataTypeChange(datatype, set);
 				else if(pin.getDataType() != datatype && exLIB.swapArrayDataType(pin.getDataType()) != datatype){
-					console.log('Prevented 2');
-					set.preventDefault();
+					console.log('Prevented 2', pin.getId(), pin.getDataType());
+					set.preventDefault(pin.getDataType());
 				}
 			});
 		},

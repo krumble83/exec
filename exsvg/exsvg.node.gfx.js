@@ -34,6 +34,7 @@ exSVG.plugin(exSVG.Node, {
 	},
 
 	paint: function(){
+		//console.log('exSVG.Node.paint()');
 		var me = this;
 
 		// Hide optional pins if node is not expanded
@@ -224,8 +225,9 @@ exSVG.plugin(exSVG.Node, {
 			this.move(0, offset);
 			offset += this.bbox().height+4;
 		});
-
-		me.mOutputPinGroup.move(me.mGfx.header.bbox().w-21);
+		if(me.mGfx.header)
+			me.mOutputPinGroup.move(me.mGfx.header.bbox().w-21);
+		
 		return me;
 	},
 	

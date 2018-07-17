@@ -86,6 +86,14 @@ exSVG.Selection = SVG.invent({
 			if(me.mWorksheet.getWorkspace)
 				me.mWorksheet.getWorkspace().back();
 		},
+		
+		swapSelectNode: function(el){
+			var me = this;
+			if(el.parent() == me)
+				toParent(el, me.mWorksheet);
+			else
+				toParent(el, me);
+		},
 	
 		isSelectedNode: function(node){
 			return node.parent() == this;
@@ -242,17 +250,17 @@ exSVG.Selection = SVG.invent({
 					// here we check if each node is in the selection rectangle
 					// actually we check only if one of it's four corners is in
 					// in future we can check for middle point border too
+					var sel = {x1 :selectionRect.x(), y1: selectionRect.y(), x2: selectionRect.x() + selectionRect.width(), y2: selectionRect.y() + selectionRect.height()};
+
 					nodes.each(function(){
 						var coords = coordsCache[this.id()];
-						if(selectionRect.inside(coords.x1, coords.y1) 
-								|| selectionRect.inside(coords.x2, coords.y1) 
-								|| selectionRect.inside(coords.x1, coords.y2) 
-								|| selectionRect.inside(coords.x2, coords.y2))
-							me.selectNode(this);
-								
-						// if the user not hold the ctl key, we unselect the node, because he's not in the selection rectangle
-						else if(!e.ctrlKey)
-							me.unselectNode(this);
+						if(sel.x2 < coords.x1 || sel.y2 < coords.y1 || sel.x1 > coords.x2 || sel.y1 > coords.y2){
+							// if the user not hold the ctl key, we unselect the node, because he's not in the selection rectangle
+							if(!e.detail.event.ctrlKey)
+								me.unselectNode(this);
+							return;
+						}
+						me.selectNode(this);
 					});
 					selectionRect.front();
 					
@@ -487,7 +495,7 @@ exSVG.plugin(exSVG.Worksheet, {
 	},
 	
 	selectNode: function(el){
-		return me.mSelection.selectNode(el);
+		return this.mSelection.selectNode(el);
 	},
 	
 	getSelection: function(){

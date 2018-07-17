@@ -78,6 +78,7 @@ exSVG.Pin = SVG.invent({
 		},
 		
 		getNode: function(){
+			//console.log(this);
 			return this.parent(exSVG.Node);
 		},
 		
@@ -106,11 +107,13 @@ exSVG.Pin = SVG.invent({
 		},
 				
 		getType: function(){
-			var me = this;
+			var me = this
+			, ret = 0;
 			if(me.hasClass('input'))
-				return exSVG.Pin.PIN_IN;
+				ret += exSVG.Pin.PIN_IN;
 			if(me.hasClass('output'))
-				return exSVG.Pin.PIN_OUT;
+				ret += exSVG.Pin.PIN_OUT;
+			return ret;
 		},
 				
 		setData: function(name, value){
@@ -200,10 +203,12 @@ SVG.extend(exSVG.Node, {
 	},
 	
 	importInput: function(data){
+		//console.log('exSVG.Node.importInput()', data);
 		return this.importPin.apply(this, arguments);
 	},
 	
 	importOutput: function(data){
+		//console.log('exSVG.Node.importOutput()', data);
 		return this.importPin.apply(this, arguments);
 	},
 	

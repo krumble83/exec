@@ -270,7 +270,7 @@ exSVG.plugin(exSVG.Worksheet, {
 					return;
 				
 				cats.each(function(){
-					var ul = findUl(this.Name(), parent)
+					var ul = (this.Name() === '/') ? parent : findUl(this.Name(), parent)
 					, li = document.createElement('li');
 					
 					if(node.Symbol())
