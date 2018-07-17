@@ -1,9 +1,9 @@
 ;(function() {
 "use strict";
 
-SVG.extend(exSVG.Pin, {
+exSVG.plugin(exSVG.Pin, {
 	
-	initGfx: function(data){
+	init: function(data){
 		var me = this;
 		
 		me.mGfx = me.mGfx || {};
@@ -30,9 +30,7 @@ SVG.extend(exSVG.Pin, {
 			me.paint();
 		});
 		
-		me.on('destroy', function(){
-			me.destroyGfx();
-		});
+		me.on('destroy', me.destroyGfx, me);
 		
 					
 		me.updateTooltip();

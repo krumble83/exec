@@ -10,9 +10,9 @@ if(!clipboardData){
 }
 document.body.appendChild(clipboardData);
 
-SVG.extend(SVG.Doc, SVG.Nested, {
+exSVG.plugin(exSVG.Worksheet, {
 	
-	initClipboard: function(){
+	init: function(){
 		var me = this;
 		me.initClipboardEventHandlers();
 		return me;
@@ -104,6 +104,6 @@ SVG.extend(SVG.Doc, SVG.Nested, {
 	}
 })
 
-exSVG.Worksheet.prototype.plugins.clipboard = {name: 'Clipboard', initor: 'initClipboard'};
+//exSVG.Worksheet.prototype.plugins.clipboard = {name: 'Clipboard', initor: 'initClipboard'};
 
 }());

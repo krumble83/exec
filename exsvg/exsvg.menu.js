@@ -1,9 +1,9 @@
 ;(function() {
 "use strict";
 
-SVG.extend(exSVG.Worksheet, {
+exSVG.plugin(exSVG.Worksheet, {
 	
-	initMenu: function(){
+	init: function(){
 		var me = this
 		, menuEl = document.querySelector('#exMenu');
 		
@@ -46,14 +46,10 @@ SVG.extend(exSVG.Worksheet, {
 				ev.stopImmediatePropagation();
 			}, node);
 			
-			node.on('move-start.menu', function(){
-				me.mMenuRoot.close();
-			});
+			node.on('move-start.menu', me.mMenuRoot.close, me.mMenuRoot);
 		});
 		
-		me.doc().on('link-start.menu', function(){
-			me.mMenuRoot.close();
-		});
+		me.doc().on('link-start.menu', me.mMenuRoot.close, me.mMenuRoot);
 				
 		return me;
 	},
@@ -187,6 +183,6 @@ SVG.extend(exSVG.Worksheet, {
 	}
 })
 
-exSVG.Worksheet.prototype.plugins.menu = {name: 'Context Menu', initor: 'initMenu'}
+//exSVG.Worksheet.prototype.plugins.menu = {name: 'Context Menu', initor: 'initMenu'}
 
 }());

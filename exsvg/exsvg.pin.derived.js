@@ -261,6 +261,12 @@ exSVG.PinExec = SVG.invent({
 			var me = this;
 			exSVG.Pin.prototype.init.apply(me, arguments);
 			me.addClass('exPinExec');
+
+			if(me.getType() == exSVG.Pin.PIN_IN)
+				me.mMaxLink = -1;
+			if(me.getType() == exSVG.Pin.PIN_OUT)
+				me.mMaxLink = 1;
+
 			return me;
 		},
 
@@ -388,10 +394,7 @@ exSVG.PinAdd = SVG.invent({
 				});
 			});
 						
-			me.on('click.pinadd', function(e){
-				me.addPin();
-			});
-
+			me.on('click.pinadd', me.addPin, me);
 			me.on('contextmenu.pinadd', function(e){
 				e.stopPropagation();
 				e.stopImmediatePropagation();

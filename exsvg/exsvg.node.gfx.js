@@ -1,13 +1,11 @@
 ;(function() {
 "use strict";
 
-
 var nodeMinwidth = 100;
 
-
-SVG.extend(exSVG.Node, {
+exSVG.plugin(exSVG.Node, {
 	
-	initGfx: function(data){
+	init: function(data){
 		var me = this;		
 		
 		me.mGfx = {};
@@ -15,9 +13,7 @@ SVG.extend(exSVG.Node, {
 		me.mColor = new SVG.Color(me.data('color'));
 		me.paint();
 		
-		me.on('destroy', function(){
-			me.destroyGfx();
-		});
+		me.on('destroy', me.destroyGfx, me);
 	},
 	
 	expandPins: function(){
@@ -199,7 +195,7 @@ SVG.extend(exSVG.Node, {
 			if(!this.visible())
 				return;
 			this.move(0, offset);
-			offset += this.bbox().height+4;
+			offset += this.bbox().height+6;
 		});
 
 		
@@ -208,7 +204,7 @@ SVG.extend(exSVG.Node, {
 			if(this.visible())
 				return;
 			this.move(0, offset);
-			offset += this.bbox().height+4;
+			offset += this.bbox().height+6;
 		});
 
 		
@@ -249,10 +245,6 @@ SVG.extend(exSVG.Node, {
 			
 			me.mGfx.expand.rect(15, 16)
 				.radius(7)
-				.on('mouseup', function(e){
-					//e.stopPropagation();
-					//e.stopImmediatePropagation();
-				})
 				.on('mousedown', function(e){
 					e.stopPropagation();
 					e.stopImmediatePropagation();

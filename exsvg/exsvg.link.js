@@ -29,10 +29,18 @@ exSVG.Link = SVG.invent({
 				// The link is started by the user by clicking/dragging a pin (see exPin ctor)
 				me.addClass('exLinkStart');
 				me.doc().fire('link-start', {link: me});
-				me.initMouseEvents(out);
+				me.initMouseEvents(out, startPin);
 			}
+			
+			me.on('mouseenter', me.focusLink, me);
+			
+			exSVG.execPlugins(this, arguments, exSVG.Link);
 			return me;
         },
+		
+		focusLink: function(e){
+			//console.log('ok', this);
+		},
 		
 		getStartPin: function(){
 			if(!this.data('startPin'))
@@ -108,6 +116,7 @@ exSVG.Link = SVG.invent({
 			
 			if(me.hasClass('exLinkStart')){
 				console.log('link-cancel')
+				me.parent(exSVG.Worksheet).select('.exLink, .exPin').animate(50).opacity(1);
 				ret = SVG.Path.prototype.remove.apply(me, arguments);
 				me.fire('cancel');
 				doc.fire('link-cancel', {link: me});
@@ -196,6 +205,7 @@ exSVG.Link = SVG.invent({
 				me.fire('finish');
 				me.doc().fire('link-finish', {link: this});
 				me.off('finish');
+				worksheet.select('.exLink, .exPin').animate(50).opacity(1);
 			}
 			//console.groupEnd();
 			return me;
@@ -206,25 +216,32 @@ exSVG.Link = SVG.invent({
 		/* Init all mouse events
 		/* these bindings are regrouped in a function in case of we want to ovveride this
 		*/
-		initMouseEvents: function(initialEvent){
+		initMouseEvents: function(initialEvent, startPin){
 			//console.group('Link.initMouseEvents()');
-			var me = this;
+			var me = this
+			, worksheet = me.parent(exSVG.Worksheet);
 
 			// track mousemove on the SVG document to paint link when user currently drawing new link
-			SVG.on(document, 'mousemove.linkStart-link' + me.id(), function(e){
-				me.draw(e);
-			});
-			
-			SVG.on(document, 'mouseup.linkStart-link' + me.id(), function(e){
-				console.log('mouseup', e.timeStamp);
-				me.remove();
-				//e.stopPropagation();
-				//e.stopImmediatePropagation();
-			});
+			SVG.on(document, 'mousemove.linkStart-link' + me.id(), me.draw, me);			
+			SVG.on(document, 'mouseup.linkStart-link' + me.id(), me.remove, me);
 
 			// avoid propagation of the mouse event to the parents
 			initialEvent.stopPropagation();
 			initialEvent.stopImmediatePropagation();
+
+			worksheet.select('.exLink:not(.exLinkStart)').animate(100).opacity(0.4);
+			
+			var type = startPin.getDataType();
+			if(exLIB.isArrayDataType(type))
+				worksheet.select('.exPin:not([data-type="' + type + '"]):not([data-type="' + exLIB.getWildcardsDataType(true) + '"])').animate(100).opacity(0.2);
+			else
+				worksheet.select('.exPin:not([data-type="' + type + '"]):not([data-type="' + exLIB.getWildcardsDataType() + '"])').animate(100).opacity(0.2);
+			
+			if(startPin.getType() == exSVG.Pin.PIN_IN)
+				worksheet.select('.exPin.input').animate(100).opacity(0.2);
+			else
+				worksheet.select('.exPin.output').animate(100).opacity(0.2);
+
 			//console.groupEnd();
 			return me;
 		},
@@ -319,43 +336,15 @@ SVG.extend(exSVG.Node, {
 	}
 });
 
-SVG.extend(exSVG.Worksheet, {
+exSVG.plugin(exSVG.Worksheet, {
 
-	/*
-	/* this function is called by exSVG.Worksheet at load, when she as loaded all modules
-	*/
-	initLinks: function() {
+	init: function() {
+		//console.log('exSVG.Worksheet.init()[exsvg.link.js]', arguments);
 		var me = this;
 		me.mLinks = me.group().addClass('exLinks');
 		if(me.getWorkspace)
 			me.getWorkspace().back();
-		me.initLinkEventHandlers();
 		return me;
-	},
-	
-	initLinkEventHandlers: function(){
-		var me = this;
-		me.doc().on('node-add.links', function(e){
-			var node = e.detail.node;
-			node.on('pin-add.link', function(e){
-				var pin = e.detail.pin;
-				pin.initPinHandlers();
-			});
-			
-			node.select('.exPin').each(function(){
-				this.initPinHandlers();
-			});
-			
-			// cancel drawing links when user move any node			
-			node.on('move-start.link', function(){
-				//console.log('ko')
-				SVG.select('.exLinkStart').each(function(){
-					this.remove();
-				});
-			});			
-			
-		});
-		
 	},
 
 	createLink: function(pin, e){
@@ -383,7 +372,6 @@ SVG.extend(exSVG.Worksheet, {
 
 });
 
-exSVG.Worksheet.prototype.plugins.link = {name: 'Links', initor: 'initLinks'}
 
 }).call(this);
 

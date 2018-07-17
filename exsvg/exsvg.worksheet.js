@@ -46,10 +46,7 @@ exSVG.Worksheet = SVG.invent({
 		
 		initWorksheetEventHandlers: function(){
 			//console.log('worksheet.initEventHandlers()');
-			var me = this
-			, panStart = {x:null, y:null, pan:false}
-			, panEl
-			, panElCursor;
+			var me = this;
 
 			me.doc().on('node-add.worksheet-dragnode', function(e){
 				//console.log('worksheet:nodeadd.worksheet-drag');
@@ -76,36 +73,6 @@ exSVG.Worksheet = SVG.invent({
 					this.fire('moved', {event: e});
 					dragPoint = null;
 				});
-			});
-			
-			me.doc().on('link-start.worksheet', function(e){
-				var pin = e.detail.link.getStartPin()
-				, type = pin.getDataType();
-
-				me.select('.exLink:not(.exLinkStart)').animate(100).opacity(0.4);
-				
-				if(exLIB.isArrayDataType(type))
-					me.select('.exPin:not([data-type="' + type + '"]):not([data-type="' + exLIB.getWildcardsDataType(true) + '"])').animate(100).opacity(0.2);
-				else
-					me.select('.exPin:not([data-type="' + type + '"]):not([data-type="' + exLIB.getWildcardsDataType() + '"])').animate(100).opacity(0.2);
-				
-				if(pin.getType() == exSVG.Pin.PIN_IN)
-					me.select('.exPin.input').animate(100).opacity(0.2);
-				else
-					me.select('.exPin.output').animate(100).opacity(0.2);
-				
-				
-				me.doc().on('link-finish.worksheet-linkstart', function(e){
-					//console.log('link-finish')
-					me.doc().off('.worksheet-linkstart');
-					me.select('.exLink, .exPin').animate(50).opacity(1);
-				});
-
-				me.doc().on('link-cancel.worksheet-linkstart', function(e){
-					me.doc().off('.worksheet-linkstart');
-					me.select('.exLink, .exPin').animate(50).opacity(1);
-				});
-				
 			});
 
 			me.doc().on('before-pin-menu', function(e){
@@ -272,8 +239,6 @@ exSVG.Worksheet = SVG.invent({
 			this.put(ret);
 			loadCss('exsvg/css/css.css');
 			
-			console.log(plugins);
-			
 			loadScript(
 				'exsvg/exsvg.extend.js', 'svgjs/svg.draggable.js', 'svgjs/svg.panzoom.js', 'svgjs/svg.foreignobject.js', 'svgjs/svg.draw.js', 'svgjs/svg.filter.js'
 				, plugins
@@ -282,19 +247,10 @@ exSVG.Worksheet = SVG.invent({
 				, 'exsvg/exsvg.link.js'
 				, function(){
 					ret.init();
-					for (var key in ret.plugins) {
-						console.log('--', key);
-						if (!Object.prototype.hasOwnProperty.call(ret.plugins, key))
-							continue;
-						if(ret.plugins[key].initor)
-							ret[ret.plugins[key].initor].call(ret);
-						else
-							console.log(key);
-					}
+					exSVG.execPlugins(ret, ret, exSVG.Worksheet);
 					ret.doc().fire('plugins-init');
-					if(typeof callback === "function")
-						callback.call(ret);
-				
+					if(typeof callback === 'function')
+						callback.call(ret, ret);			
 			});
 			return ret;
 		}

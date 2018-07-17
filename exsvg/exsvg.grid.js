@@ -3,15 +3,14 @@
 
 var DRAGSMALL;
 
-SVG.extend(exSVG.Worksheet, {
+exSVG.plugin(exSVG.Worksheet, {
 
-	initGrid: function(options) {
+	init: function(options) {
 		var me = this
 		, workSpace = (me.getWorkspace) ? me.getWorkspace() : me.doc();
 		
 		if(!workSpace)
 			return;
-		console.log(workSpace);
 		var options = options || {};
 		options.small = options.small || 16;
 		options.big = options.big || 128;
@@ -50,6 +49,6 @@ SVG.extend(exSVG.Worksheet, {
 	}
 });
 
-exSVG.Worksheet.prototype.plugins.grid = {name: 'Grid', initor: 'initGrid'}
+//exSVG.Worksheet.prototype.plugins.grid = {name: 'Grid', initor: 'initGrid'}
 
 }(this));

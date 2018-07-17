@@ -49,7 +49,8 @@ exSVG.PinEditorInput = SVG.invent({
 		init: function(){
 			var me = this
 			, pin = me.parent(exSVG.Pin)
-			, editor = exLIB.getDataType2(pin.getDataType()).Editor();
+			, editor = exLIB.getDataType2(pin.getDataType()).Editor()
+			, worksheet = me.parent(exSVG.Worksheet);
 			
 			exSVG.PinEditorBase.prototype.init.apply(me, arguments);
 			
@@ -70,6 +71,8 @@ exSVG.PinEditorInput = SVG.invent({
 					e.stopPropagation();
 				})
 				.on('mousemove', function(e){
+					if(worksheet)
+						worksheet.hideTooltip();
 					e.stopImmediatePropagation();
 					e.stopPropagation();
 				});
@@ -200,7 +203,8 @@ exSVG.PinEditorSelect = SVG.invent({
 		init: function(){
 			var me = this
 			, pin = me.parent(exSVG.Pin)
-			, type = exLIB.getDataType2(pin.getDataType());
+			, type = exLIB.getDataType2(pin.getDataType())
+			, worksheet = me.parent(exSVG.Worksheet);
 			
 			exSVG.PinEditorBase.prototype.init.apply(me, arguments);
 			me.width(100);
@@ -213,14 +217,8 @@ exSVG.PinEditorSelect = SVG.invent({
 					e.stopPropagation();
 				})
 				.on('mousemove', function(e){
-					e.stopImmediatePropagation();
-					e.stopPropagation();
-				})
-				.on('mouseup', function(e){
-					e.stopImmediatePropagation();
-					e.stopPropagation();
-				})
-				.on('click', function(e){
+					if(worksheet)
+						worksheet.hideTooltip();
 					e.stopImmediatePropagation();
 					e.stopPropagation();
 				})

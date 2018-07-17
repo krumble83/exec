@@ -171,7 +171,42 @@ def(ctx, 'clone', clone);
 def(ctx, 'merge', merge);
 def(ctx, 'loadScript', loadScript);
 def(ctx, 'loadCss', loadCss);
-def(ctx, 'exSVG', {});
+
+def(ctx, 'exSVG', {
+	//__plugins : [],
+	
+	plugin: function(){
+		var modules, methods, key, i;
+
+		modules = [].slice.call(arguments);
+		methods = modules.pop();
+
+		for (i = modules.length - 1; i >= 0; i--){
+			if (modules[i]){
+				if(!modules[i].__plugins)
+					modules[i].__plugins = [];
+				for (key in methods){
+					//console.log(methods[key]);
+					if(key == 'init'){
+						modules[i].__plugins.push(methods[key]);
+						//console.log(this);
+					}
+					else
+						modules[i].prototype[key] = methods[key];
+				}
+			}
+		}
+		
+	},
+	
+	execPlugins: function(obj, args, parent){
+		if(parent.__plugins){
+			parent.__plugins.forEach(function(val){
+				val.apply(obj, args);
+			});
+		}		
+	}
+});
 
 
 Number.prototype.clamp = function(min, max) {

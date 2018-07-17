@@ -139,9 +139,9 @@ var UndoManager = function() {
 var undoManager = new UndoManager();
 
 
-SVG.extend(exSVG.Worksheet, {
+exSVG.plugin(exSVG.Worksheet, {
 
-	initUndo: function() {
+	init: function() {
 		var me = this;
 		me.sequenceEnabled = true;
 				
@@ -266,6 +266,10 @@ SVG.extend(exSVG.Worksheet, {
 			undoManager.add({
 				undo: function() {
 					//console.group('Undo:link-remove(undo)');
+					
+					// see exSVG.Pin.addLink (link removed when a blur is applied to all links)
+					link.opacity(1);					
+					
 					me.getLinksLayer().put(link);
 					link.fire('add');
 					//console.groupEnd();
@@ -357,6 +361,6 @@ SVG.extend(exSVG.Worksheet, {
 
 //SVG.Nested.prototype.startSequence = start;
 
-exSVG.Worksheet.prototype.plugins.undo = {name: 'Undo Framework', initor: 'initUndo'};
+//exSVG.Worksheet.prototype.plugins.undo = {name: 'Undo Framework', initor: 'initUndo'};
 
 }());

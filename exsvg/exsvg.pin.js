@@ -7,19 +7,41 @@ exSVG.Pin = SVG.invent({
 	
     extend: {
 		init: function(data){
+			//console.log('exSVG.Pin.init()', data);
 			var me = this;
 
 			this.getNode().on('export', function(e){
 				me.export(e.detail.parent);
 			});
 
-			this.getNode().on('destroy', function(e){
-				me.destroy();
+			this.getNode().on('destroy', me.destroy, me);
+			
+			for (var i = 0, atts = data.attr(), n = atts.length; i < n; i++){
+				if(['import'].indexOf(atts[i].nodeName) > -1)
+					continue;
+				me.setData(atts[i].nodeName, atts[i].value);
+			}
+			me.setId(data.Id());
+			me.addClass('exPin');
+			me.mMaxLink = -1;
+			
+			
+			if(data.type == 'INPUT'){
+				this.addClass('input')
+				.setMaxLink(1);
+			}
+			if(data.type == 'OUTPUT'){
+				this.addClass('output')
+				.setMaxLink(-1);
+			}
+			
+			data.select('*').each(function(){
+				if(me['import' + this.type.capitalize()])
+					me['import' + this.type.capitalize()](this, me);
 			});
 			
-			if(data instanceof exGRAPH.Pin)
-				return this.import(data);
-
+			exSVG.execPlugins(this, arguments, exSVG.Pin);
+			return me;
         },
 		
 		import: function(data){
@@ -199,14 +221,6 @@ SVG.extend(exSVG.Node, {
 		return pin;	
 	},
 	
-	/*
-	addPin: function(data){
-		if(data.type == 'INPUT')
-			return this.importInput(data);
-		else if(data.type == 'OUTPUT')
-			return this.importOutput(data);
-	},
-       */
 	getPin: function(id){
 		return this.select('.exPin.output[data-id="' + id + '"], .exPin.input[data-id="' + id + '"]').first();
 	},

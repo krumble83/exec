@@ -194,7 +194,7 @@ SVG.extend(SVG.Doc, SVG.Nested, {
 		}
 	},this, {useCapture:true}) // added
 	// end krumble
-    return this
+    return this;
 
   },
 

@@ -3,15 +3,14 @@
 
 var DRAGSMALL;
 
-SVG.extend(exSVG.Worksheet, {
+exSVG.plugin(exSVG.Worksheet, {
 
-	initWorkspace: function() {
+	init: function() {
 		var me = this
 		, panStart = {x:null, y:null, pan:false}
 		, panEl
 		, panElCursor;	
-		
-		console.log('exSVG.Worksheet.initWorkspace()');
+		//console.log('exSVG.Worksheet.initWorkspace()');
 		
 		me.mWorkspace = me.rect(100000,100000)
 			.x(-50000)
@@ -93,6 +92,6 @@ SVG.extend(exSVG.Worksheet, {
 	}
 });
 
-exSVG.Worksheet.prototype.plugins.workspace = {name: 'Panzoom', initor: 'initWorkspace'};
+//exSVG.Worksheet.prototype.plugins.workspace = {name: 'Panzoom', initor: 'initWorkspace'};
 
 }(this));

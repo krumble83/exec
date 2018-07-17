@@ -31,7 +31,6 @@
 	stroke-width: 1;
 }
 
-
 .worksheet .cross{
 	stroke: #000;
 }
@@ -110,7 +109,7 @@
 }
 
 .worksheet .exNode .exPin.linkable{
-	cursor: crosshair;	
+	cursor: crosshair;
 }
 
 .worksheet .exNode .exPin rect{

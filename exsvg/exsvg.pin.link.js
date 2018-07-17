@@ -4,9 +4,9 @@
 // backup original draw function
 var gfxDraw = exSVG.Pin.prototype.paint.clone();
 
-SVG.extend(exSVG.Pin, {
+exSVG.plugin(exSVG.Pin, {
 	
-	initPinHandlers: function(){
+	init: function(){
 		var me = this;
 		me.addClass('linkable');
 			
@@ -170,9 +170,13 @@ SVG.extend(exSVG.Pin, {
 	addLink: function(link){
 		//console.group('Pin.addLink()');
 		console.assert(link instanceof exSVG.Link, 'link should be instance of exSVGLink');
-		var me = this;
+		var me = this
+		, links = me.getLinks();
 
 		me.addClass('linked');
+		if(links.length() > me.mMaxLink && me.mMaxLink != -1){
+			links.first().remove();
+		}
 		me.paint();
 		me.initLinkEvents(link);
 		return me;
@@ -203,22 +207,13 @@ SVG.extend(exSVG.Pin, {
 		//console.warn('Pin.initLinkEvents()');
 		var me = this;
 		
-		me.getNode().on('move.linknode' + link.id(), function(e){
-			//console.log('linknode.nodemove', this.id());
-			// track node move's to redraw the link.
+		me.getNode().on('move.linknode' + link.id(), function(){
+			link.draw();
+		});		
+		me.getNode().on('resize.linknode' + link.id(), function(){
 			link.draw();
 		});
-		
-		me.getNode().on('resize.linknode' + link.id(), function(e){
-			//console.log('nodemove', this.id())
-			// track node resize to redraw the link.
-			link.draw();
-		});
-
-		me.getNode().on('before-remove.linknode' + link.id(), function(e){
-			// remove this link if the node of start pin is removed
-			link.remove();
-		});
+		me.getNode().on('before-remove.linknode' + link.id(), link.remove, link);
 		
 		link.on('remove.linknode' + me.id(), function(){
 			me.removeLink(this);

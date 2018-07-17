@@ -9,8 +9,8 @@ exSVG.NodeMacro = SVG.invent({
 		
 		init: function(){
 			var me = this;
-			exSVG.Node.prototype.init.apply(me, arguments);
 			me.addClass('exMacro');
+			exSVG.Node.prototype.init.apply(me, arguments);
 			return me;
 		},
 

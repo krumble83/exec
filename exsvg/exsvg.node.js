@@ -27,8 +27,8 @@ exSVG.Node = SVG.invent({
 					me['import' + this.type.capitalize()](this, me);
 			});
 			
-			if(me.initGfx)
-				me.initGfx(data);
+			exSVG.execPlugins(this, arguments, exSVG.Node);
+			
             return me;
         },
 		

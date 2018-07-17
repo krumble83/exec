@@ -3,9 +3,9 @@
 
 var menuEl = document.querySelector('#librarymenu');
 
-SVG.extend(exSVG.Worksheet, {
+exSVG.plugin(exSVG.Worksheet, {
 
-	initLibrary: function() {
+	init: function() {
 		this.initLibraryEventHandlers();
 		this.createMenu();
 
@@ -61,7 +61,7 @@ SVG.extend(exSVG.Worksheet, {
 			
 			
 			SVG.on(document, 'mousemove.library-linkstart-temp', function(e){
-				if(e.target.className.baseVal == 'grid')
+				if(e.target.className.baseVal.trim() == 'grid' || e.target.className.baseVal.trim() == 'workspace')
 					me.showTooltip(e, '<img src="exsvg/img/newnode.png" style="vertical-align:-3px"> Place a new node', 1);
 			});
 
@@ -88,8 +88,6 @@ SVG.extend(exSVG.Worksheet, {
 				}
 					
 				me.hideTooltip();
-				
-				console.log(dataType);
 				
 				// before displaying menu, we get all nodes from library with a comptatible pin
 				filters2 = io + '[type="' + dataType + '"]';										
@@ -172,11 +170,8 @@ SVG.extend(exSVG.Worksheet, {
 		});
 		
 		me.doc().on('node-add', function(e){
-			var node = e.detail.node;
-			
-			node.on('move-start.menu', function(){
-				me.hideMenu();
-			});			
+			var node = e.detail.node;			
+			node.on('move-start.menu', me.hideMenu, me);			
 		});
 	},
 
@@ -395,9 +390,6 @@ SVG.extend(exSVG.Worksheet, {
 		}
 	}
 });
-
-exSVG.Worksheet.prototype.plugins.library = {name: 'Library Wrapper', initor: 'initLibrary'}
-
 loadCss('exsvg/css/librarymenu.css');
 
 }).call(this);

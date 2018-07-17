@@ -209,7 +209,7 @@ exSVG.Selection = SVG.invent({
 				if(!e.ctrlKey && !e.shiftKey)
 					me.unselectNode();
 				
-				selectionRect = me.rect().addClass('marquee');
+				selectionRect = me.mWorksheet.rect().addClass('marquee');
 				nodes = me.mWorksheet.getNodes();
 				
 				// to check if a node is in the selection rectangle we need it's coordinates (x, y, w, h)
@@ -220,23 +220,21 @@ exSVG.Selection = SVG.invent({
 					var x2 = this.parent(exSVG.Workesheet).point(box.x + box.w, box.y + box.h);
 					//console.log(p);
 					coordsCache[this.id()] = {x1:x1.x, y1:x1.y, x2:x2.x, y2:x2.y};
-					
-					// adding class .unfocusable on each node only for visual effect (pins not hightligth when dragging rectangle)
-					me.mWorksheet.addClass('blur');
-					//this.addClass('unfocusable');
 				});
+
+				// adding class .blur on each node only for visual effect (pins not hightligth when dragging rectangle)
+				me.mWorksheet.addClass('blur');
 
 				// before drawing, we initialize all event handlers
 				// handler when user release mouse button when selection rectangle is drawing
-				me.doc().on('mouseup.selection-rectangle-handler', function(e){
+				SVG.on(document, 'mouseup.selection-rectangle-handler', function(e){
 					//console.log('selection:rectangle-selection.mouseup');
 					selectionRect.draw('stop', e); // stop drawind rectangle
 					selectionRect.off(); // remove all events handlers
 					selectionRect.remove(); // remove rectangle from DOM
 					selectionRect = null;
-					me.mWorksheet.removeClass('blur');
-					//nodes.removeClass('unfocusable'); // remove class unfocusable on all nodes
-					me.doc().off('.selection-rectangle-handler');  // remove this event handler from doc()
+					me.mWorksheet.removeClass('blur'); //// remove class unfocusable on all nodes
+					SVG.off(document, '.selection-rectangle-handler');
 				});
 				
 				// handler when the selection rectangle is updated, see drawing svg plugin
@@ -415,10 +413,7 @@ exSVG.Selection = SVG.invent({
 				
 			});
 
-			me.doc().on('before-paste.selection', function(){
-				me.unselectNode();
-			});
-
+			me.doc().on('before-paste.selection', me.unselectNode, me);
 
 			me.doc().on('paste.selection', function(e){
 				console.log(e.detail);
@@ -461,9 +456,9 @@ exSVG.Selection = SVG.invent({
 	}
 });
 
-SVG.extend(exSVG.Worksheet, {
+exSVG.plugin(exSVG.Worksheet, {
 
-	initSelection: function(options) {
+	init: function(options) {
 		var me = this;
 		
 		me.attr('tabindex', -1);
@@ -518,6 +513,6 @@ SVG.extend(exSVG.Worksheet, {
 	}
 })
 
-exSVG.Worksheet.prototype.plugins.selection = {name: 'Selection', initor: 'initSelection'}
+//exSVG.Worksheet.prototype.plugins.selection = {name: 'Selection', initor: 'initSelection'}
 
 }());
