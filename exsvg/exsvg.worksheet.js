@@ -21,27 +21,46 @@ exSVG.Worksheet = SVG.invent({
 			//console.group('worksheet.init()');
 			var me = this;
 						
-			me.doc().addClass('worksheet');			
-			me.createTooltip();
-			me.createHeader();
-			me.doc().size('100%', '100%');
+			me.doc()
+				.addClass('worksheet');
+			
+			me.createTooltip()
+				.createHeader()
+				.size('100%', '100%');
 	
 			//PinArray pattern
 			me.pattern(10, 10, function(add) {
 				add.rect(3,3).move(2,2);
 			}).id('pinArrayPattern').attr('patternUnits', 'userSpaceOnUse');
 			
-			me.initWorksheetEventHandlers()
-				
-				
-
+			me.initWorksheetEventHandlers();
+					
+			me.doc().rect('100%', '100%')
+				.addClass('focusrect');
+			
+			me.on('blur', function(){
+				 me.doc().addClass('blur');
+			})
+			.on('focus', function(){
+				 me.doc().removeClass('blur');
+			});
+			
 			return me;
         },
 		
 		doLayout: function(){
 			//console.log(this.mTitle.bbox().width, this.doc().parent().clientWidth);
 			this.mTitleGroup.select('text').x((this.doc().parent().clientWidth/2)-this.mTitle.bbox().width);
-			
+			return this;
+		},
+		
+		focus: function(){
+			this.node.focus();
+			return this;
+		},
+		
+		hasFocus: function(){
+			return document.activeElement && document.activeElement.instance && document.activeElement.instance === this;
 		},
 		
 		initWorksheetEventHandlers: function(){
@@ -139,6 +158,7 @@ exSVG.Worksheet = SVG.invent({
 				.addClass('title')
 				.front()
 				.translate(3, 7);
+			return me;
 		},
 		
 		createTooltip: function(){
@@ -149,7 +169,8 @@ exSVG.Worksheet = SVG.invent({
 				me.mToolTip = document.createElement('div');
 				me.mToolTip.setAttribute('id', 'exTooltip');
 				document.body.appendChild(me.mToolTip);
-			}				
+			}
+			return me;
 		},
 		
 		getTitleBar: function(){
@@ -173,7 +194,6 @@ exSVG.Worksheet = SVG.invent({
 			if(me['import' + data.type.capitalize()])
 				return me['import' + data.type.capitalize()](data, me);
 
-			console.log('test');
 			me.startSequence();
 			data.select(':scope > *').each(function(){
 				//console.log(this);
@@ -196,26 +216,20 @@ exSVG.Worksheet = SVG.invent({
 					return;
 				me.mToolTip.setAttribute('class', 'exTooltip visible');
 			}, timeout || 500);
+			return me;
 		},
 
 		hideTooltip: function(){
 			//console.log('worksheet.hideTooltip()');
-			this.mToolTip.timer = null;
-			this.mToolTip.setAttribute('class', 'exTooltip');
+			var me = this;
+			me.mToolTip.timer = null;
+			me.mToolTip.setAttribute('class', 'exTooltip');
+			return me;
 		},
 		
 		getPoint: function(e){
 			//console.log('worksheet.getPoint()');
 			return this.point(e);
-		},
-		
-		exportGraph: function(graph){
-			var me = this;
-			me.fire('export', {parent: graph});
-		},
-		
-		stopAutoScroll: function(){
-			SVG.off(document, '.worksheet-autoscroll');
 		},
 		
 		startSequence: function(){
@@ -243,7 +257,7 @@ exSVG.Worksheet = SVG.invent({
 				'exsvg/exsvg.extend.js', 'svgjs/svg.draggable.js', 'svgjs/svg.panzoom.js', 'svgjs/svg.foreignobject.js', 'svgjs/svg.draw.js', 'svgjs/svg.filter.js'
 				, 'exsvg/exsvg.node.js', 'exsvg/exsvg.node.gfx.js', 'exsvg/exsvg.node.derived.js', 'exsvg/exsvg.node.properties.js'
 				, 'exsvg/exsvg.pin.js', 'exsvg/exsvg.pin.gfx.js', 'exsvg/exsvg.pin.link.js',  'exsvg/exsvg.pin.derived.js', 'exsvg/exsvg.pin.editors.js'
-				, 'exsvg/exsvg.link.js', 'exsvg/exsvg.node.reroute.js'
+				, 'exsvg/exsvg.link.js', 'exsvg/exsvg.node.reroute.js', 'exsvg/exsvg.node.ramp.js'
 				, plugins
 				, function(){
 					ret.init();
@@ -256,7 +270,5 @@ exSVG.Worksheet = SVG.invent({
 		}
 	}
 });
-
-exSVG.Worksheet.prototype.plugins = {}
 
 }());

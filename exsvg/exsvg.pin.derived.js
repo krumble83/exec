@@ -30,9 +30,11 @@ exSVG.PinWildcards = SVG.invent({
 	inherit : exSVG.Pin,
 	
 	extend: {
+		
+		test: 'titi',
 	
 		init: function(data){
-			//console.log('exSVG.PinWildcards.init()', data);
+			//console.log('exSVG.PinWildcards.init()', this.titi);
 			var me = this;
 			
 			exSVG.Pin.prototype.init.apply(this, arguments);
@@ -46,12 +48,13 @@ exSVG.PinWildcards = SVG.invent({
 		},
 		
 		addLink: function(link){
-			//console.log('ttt');
+			//console.log('exSVG.PinWildcards.addLink()', link);
 			var me = this
 			, set = new exSVG.WildcardsSet
 			, datatype = link.getDataType()
 			, oPin = link.getOtherPin(me);
 			
+			console.assert(oPin instanceof exSVG.Pin);			
 			exSVG.Pin.prototype.addLink.apply(this, arguments);
 
 			if(exLIB.isWildcardsDataType(datatype) && !exLIB.isWildcardsDataType(oPin.getDataType()))
@@ -64,20 +67,7 @@ exSVG.PinWildcards = SVG.invent({
 				});
 				me.getNode().paint();
 				return true;
-			}/*
-			else{
-				set.reset();
-				me.checkDataTypeChange(set.mDataType, set);
-				console.log(set.defaultPrevented);
-				if(!set.defaultPrevented){
-					set.each(function(){
-						this.setDataType(set.mDataType);
-					});
-					me.getNode().paint();
-					return true;
-				}
 			}
-			*/
 			me.getNode().paint();
 			return false;			
 		},
@@ -294,10 +284,9 @@ exSVG.PinExec = SVG.invent({
 		},
 
 		acceptLink: function(pin){
-			var ret = exSVG.Pin.prototype.acceptLink.apply(this, arguments);
-			if(pin.getDataType() !== exLIB.getExecDataType())
-				ret += exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE;
-			return ret;
+			if(!exLIB.isExecDataType(pin.getDataType()))
+				return {code: exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE, label: '<div><img src="exsvg/img/none.png"> Datatype is not compatible'};
+			return exSVG.Pin.prototype.acceptLink.apply(this, arguments);
 		},
 
 		drawPin: function(x, y, color, size){
@@ -453,8 +442,7 @@ exSVG.PinAdd = SVG.invent({
 			me.getNode().paint();
 			return me;
 		},
-		
-		
+			
 		drawBackground: function(x, y, w, h){
 			var me = this
 			, box = me.bbox();

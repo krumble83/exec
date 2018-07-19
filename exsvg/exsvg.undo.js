@@ -168,8 +168,9 @@ exSVG.plugin(exSVG.Worksheet, {
 			bar.select('text').move(100,0);
 		}
 
-		me.doc().on('keyup.selection', function(e){
-			//console.log('selection.keyup', e);
+		me.doc().on('keydown.undo', function(e){
+			if(!me.hasFocus())
+				return;
 			if(e.keyCode == 90 && e.ctrlKey){ //Ctrl+Z
 				undoManager.undo();
 			}
@@ -317,13 +318,6 @@ exSVG.plugin(exSVG.Worksheet, {
 		return me;
 	},
 
-/*	
-	addUndo: function(f){
-		var me = this;
-		undoManager.add(f);		
-		me.updateUndoButtons();
-	},
-*/	
 	undo: function(viewbox){
 		var me = this;
 		undoManager.undo();
@@ -355,6 +349,12 @@ exSVG.plugin(exSVG.Worksheet, {
 			me.mRedoIcon.removeClass('disabled');
 		else
 			me.mRedoIcon.addClass('disabled');		
+	},
+	
+	destroyUndo: function(){
+		me.doc().off('.undo');
+		me.mUndoIcon.off();
+		me.mRedoIcon.off()
 	}
 })
 

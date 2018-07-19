@@ -134,7 +134,7 @@ exSVG.Link = SVG.invent({
 		/* we must tell at each pin that a new link was added/reinserted to rebind event listeners.
 		*/
 		addTo: function(){
-			//console.group('Link.addTo()');
+			//console.group('exSVG.Link.addTo()');
 			var me = this
 			, ret = SVG.Path.prototype.addTo.apply(me, arguments);
 			
@@ -168,12 +168,10 @@ exSVG.Link = SVG.invent({
 			console.assert(worksheet);
 			console.assert(startPin instanceof exSVG.Pin);
 			console.assert(endPin instanceof exSVG.Pin);
-			//console.assert(startPin.acceptLink(endPin, me) == 0, 'result: ' + startPin.acceptLink(endPin, me) + ', ' + me.id());
-			//console.assert(endPin.acceptLink(startPin, me) == 0, 'result: ' + endPin.acceptLink(startPin, me) + ', ' + me.id());
 			console.assert(startPin.getType() != endPin.getType());
 			
 			// register start pin / end pin ids directly in the link node
-			if(endPin.getType() == exSVG.Pin.PIN_IN){
+			if(endPin.getType() == exSVG.Pin.PIN_IN || startPin.getType() == exSVG.Pin.PIN_OUT){
 				me.data('pinIn', endPin.id());
 				me.data('pinOut', startPin.id());
 			} else {
@@ -313,27 +311,7 @@ exSVG.Link = SVG.invent({
 				cp1 = {x: Math.max(startpos.x + w, startpos.x + smooth), y: startpos.y};
 				cp2 = {x: Math.min(stoppos.x - w, stoppos.x - smooth), y: stoppos.y};				
 			}
-			else if(startPin.getType() == exSVG.Pin.PIN_INOUT && e instanceof MouseEvent){
-				stoppos = me.parent(exSVG.Worksheet).point(e);
-				//console.log(e.x, startPin.x());
-				if(e.x < startpos.x){
-					cp1 = {x: Math.min(startpos.x - w, startpos.x - smooth), y: startpos.y};
-					cp2 = {x: Math.max(stoppos.x + w, stoppos.x + smooth), y: stoppos.y};
-				} else {
-					cp1 = {x: Math.max(startpos.x + w, startpos.x + smooth), y: startpos.y};
-					cp2 = {x: Math.min(stoppos.x - w, stoppos.x - smooth), y: stoppos.y};					
-				}
-			}
-			else if(startPin.getType() == exSVG.Pin.PIN_INOUT && stopPin.getType() == exSVG.Pin.PIN_INOUT){
-				//console.log(stoppos.x, startpos.x);
-				if(stoppos.x < startpos.x){
-					cp1 = {x: Math.min(startpos.x - w, startpos.x - smooth), y: startpos.y};
-					cp2 = {x: Math.max(stoppos.x + w, stoppos.x + smooth), y: stoppos.y};
-				} else {
-					cp1 = {x: Math.max(startpos.x + w, startpos.x + smooth), y: startpos.y};
-					cp2 = {x: Math.min(stoppos.x - w, stoppos.x - smooth), y: stoppos.y};					
-				}
-			}
+
 			else{
 				console.error('can\'t calculate link coords');
 				return;
@@ -418,9 +396,9 @@ exSVG.plugin(exSVG.Worksheet, {
 		, link = new (className || exSVG.Link)();
 		
 		me.mLinks.put(link);
-		link.init.call(link, pin, e);
-		pin.startLink(link);
+		link.init(pin, e);
 		if(e instanceof exSVG.Pin){
+			pin.startLink(link);
 			e.endLink(link);			
 		}
 		return link;

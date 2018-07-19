@@ -186,6 +186,8 @@ SVG.extend(exSVG.Worksheet, {
 			node.x(pos.x);
 			node.y(pos.y);
 		}
+		//if(data.attr('svgid'))
+		//	data.attr('svgid', node.id());
 		//data.svg = node;
 		return node;
 	},

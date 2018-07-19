@@ -227,7 +227,9 @@ SVG.extend(exSVG.Node, {
 	},
 	
 	getPin: function(id){
-		return this.select('.exPin.output[data-id="' + id + '"], .exPin.input[data-id="' + id + '"]').first();
+		if(id)
+			return this.select('.exPin.output[data-id="' + id + '"], .exPin.input[data-id="' + id + '"]').first();
+		return this.select('.exPin.output,.exPin.input');
 	},
 
 	getPins: function(filters){
@@ -235,6 +237,8 @@ SVG.extend(exSVG.Node, {
 		, pins
 		, type
 		, out
+		
+		filters = filters || {};
 		
 		if(filters.input){
 			pins = me.select('.exPin.input');

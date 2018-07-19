@@ -40,7 +40,7 @@
 	
 	var draw;
 	exLIB.init(function(){
-		draw = SVG('drawing').worksheet(function(){		
+		draw = SVG('drawing').worksheet(function(){
 			var me = this, inp, outp, n1, n2, seq, makearr, forloop;
 			
 			n1 = me.import(exLIB.getNode2('core.entrypoint').attr('pos', '100,100'));
@@ -79,6 +79,8 @@
 			
 			
 			me.import(exLIB.getNode2('special.reroutenode').attr('pos','850,300'));
+
+			me.import(exLIB.getNode2('special.rampnode').attr('pos','650,700')).width(800);
 			
 			return;
 

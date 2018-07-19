@@ -1,96 +1,101 @@
 ;(function() {
 "use strict";
 
-var clipboardData = document.querySelector('#exClipboardData')
-, mousePosEvent;
- 
-if(!clipboardData){
-	clipboardData = document.createElement('textarea');
-	clipboardData.setAttribute('id', 'exClipboardData');
-}
-document.body.appendChild(clipboardData);
+var mousePosEvent;
 
 exSVG.plugin(exSVG.Worksheet, {
 	
 	init: function(){
 		var me = this;
-		me.initClipboardEventHandlers();
-		return me;
-	},
-	
-	initClipboardEventHandlers: function(){
-		var me = this;
-		
-		me.doc().on('node-add.clipboard', function(e){
-			var node = e.detail.node;
-			
-			node.on('before-menu.clipboard', function(e){
-				var menu = e.detail.menu
-				, copy
-				, cut
-				,paste
-				
-				
-				menu.sep();
-				cut = menu.addItem('Cut', 'cut', function(){
-					me.cut(this);
-				});
-				
-				copy = menu.addItem('Copy', 'copy', function(){
-					me.copy(this);
-				});
 
-			});
-		});
-		
-		me.doc().on('mousemove.clipboard', function(e){
+		me.on('mousemove.clipboard', function(e){
 			mousePosEvent = e;
 		});
 		
-		me.doc().on('keyup.clipboard', function(e){
-			if(e.keyCode == 86 && e.ctrlKey){ //Ctrl+V
-				me.paste(mousePosEvent);
-			}
-		});
-	},
-
-	cut: function(data){
-		var me = this
-		, expt = new exGRAPH.Graph();
+		SVG.on(window, 'paste', me.paste, me);
+		SVG.on(window, 'copy', me.copy, me);
+		SVG.on(window, 'cut', me.copy, me);
 		
-		console.assert(data instanceof SVG.Set)
+		return me;
+	},
+	
+	cut: function(data){
+		//console.log('Clipboard.cut()', data);
+		var me = this
+		, expt = new exGRAPH.Graph()
+		, clipboardData;
+		
+
+		if(data instanceof ClipboardEvent){
+			if(!me.hasFocus() || !me.getSelection)
+				return me;
+			data.stopPropagation();
+			data.preventDefault();		
+			console.log('data cutted to clipboard');
+			return me.cut(me.getSelection());
+		}
+		
+		console.assert(data instanceof SVG.Set);
 		me.startSequence();
 		data.each(function(){
 			expt.add(this.export());
-			//this.remove();
-		});
-		me.stopSequence();
-		clipboardData.value = expt.node.outerHTML;
-		data.each(function(){
 			this.remove();
 		});
+		me.stopSequence();
+		
+		clipboardData = document.createElement('textarea');
+		document.body.appendChild(clipboardData);
+		clipboardData.value = expt.node.outerHTML;
+		clipboardData.select();
+		document.execCommand('copy');
+		document.body.removeChild(clipboardData);
+		me.focus();
 		return me;
 	},
 	
 	copy: function(data){
+		//console.log('Clipboard.copy()', data);
 		var me = this
-		, expt = new exGRAPH.Graph();
+		, expt = new exGRAPH.Graph()
+		, clipboardData;
 		
-		console.assert(data instanceof SVG.Set)
+		if(data instanceof ClipboardEvent){
+			if(!me.hasFocus() || !me.getSelection)
+				return me;
+			data.stopPropagation();
+			data.preventDefault();		
+			console.log('data copied to clipboard');
+			return me.copy(me.getSelection());
+		}
+		
+		console.assert(data instanceof SVG.Set);
 		data.each(function(){
 			expt.add(this.export());
 		});
+		
+		clipboardData = document.createElement('textarea');
+		document.body.appendChild(clipboardData);
 		clipboardData.value = expt.node.outerHTML;
-		return me;		
+		clipboardData.select();
+		document.execCommand('copy');
+		document.body.removeChild(clipboardData);
+		me.focus();
+		return me;
 	},
 	
-	paste: function(e){
-		console.log('Clipboard.paste()', e);
-		var me = this
-		, data = clipboardData.value;
-		
-		if(!data || data == '')
-			return;
+	paste: function(data){
+		//console.log('Clipboard.paste()', data);
+		var me = this;
+
+		if(data instanceof ClipboardEvent){
+			if(!me.hasFocus())
+				return me;
+			data.stopPropagation();
+			data.preventDefault();		
+			var clipboardData = data.clipboardData || window.clipboardData;
+			console.log('data pasted from clipboard');
+			return me.paste(clipboardData.getData('Text'));
+		}
 		
 		var graph = new exGRAPH.Graph();
 		graph.node.innerHTML = data;
@@ -102,8 +107,30 @@ exSVG.plugin(exSVG.Worksheet, {
 		me.stopSequence();
 		return me;
 	}
-})
+});
 
-//exSVG.Worksheet.prototype.plugins.clipboard = {name: 'Clipboard', initor: 'initClipboard'};
 
+
+exSVG.plugin(exSVG.Node, {
+	
+	init: function(){
+		var me = this
+		, worksheet = me.parent(exSVG.Worksheet);
+		
+		me.on('before-menu.clipboard', function(e){
+			var menu = e.detail.menu;
+			
+			menu.sep();
+			menu.addItem('Cut', 'cut', function(){
+				me.cut(this);
+			});
+			
+			menu.addItem('Copy', 'copy', function(){
+				me.copy(this);
+			});
+
+		});				
+	}
+});
+	
 }());

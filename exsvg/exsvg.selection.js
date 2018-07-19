@@ -42,7 +42,7 @@ exSVG.Selection = SVG.invent({
 		selectNode: function(el){
 			var me = this;
 			if(!el){
-				me.select('.exNode').each(function(){
+				me.mWorksheet.select('.exNode').each(function(){
 					me.selectNode(this);
 				});
 				return;
@@ -64,6 +64,7 @@ exSVG.Selection = SVG.invent({
 		},
 	
 		unselectNode: function(el){
+			//console.log(el);
 			var me = this;
 			if(!el){
 				var sel = me.nodes();
@@ -94,7 +95,7 @@ exSVG.Selection = SVG.invent({
 			else
 				toParent(el, me);
 		},
-	
+		
 		isSelectedNode: function(node){
 			return node.parent() == this;
 		},
@@ -307,9 +308,6 @@ exSVG.Selection = SVG.invent({
 				//console.log('selection:nodeadd');
 				var node = e.detail.node;
 				
-				//me.unselectNode();
-				//me.selectNode(node);
-				
 				// here we are transforming the node context menu to adapt some action on all selected nodes
 				// instead of one node
 				node.on('menu.selection', function(e){
@@ -375,8 +373,8 @@ exSVG.Selection = SVG.invent({
 				});
 
 				
-				// To be able to drag a unselectd node, we need to put it in mSelection Group before
-				// so, the only place to do this is when the user press down the mouse button on the node
+				// To be able to drag a unselected node, we need to put it in mSelection before.
+				// So, the only place to do this is when the user press down the mouse button on the node
 				node.on('mousedown.selection', function(e){
 					var selected;
 					
@@ -421,7 +419,9 @@ exSVG.Selection = SVG.invent({
 				
 			});
 
-			me.doc().on('before-paste.selection', me.unselectNode, me);
+			me.doc().on('before-paste.selection', function(){
+				me.unselectNode();
+			});
 
 			me.doc().on('paste.selection', function(e){
 				console.log(e.detail);
@@ -440,24 +440,20 @@ exSVG.Selection = SVG.invent({
 
 			
 			// Handle some keyboard shortcut
-			me.doc().on('keyup.selection', function(e){
+			SVG.on(window, 'keydown.selection', function(e){
 				//console.log('selection.keyup', e);
+				if(!me.mWorksheet.hasFocus())
+					return;
+				
 				if(e.keyCode == 46){ //delete
 					me.deleteSelection();
 				}
 				else if(e.keyCode == 65 && e.ctrlKey){ //Ctrl+A
+					console.log('ctrl+A');
 					me.selectNode();
 					e.preventDefault();
 					e.stopPropagation();
 					e.stopImmediatePropagation();
-				}
-				else if(e.keyCode == 67 && e.ctrlKey){ //Ctrl+C
-					me.mWorksheet.copy(me.nodes());
-				}
-				else if(e.keyCode == 88 && e.ctrlKey){ //Ctrl+X
-					var sel = me.nodes();
-					me.unselectNode();
-					me.cut(sel);
 				}
 			});
 		}
@@ -499,7 +495,7 @@ exSVG.plugin(exSVG.Worksheet, {
 	},
 	
 	getSelection: function(){
-		return this.mSelection.getSelection().nodes();
+		return this.mSelection.nodes();
 	},
 	
 	deleteSelection: function(){

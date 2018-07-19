@@ -36,7 +36,6 @@ exSVG.plugin(exSVG.Pin, {
 		me.paint();
 		return me;
 	},
-	
 		
 	setColor: function(color){
 		//console.log('Pin.setColor()', color);

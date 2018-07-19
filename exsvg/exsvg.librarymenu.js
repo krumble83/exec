@@ -257,14 +257,16 @@ exSVG.plugin(exSVG.Worksheet, {
 		}
 
 		function fill(parent, nodes, expended, highlight){
-			var reg = (highlight) ? new RegExp('(' + highlight + ')', 'gi') : null
+			var reg = (highlight) ? new RegExp('(' + highlight + ')', 'gi') : null;
+			
+			// clear old menu if anyone
 			while (parent.firstChild) {
 				parent.removeChild(parent.firstChild);
 			}
 
 			nodes.each(function(){
 				var node = this
-				, cats = node.select('category')
+				, cats = node.select('category');
 				
 				if(!cats.first())
 					return;
@@ -351,8 +353,6 @@ exSVG.plugin(exSVG.Worksheet, {
 			me.hideMenu();
 		});
 		
-		//tinysort('.sortable>li');
-		
 		if(!ev || !ev.clientX)
 			return;
 
@@ -369,7 +369,6 @@ exSVG.plugin(exSVG.Worksheet, {
 		div.style.display = 'block';
 		input.focus();
 		return div;
-		//me.fire('show' + menu.name, {menu: div});		
 	},
 
 	hideMenu: function(menu){
@@ -382,11 +381,8 @@ exSVG.plugin(exSVG.Worksheet, {
 		, inp = link.getInputPin().getNode().select('.exPin.exPinExec.input[data-id="entry"]')
 		, out = link.getOutputPin().getNode().select('.exPin.exPinExec.output[data-id="exit"]');
 
-		if(inp.length() == 1 && out.length() == 1){
-			var l1 = me.createLink(inp.first());
-			inp.first().startLink(l1);
-			out.first().endLink(l1);
-			
+		if(inp.length() == 1 && out.length() == 1 && out.first().getLinks().length() == 0){
+			var l1 = me.createLink(inp.first(), out.first());
 		}
 	}
 });

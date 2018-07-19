@@ -7,6 +7,7 @@ var gfxDraw = exSVG.Pin.prototype.paint.clone();
 exSVG.plugin(exSVG.Pin, {
 	
 	init: function(){
+		//console.warn('Pin.init()[plugin]');
 		var me = this;
 		me.addClass('linkable');
 			
@@ -26,16 +27,16 @@ exSVG.plugin(exSVG.Pin, {
 					return;
 				me.startLink(e);
 			}
-
 		});
 		
+		/*
 		me.on('paint', function(){
 			if(me.getLinks().length() > 0)
 				me.addClass('linked')
 			else
 				me.removeClass('linked')			
 		});
-		
+		*/
 		me.on('mousemove.link-handler', function(e){
 			//console.log('pinbase.onMouseMove()', e.buttons);
 			if(e.buttons != 1)
@@ -55,12 +56,8 @@ exSVG.plugin(exSVG.Pin, {
 			// check if the start pin dataType is compatible with this pin
 			if(!me.hasClass('linkable'))
 				return;
-			if(me.acceptLink(links.last().getStartPin()) > 0){
-				console.log('Pin Datatype is not compatible', me.acceptLink(links.last().getStartPin()));
-				me.parent(exSVG.Worksheet).showTooltip(e, '<div><img src = "exsvg/img/none.png"> DataType is not compatible</div>', 1);
-			}
-			else
-				me.parent(exSVG.Worksheet).showTooltip(e, '<img src = "exsvg/img/linkok.png"> Pins are compatibles', 10);					
+
+			me.parent(exSVG.Worksheet).showTooltip(e, me.acceptLink(links.last().getStartPin()).label, 10);					
 			//console.log(links);			
 		});
 		
@@ -77,7 +74,7 @@ exSVG.plugin(exSVG.Pin, {
 			e.stopImmediatePropagation();
 			console.assert(link.length() == 1);
 			
-			if(!me.hasClass('linkable') || me.acceptLink(link.last().getStartPin()) != 0){
+			if(!me.hasClass('linkable') || me.acceptLink(link.last().getStartPin()).code != 0){
 				console.log('Pin \'' + me.getId() + '\' dont accept link');
 				link.last().remove();
 				return;
@@ -99,17 +96,16 @@ exSVG.plugin(exSVG.Pin, {
 	/* called from init in mousedown.pin event on pin
 	*/
 	startLink: function(target, className){
-		//console.group('Pin.startLink()');
+		//console.warn('Pin.startLink()');
 		var me = this
 		, link;
 		
-		if(target instanceof MouseEvent){
+		if(target instanceof MouseEvent)
 			link = me.parent(exSVG.Worksheet).createLink(me, target, className);
-			if(!link instanceof exSVG.Link)
-				return link;
-		}
 		else
 			link = target;
+		
+		console.assert(link instanceof exSVG.Link, 'link should be "exSVG.Link" instance');
 		
 		link.on('cancel.pinlink' + me.id(), function(){
 			this.off('.pinlink' + me.id());
@@ -117,16 +113,18 @@ exSVG.plugin(exSVG.Pin, {
 		});
 		
 		link.on('add.pinlinkadd' + me.id(), function(){
+			//console.warn('startLink', this.node);
 			me.addLink(this);
+			link.off('cancel.pinlink' + me.id());
 		});
-		//me.initLinkEvents(link);
+		
 		//console.groupEnd();
 		return me;
 	},
 	
 	endLink: function(link, e){
-		//console.group('Pin.endLink()');
-		console.assert(link instanceof exSVG.Link, 'link should be "exSVG.Link" instance, but "' + link.constructor.name + '" found');
+		//console.group('exSVG.Pin.endLink()');
+		console.assert(link instanceof exSVG.Link, 'link should be "exSVG.Link" instance');
 		var me = this;
 		
 		link.on('cancel.pinlink' + me.id(), function(){
@@ -135,6 +133,7 @@ exSVG.plugin(exSVG.Pin, {
 		});
 		
 		link.on('add.pinlinkadd' + me.id(), function(){
+			//console.log('endLink', this.node);
 			me.addLink(this);
 			link.off('cancel.pinlink' + me.id());
 		});
@@ -150,37 +149,38 @@ exSVG.plugin(exSVG.Pin, {
 		var me = this
 		, ret = 0;
 					
-		if(otherPin.getType() == me.getType())
-			ret += exSVG.Pin.PIN_LINK_ACCEPT_SAME_DIRECTION;
-
 		if(otherPin.getNode() == me.getNode())
-			ret += exSVG.Pin.PIN_LINK_ACCEPT_SAME_NODE;
+			return {code: exSVG.Pin.PIN_LINK_ACCEPT_SAME_NODE, label: '<div><img src="exsvg/img/none.png"> Both Pin are on same Node'};
+
+		if(otherPin.getType() == me.getType())
+			return {code: exSVG.Pin.PIN_LINK_ACCEPT_SAME_DIRECTION, label: '<div><img src="exsvg/img/none.png"> Both Pin are same Type (input/output)'};
 		
 		if(otherPin.isArrayDataType() != me.isArrayDataType())
-			ret += exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE_ARRAY;
+			return {code: exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE_ARRAY, label: '<div><img src="exsvg/img/none.png"> Datatype is not compatible (Array with no Array Type)'};
 
 		if(me.getType() == exSVG.Pin.PIN_OUT && !exLIB.isDataTypeCompatible(otherPin.getDataType(), me.getDataType()))
-			ret += exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE;
+			return {code: exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE, label: '<div><img src="exsvg/img/none.png"> Datatype is not compatible'};
 		
 		else if(me.getType() == exSVG.Pin.PIN_IN && !exLIB.isDataTypeCompatible(me.getDataType(), otherPin.getDataType()))
-			ret += exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE;
+			return {code: exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE, label: '<div><img src="exsvg/img/none.png"> Datatype is not compatible'};
 		
 		else if(me.getType() == exSVG.Pin.PIN_INOUT && otherPin.getType() == exSVG.Pin.PIN_IN
 			&& !exLIB.isDataTypeCompatible(otherPin.getDataType(), me.getDataType()))
-				ret += exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE;
+				return {code: exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE, label: '<div><img src="exsvg/img/none.png"> Datatype is not compatible'};
 
 		else if(me.getType() == exSVG.Pin.PIN_INOUT && otherPin.getType() == exSVG.Pin.PIN_OUT
 			&& !exLIB.isDataTypeCompatible(me.getDataType(), otherPin.getDataType()))
-				ret += exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE;
+				return {code: exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE, label: '<div><img src="exsvg/img/none.png"> Datatype is not compatible'};
 		
-		return ret;
+		return {code: 0, label: '<img src="exsvg/img/linkok.png"> Place a new Link'};
 	},
 	
 	addLink: function(link){
-		//console.group('Pin.addLink()');
-		console.assert(link instanceof exSVG.Link, 'link should be instance of exSVGLink');
+		//console.warn('exSVG.Pin.addLink()', link);
 		var me = this
 		, links = me.getLinks();
+
+		console.assert(link instanceof exSVG.Link, 'link should be instance of exSVG.Link');
 
 		me.addClass('linked');
 		
@@ -206,7 +206,7 @@ exSVG.plugin(exSVG.Pin, {
 		var me = this
 		, group
 
-		console.assert(link instanceof exSVG.Link, 'link should be instance of exSVGLink, but "' + link.constructor.name + '" found');
+		console.assert(link instanceof exSVG.Link, 'link should be instance of exSVG.Link');
 		
 		//check if we have remaining links on this pin
 		var links = me.getLinks();

@@ -1,16 +1,16 @@
 ;(function() {
 "use strict";
 
-var DRAGSMALL;
+var DRAGSMALL
+, panStart = {x:null, y:null, pan:false};
 
 exSVG.plugin(exSVG.Worksheet, {
 
 	init: function() {
+		//console.log('exSVG.Worksheet.initWorkspace()');
 		var me = this
-		, panStart = {x:null, y:null, pan:false}
 		, panEl
 		, panElCursor;	
-		//console.log('exSVG.Worksheet.initWorkspace()');
 		
 		me.mWorkspace = me.rect(100000,100000)
 			.x(-50000)
@@ -19,22 +19,10 @@ exSVG.plugin(exSVG.Worksheet, {
 			.addClass('workspace')
 		me.line(0, -50000, 0, 50000).stroke({width: 1, color: '#000'}).back();
 		me.line(-50000, 0, 50000, 0).stroke({width: 1, color: '#000'}).back();
-		//me.mWorkspace.back();
 		
 		me.size('100%', '100%')
 			.panZoom({zoomMin: 0.05, zoomMax: 1, zoomFactor: 0.08});
 
-		me.doc().on('node-add.worksheet', function(e){
-			var node = e.detail.node;
-			node.on('contextmenu.worksheet', function(e){
-				if(panStart.pan){
-					e.preventDefault();
-					e.stopImmediatePropagation();
-					e.stopPropagation();
-				}
-			});
-		});
-		
 		me.on('panStart.workspace', function(e){
 			panStart.x = e.detail.event.clientX;
 			panStart.y = e.detail.event.clientY;
@@ -92,6 +80,21 @@ exSVG.plugin(exSVG.Worksheet, {
 	}
 });
 
-//exSVG.Worksheet.prototype.plugins.workspace = {name: 'Panzoom', initor: 'initWorkspace'};
+
+exSVG.plugin(exSVG.Node, {
+	
+	init: function(){
+		var me = this
+		, worksheet = me.parent(exSVG.Worksheet);
+		
+		me.on('contextmenu.workspace', function(e){
+			if(panStart.pan){
+				e.preventDefault();
+				e.stopImmediatePropagation();
+				e.stopPropagation();
+			}
+		});
+	}
+});
 
 }(this));
