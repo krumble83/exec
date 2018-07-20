@@ -12,6 +12,7 @@ function def(obj, name, value){
 	});
 }
 
+/*
 function clone(obj) {
 	if (obj === null || typeof(obj) !== 'object' || 'isActiveClone' in obj)
 		return obj;
@@ -80,7 +81,7 @@ function clone2(obj) {
 	}
 	return temp;
 }
-
+*/
 
 function loadScript(){
 	var args = Array.prototype.slice.call(arguments);
@@ -124,6 +125,7 @@ function loadScript(){
 		loadScript.apply(this, args);
 	}
 }
+
 function loadCss(){
 	var args = Array.prototype.slice.call(arguments);
 
@@ -165,16 +167,94 @@ function loadCss(){
 	}
 }
 
+function nl2br (str, is_xhtml) {
+    if (typeof str === 'undefined' || str === null) {
+        return '';
+    }
+    var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>';
+    return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1' + breakTag + '$2');
+}
+
+
+
+/*
+Object.defineProperty(ctx, '__stack', {
+get: function() {
+        var orig = Error.prepareStackTrace;
+        Error.prepareStackTrace = function(_, stack) {
+            return stack;
+        };
+        var err = new Error;
+        Error.captureStackTrace(err, arguments.callee);
+        var stack = err.stack;
+        Error.prepareStackTrace = orig;
+		console.dir(stack);
+        return stack;
+    }
+});
+
+Object.defineProperty(ctx, '__line', {
+get: function() {
+        return __stack[2].getLineNumber();
+    }
+});
+
+Object.defineProperty(ctx, '__function', {
+get: function() {
+        return __stack[2].getFunctionName();
+    }
+});
+
+Object.defineProperty(ctx, '__file', {
+get: function() {
+        return __stack[2].getFileName();
+    }
+});
+*/
+
+
+
+function download(filename, text) {
+    var pom = document.createElement('a');
+    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    pom.setAttribute('download', filename);
+
+    if (document.createEvent) {
+        var event = document.createEvent('MouseEvents');
+        event.initEvent('click', true, true);
+        pom.dispatchEvent(event);
+    }
+    else {
+        pom.click();
+    }
+}
+
+
+
+function assert(ass, callback){
+	if(!ass){
+		if(typeof callback === 'function')
+			callback();
+		throw new Error('Assertion Error');
+	}
+};
 
 def(ctx, 'define', def);
-def(ctx, 'clone', clone);
-def(ctx, 'merge', merge);
+def(ctx, 'download', download);
+def(ctx, 'assert', assert);
 def(ctx, 'loadScript', loadScript);
 def(ctx, 'loadCss', loadCss);
+def(ctx, 'nl2br', nl2br);
+
+
+def(ctx, 'F_UNIQUE', 1);
+def(ctx, 'F_NODELETE', 2);
+def(ctx, 'F_NOCOPY', 4);
+def(ctx, 'F_NOCUT', 8);
+def(ctx, 'F_REQUIRED', 16);
+
 
 def(ctx, 'exSVG', {
-	//__plugins : [],
-	
 	plugin: function(){
 		var modules, methods, key, i;
 
@@ -219,7 +299,7 @@ String.prototype.capitalize = function(firstOnly) {
     return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase();
 }
 
-
+/*
 Function.prototype.clone = function() {
     var that = this;
     var temp = function temporary() { return that.apply(this, arguments); };
@@ -230,7 +310,7 @@ Function.prototype.clone = function() {
     }
     return temp;
 };
-
+*/
 
 
 if (!Array.prototype.forEach) {

@@ -34,7 +34,8 @@ exSVG.plugin(exSVG.Link, {
 	
 	showLinkContextMenu: function(link, e){
 		var me = this
-		, worksheet = me.parent(exSVG.Worksheet);
+		, worksheet = me.parent(exSVG.Worksheet)
+		, el
 
 		e.preventDefault();
 		e.stopPropagation();
@@ -47,9 +48,11 @@ exSVG.plugin(exSVG.Link, {
 			me.addRerouteNode.call(me, e);
 		});
 			
-		menuRoot.addItem('Delete Link', 'delete', function(){
+		el = menuRoot.addItem('Delete Link', 'delete', function(){
 			this.remove();
 		});
+		if(me.hasFlag(F_NODELETE))
+			el.enabled(false);
 
 		link.fire('before-menu', {menu: menuRoot});
 		if(me.doc().event().isPrevented)
@@ -96,7 +99,7 @@ exSVG.plugin(exSVG.Pin, {
 		}
 		else if(links.length() == 1){
 			var p = links.last().getOtherPin(pin);
-			console.assert(p instanceof exSVG.Pin, 'instanceof "exSVG.Pin expected" but "' + p.constructor.name + '" found');
+			assert(p instanceof exSVG.Pin, 'instanceof "exSVG.Pin expected" but "' + p.constructor.name + '" found');
 			menuRoot.addItem('Break Link to `' + p.getNode().getData('title') + '`', 'breaklink', function(){
 					links.last().remove();
 				})
@@ -117,7 +120,7 @@ exSVG.plugin(exSVG.Pin, {
 				var link = this
 				, p = link.getOtherPin(pin);
 				
-				console.assert(p instanceof exSVG.Pin, 'instanceof "exSVG.Pin expected" but "' + p.constructor.name + '" found');
+				assert(p instanceof exSVG.Pin, 'instanceof "exSVG.Pin expected" but "' + p.constructor.name + '" found');
 				breaks.addItem('Break Link to `' + p.getNode().getData('title') + '`', 'breaklinks', function(){
 						link.remove();
 					})
@@ -154,26 +157,29 @@ exSVG.plugin(exSVG.Node, {
 
 	showNodeContextMenu: function(node, e){
 		var me = this
-		, worksheet = me.parent(exSVG.Worksheet);
+		, worksheet = me.parent(exSVG.Worksheet)
+		, el
+		, point = {x: e.pageX || 0, y: e.pageY || 0};
 
 		e.preventDefault();
 		e.stopPropagation();
-		//ev.stopImmediatePropagation();
 
 		menuRoot.clear()
 		.addTitleItem('Node Actions');
 		
-		var del = menuRoot.addItem('Delete', 'delete', function(){
+		el = menuRoot.addItem('Delete', 'delete', function(){
 				this.remove();
 			})
-			.setMeta('Delete selected node', 'Delete');
-		if(node.hasFlag(READ_ONLY))
-			del.enabled(false);
+			.setMeta('Delete selected node', 'del');
+		if(node.hasFlag(F_NODELETE))
+			el.enabled(false);
 		
-		menuRoot.addItem('Duplicate', 'duplicate', function(){
+		el = menuRoot.addItem('Duplicate', 'duplicate', function(){
 				console.warn('TODO : Duplicate node');
 			})
 			.setMeta('Duplicate selected node', 'Ctrl+W');
+		if(node.hasFlag(F_UNIQUE))
+			el.enabled(false);
 		
 		menuRoot.sep();
 		
@@ -201,8 +207,7 @@ exSVG.plugin(exSVG.Node, {
 			return;
 		
 		menuRoot.node = node;
-		var pt = {x: e.pageX, y: e.pageY};
-		menuRoot.showAt(pt, node);
+		menuRoot.showAt(point, node);
 		node.fire('menu', {menu: menuRoot});
 		
 		return menuRoot;

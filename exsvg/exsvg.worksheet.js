@@ -10,6 +10,7 @@ var pluginsList = [
 	, 'exsvg/exsvg.clipboard.js'
 	, 'exsvg/exsvg.menu.js'
 	, 'exsvg/exsvg.librarymenu.js'
+	, 'exsvg/exsvg.validator.js'
 	];
 
 
@@ -27,7 +28,11 @@ exSVG.Worksheet = SVG.invent({
 			me.createTooltip()
 				.createHeader()
 				.size('100%', '100%');
-	
+
+			me.attr('tabindex', -1);
+			me.focus();
+
+				
 			//PinArray pattern
 			me.pattern(10, 10, function(add) {
 				add.rect(3,3).move(2,2);
@@ -130,7 +135,7 @@ exSVG.Worksheet = SVG.invent({
 					links.each(function(){
 						var link = this;
 						var p = link.getOtherPin(pin);
-						console.assert(p instanceof exSVG.Pin, 'instanceof "exSVG.Pin expected" but "' + p.constructor.name + '" found');
+						assert(p instanceof exSVG.Pin, 'instanceof "exSVG.Pin expected" but "' + p.constructor.name + '" found');
 						jumps.addItem('Jump to `' + p.getNode().getData('title') + '`', 'jumpto', function(){
 							console.warn('TODO : Jump to node');
 							p.getNode().getCenter();
@@ -143,7 +148,7 @@ exSVG.Worksheet = SVG.invent({
 		},
 		
 		createHeader: function(){
-			//console.log('worksheet.createHeader()');
+			//console.log('exSVG.Worksheet.createHeader()');
 			var me = this;
 			me.mTitleGroup = me.doc()
 				.group()
@@ -162,7 +167,7 @@ exSVG.Worksheet = SVG.invent({
 		},
 		
 		createTooltip: function(){
-			//console.log('worksheet.createTooltip()');
+			//console.log('exSVG.Worksheet.createTooltip()');
 			var me = this;
 			me.mToolTip = document.querySelector('#exTooltip');
 			if(!me.mToolTip){
@@ -179,20 +184,18 @@ exSVG.Worksheet = SVG.invent({
 		},
 		
 		setTitle: function(title){
-			//console.log('worksheet.setTitle()');
+			//console.log('exSVG.Worksheet.setTitle()');
 			this.mTitleGroup.select('text').text(title);
 			return this;
 		},
 		
-		import: function(data, parent){
+		import: function(data){
 			//console.log('exSVG.Worksheet.import()', data);
 			var me = this;
 			
-			if(typeof data === 'string')
-				return me.import(exLIB.getNode2(data), parent);
-
 			if(me['import' + data.type.capitalize()])
 				return me['import' + data.type.capitalize()](data, me);
+			return 0;
 		},
 		
 		importGraph: function(data, parent){
@@ -210,15 +213,16 @@ exSVG.Worksheet = SVG.invent({
 		
 		
 		exportGraph: function(graph){	
+			//console.log('exSVG.Worksheet.exportGraph()', data);
 			var me = this;	
 			me.fire('export', {parent: graph});	
 		},
 		
 		showTooltip: function(e, text, timeout){
-			//console.log('worksheet.showTooltip()', text);
+			//console.log('exSVG.Worksheet.showTooltip()', text);
 			var me = this;
 			
-			me.mToolTip.innerHTML = text;
+			me.mToolTip.innerHTML = nl2br(text);
 			me.mToolTip.style.left = e.pageX + 'px';
 			me.mToolTip.style.top = (e.pageY+10) + 'px';
 			//me.mToolTip.setAttribute('class', 'exTooltip visible');
@@ -231,7 +235,7 @@ exSVG.Worksheet = SVG.invent({
 		},
 
 		hideTooltip: function(){
-			//console.log('worksheet.hideTooltip()');
+			//console.log('exSVG.Worksheet.hideTooltip()');
 			var me = this;
 			me.mToolTip.timer = null;
 			me.mToolTip.setAttribute('class', 'exTooltip');
@@ -239,7 +243,7 @@ exSVG.Worksheet = SVG.invent({
 		},
 		
 		getPoint: function(e){
-			//console.log('worksheet.getPoint()');
+			//console.log('exSVG.Worksheet.getPoint()');
 			return this.point(e);
 		},
 		
@@ -253,8 +257,26 @@ exSVG.Worksheet = SVG.invent({
 
 		enableSequence: function(){
 			return this;
-		}
+		},
 		
+		strToGraph: function(str){
+			//console.log('exSVG.Worksheet.getPoint()');
+			var graph = new exGRAPH.Graph()
+			, parser = new DOMParser()
+			, xmlDoc = parser.parseFromString(str, "text/xml");
+			document.getElementById('ttest').value = xmlDoc.innerHTML;
+			
+			if(xmlDoc.querySelector('parsererror')){
+				return console.error('cant paste from clipboard');
+			}
+			
+			graph.node.innerHTML = xmlDoc.firstChild.innerHTML;
+			return graph;
+		},
+
+		graphToStr: function(graph){
+
+		}
 	}, 
 	construct: {
 		worksheet: function(callback, plugins) {
@@ -263,7 +285,6 @@ exSVG.Worksheet = SVG.invent({
 			
 			this.put(ret);
 			loadCss('exsvg/css/css.css');
-			
 			loadScript(
 				'exsvg/exsvg.extend.js', 'svgjs/svg.draggable.js', 'svgjs/svg.panzoom.js', 'svgjs/svg.foreignobject.js', 'svgjs/svg.draw.js', 'svgjs/svg.filter.js'
 				, 'exsvg/exsvg.node.js', 'exsvg/exsvg.node.gfx.js', 'exsvg/exsvg.node.derived.js', 'exsvg/exsvg.node.properties.js'

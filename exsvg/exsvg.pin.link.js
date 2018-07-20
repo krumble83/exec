@@ -1,30 +1,18 @@
 ;(function() {
 "use strict";
 
-
-exSVG.LinkRef = SVG.invent({
-    create: 'foreignObject', 
-    inherit: SVG.ForiegnObject,
-	
-    extend: {
-		
-	}
-});
-
 exSVG.plugin(exSVG.Pin, {
 	
 	init: function(){
-		//console.warn('Pin.init()[plugin]');
+		//console.warn('exSVG.Pin.init()[plugin pinlink]');
 		var me = this;
+		
 		me.addClass('linkable');
 
-		//me.element('linkref');			
-
 		me.on('mousedown.link-handler', function(e){
-			//console.log('pinBase.onMouseDown()', e.buttons);
 			e.stopImmediatePropagation();
 			e.stopPropagation();
-			
+						
 			// If mouse button is pressed over the pin, we starting a new link
 			// because only one link should be drawed at the same time,
 			// before, we kill all other drawing links, in case of a bug.
@@ -45,9 +33,7 @@ exSVG.plugin(exSVG.Pin, {
 			// check if we have a link currently draging/drawing
 			// current dragging/drawing link have '.exLinkStart' class
 			var links = me.parent(exSVG.Worksheet).select('.exLinkStart');
-			if(links.length() == 0)
-				return;
-			if(links.last().getStartPin() == me)
+			if(links.length() == 0 || links.last().getStartPin() == me)
 				return;
 
 			// to prevent drag link drawing not updated when mouse cursor is moving over the pin, because of e.stopPropagation(), 
@@ -58,7 +44,7 @@ exSVG.plugin(exSVG.Pin, {
 			if(!me.hasClass('linkable'))
 				return;
 
-			me.parent(exSVG.Worksheet).showTooltip(e, me.acceptLink(links.last().getStartPin()).label, 10);					
+			me.parent(exSVG.Worksheet).showTooltip(e, me.acceptLink(links.last().getStartPin()).label, 10);
 			//console.log(links);			
 		});
 		
@@ -73,7 +59,7 @@ exSVG.plugin(exSVG.Pin, {
 			if(link.length() == 0)
 				return;
 			e.stopImmediatePropagation();
-			console.assert(link.length() == 1);
+			assert(link.length() == 1);
 			
 			if(!me.hasClass('linkable') || me.acceptLink(link.last().getStartPin()).code != 0){
 				console.log('Pin \'' + me.getId() + '\' dont accept link');
@@ -83,7 +69,8 @@ exSVG.plugin(exSVG.Pin, {
 			me.endLink(link.last(), e);
 		});
 		
-		me.on('export', function(e){
+		me.on('export.pinlink', function(e){
+			//console.log('exSVG.Pin.export()[pinlink plugin]', this.getId());
 			var me = this
 			, pin = e.detail.parent
 			, graph = pin.parent(exGRAPH.Graph)
@@ -93,19 +80,17 @@ exSVG.plugin(exSVG.Pin, {
 			if(!graph || !me.hasClass('linkable'))
 				return;
 			
+			// check if pin have links
 			links = me.getLinks();
 			if(links.length() == 0)
-				return console.log('no link');
+				return;
 			
-			//linkref = new exGRAPH.Linkref;
-			//linkref.init(me.getNode().id(), me.getId());
-			//pin.add(linkref);
-			pin.attr('linkref', me.getNode().id() + '-' + me.getId());
-
+			// if the other pin's node is exported
+			// we can export the link
 			links.each(function(){
 				var oPin = this.getOtherPin(me);
+				assert(oPin instanceof exSVG.Pin);
 				if(graph.GetNode(oPin.getNode().id())){
-					//console.log('yes');
 					this.export(graph);
 				}
 			});
@@ -119,11 +104,11 @@ exSVG.plugin(exSVG.Pin, {
 		me.element('linkref').attr('node', linkref.Node()).attr('pin', linkref.Pin());
 	},
 	
-	getLinks: function(ignore){
-		ignore = (ignore) ? ':not([id="' + ignore.id() + '"])' : '';
-		var me = this;
-		var type = (me.getType() == exSVG.Pin.PIN_IN) ? 'pinIn' : 'pinOut';
-		return me.parent(exSVG.Worksheet).select('.exLink[data-' + type + '="' + me.id() + '"]' + ignore);
+	getLinks: function(){
+		//console.log('exSVG.Pin.getLinks()[pinlink plugin]', this);
+		var me = this
+		, type = (me.getType() == exSVG.Pin.PIN_IN) ? 'pinIn' : 'pinOut';
+		return me.parent(exSVG.Worksheet).select('.exLink[data-' + type + '="' + me.id() + '"]');
 	},
 		
 	/*
@@ -131,7 +116,7 @@ exSVG.plugin(exSVG.Pin, {
 	/* called from init in mousedown.pin event on pin
 	*/
 	startLink: function(target, className){
-		//console.warn('Pin.startLink()');
+		//console.warn('exSVG.Pin.startLink()');
 		var me = this
 		, link;
 		
@@ -140,7 +125,7 @@ exSVG.plugin(exSVG.Pin, {
 		else
 			link = target;
 		
-		console.assert(link instanceof exSVG.Link, 'link should be "exSVG.Link" instance');
+		assert(link instanceof exSVG.Link);
 		
 		link.on('cancel.pinlink' + me.id(), function(){
 			this.off('.pinlink' + me.id());
@@ -148,18 +133,15 @@ exSVG.plugin(exSVG.Pin, {
 		});
 		
 		link.on('add.pinlinkadd' + me.id(), function(){
-			//console.warn('startLink', this.node);
 			me.addLink(this);
 			link.off('cancel.pinlink' + me.id());
 		});
-		
-		//console.groupEnd();
-		return me;
+		return link;
 	},
 	
 	endLink: function(link, e){
 		//console.group('exSVG.Pin.endLink()');
-		console.assert(link instanceof exSVG.Link, 'link should be "exSVG.Link" instance');
+		assert(link instanceof exSVG.Link);
 		var me = this;
 		
 		link.on('cancel.pinlink' + me.id(), function(){
@@ -168,19 +150,17 @@ exSVG.plugin(exSVG.Pin, {
 		});
 		
 		link.on('add.pinlinkadd' + me.id(), function(){
-			//console.log('endLink', this.node);
 			me.addLink(this);
 			link.off('cancel.pinlink' + me.id());
 		});
 		
 		link.finish(me, e);
-		//console.groupEnd();
 		return me;
 	},
 	
 	acceptLink: function(otherPin){
-		//console.log('pinBase.acceptLink()');
-		console.assert(otherPin instanceof exSVG.Pin)
+		//console.log('exSVG.Pin.acceptLink()');
+		assert(otherPin instanceof exSVG.Pin)
 		var me = this
 		, ret = 0;
 					
@@ -215,8 +195,7 @@ exSVG.plugin(exSVG.Pin, {
 		var me = this
 		, links = me.getLinks();
 
-		console.assert(link instanceof exSVG.Link, 'link should be instance of exSVG.Link');
-
+		assert(link instanceof exSVG.Link);
 		me.addClass('linked');
 		
 		//if the pin is optional, maybe she is hidden, so show it
@@ -232,16 +211,14 @@ exSVG.plugin(exSVG.Pin, {
 		}
 		me.paint();
 		me.initLinkEvents(link);
-		//console.groupEnd();
 		return me;
 	},
 	
 	removeLink: function(link){
-		//console.group('Pin.removeLink()');
-		var me = this
-		, group
+		//console.log('exSVG.Pin.removeLink()');
+		var me = this;
 
-		console.assert(link instanceof exSVG.Link, 'link should be instance of exSVG.Link');
+		assert(link instanceof exSVG.Link);
 		
 		//check if we have remaining links on this pin
 		var links = me.getLinks();
@@ -253,15 +230,14 @@ exSVG.plugin(exSVG.Pin, {
 		// from here, no links remaining on this pin
 		me.removeClass('linked');
 		me.paint();
-		//console.groupEnd();
 		return me;
 	},
 
 	initLinkEvents: function(link){
-		//console.warn('Pin.initLinkEvents()');
+		//console.log('exSVG.Pin.initLinkEvents()');
 		var me = this;
 		
-		console.assert(link instanceof exSVG.Link, 'link should be instance of exSVGLink, but "' + link.constructor.name + '" found');
+		assert(link instanceof exSVG.Link);
 		
 		me.getNode().on('move.linknode' + link.id(), link.draw, link);
 		me.getNode().on('resize.linknode' + link.id(), link.draw, link);
@@ -273,6 +249,10 @@ exSVG.plugin(exSVG.Pin, {
 			link.off('.linknode' + me.id());
 		});
 		return me;
+	},
+	
+	destroyPinlink: function(){
+		
 	}
 
 });

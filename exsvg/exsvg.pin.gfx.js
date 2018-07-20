@@ -4,12 +4,10 @@
 exSVG.plugin(exSVG.Pin, {
 	
 	init: function(data){
-		var me = this;
-		
+		var me = this;		
 		me.mGfx = me.mGfx || {};
 		
 		me.on('mousemove.pingfx', function(e){
-			//console.log('pinbase.onMouseMove()', e.target);
 			if(e.buttons == 1)
 				return;
 
@@ -94,8 +92,13 @@ exSVG.plugin(exSVG.Pin, {
 		, dataType = exLIB.getDataType2(me.getDataType())
 		, labelbox = (me.mGfx.label) ? me.mGfx.label.bbox() : {x: 0, y:0};
 		
-		if(me.getType() == exSVG.Pin.PIN_OUT || exLIB.isArrayDataType(me.getDataType()) || !dataType.Editor().Name())
+		if(me.getType() == exSVG.Pin.PIN_OUT || exLIB.isArrayDataType(me.getDataType()) || !dataType.Editor().Name()){
+			if(me.mGfx.editor){
+				me.mGfx.editor.destroy();
+				me.mGfx.editor = null;
+			}
 			return;
+		}
 		
 		if(!me.mGfx.editor){
 			if(exSVG['PinEditor' + dataType.Editor().Name().capitalize()]){

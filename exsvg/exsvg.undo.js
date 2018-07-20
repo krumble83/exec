@@ -147,7 +147,7 @@ exSVG.plugin(exSVG.Worksheet, {
 				
 		if(me.getTitleBar){
 			var bar = me.getTitleBar();
-			console.assert(bar instanceof SVG.G);
+			assert(bar instanceof SVG.G);
 			me.mUndoIcon = bar.image('exsvg/img/undo.png')
 				.move(10,3)
 				.addClass('undoredo undo disabled')

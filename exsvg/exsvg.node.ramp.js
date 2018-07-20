@@ -98,8 +98,8 @@ exSVG.RampNode = SVG.invent({
 		drawLink: function(input, output){
 			var me = this;
 			
-			console.assert(input instanceof exSVG.Pin);
-			console.assert(output instanceof exSVG.Pin);
+			assert(input instanceof exSVG.Pin);
+			assert(output instanceof exSVG.Pin);
 			
 			var link = me.parent(exSVG.Worksheet).createLink(input, output, exSVG.RampLink);
 			return;
@@ -118,13 +118,13 @@ exSVG.RampNode = SVG.invent({
 			, output
 			
 			input = exSVG.Node.prototype.importInput.apply(me, arguments);
-			console.assert(input instanceof exSVG.Pin);
+			assert(input instanceof exSVG.Pin);
 			input.setMaxLink(2);
 
 			var o = new exGRAPH.Output();
 			o.init('o_' + data.Id(), 'core.wildcards', data.Label()).Ctor('RampPin');
 			output = me.importOutput(o);
-			console.assert(output instanceof exSVG.Pin);
+			assert(output instanceof exSVG.Pin);
 			output.setMaxLink(2);
 			me.drawLink(input, output);
 			return input;

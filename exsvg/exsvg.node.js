@@ -9,7 +9,7 @@ exSVG.Node = SVG.invent({
 			//console.group('Node.init()');
 			var me = this;
 			
-			me.parent(exSVG.Worksheet).on('export', function(e){
+			me.parent(exSVG.Worksheet).on('export.node-' + me.id(), function(e){
 				if(!me.parent())
 					return;
 				me.export(e.detail.parent);
@@ -17,7 +17,7 @@ exSVG.Node = SVG.invent({
 
 			me.addClass('exNode');
 			for (var i = 0, atts = data.attr(), n = atts.length; i < n; i++){
-				if(['import', 'keywords', 'svgid'].indexOf(atts[i].nodeName) > -1)
+				if(['import', 'keywords', 'svgid', 'xmlns'].indexOf(atts[i].nodeName) > -1)
 					continue;
 				me.setData(atts[i].nodeName, atts[i].value);
 			}						
@@ -28,17 +28,14 @@ exSVG.Node = SVG.invent({
 			});
 			
 			exSVG.execPlugins(this, arguments, exSVG.Node);
-			
             return me;
         },
 		
 		hasFlag: function(flag){
 			var me = this
-			, flags = me.getData('flags');
+			, flags = parseInt(me.getData('flags') || 0);
 			
-			if(!flags)
-				return false;
-			return flags & flag > 0;
+			return flags & flag == flag;
 		},
 							
 		export: function(graph){
@@ -116,14 +113,14 @@ exSVG.Node = SVG.invent({
 			return ret;
 		},
 
-		remove: function(throwEvents){
-			//console.group('Node.remove()');
+		remove: function(){
+			//console.group('exSVG.Node.remove()');
 			var me = this
 			, parent
 			, ret
 			
-			if(me.hasFlag(READ_ONLY))
-				return false;
+			if(me.hasFlag(F_NODELETE))
+				return me;
 			
 			parent = me.doc();
 			me.fire('before-remove');
@@ -134,8 +131,8 @@ exSVG.Node = SVG.invent({
 			return ret;
 		},
 		
-		addTo: function(parent, throwEvents){
-			//console.group('Node.addTo()');
+		addTo: function(parent){
+			//console.group('exSVG.Node.addTo()');
 			var me = this
 			, ret = SVG.G.prototype.addTo.call(me, parent);
 			
@@ -152,7 +149,6 @@ exSVG.Node = SVG.invent({
 			
 			if(data && data != value || data == undefined){
 				me.data(name, value);
-				//me.mData[name] = value;
 				me.fire('data-change', {name: name, value: value});
 			}
 			return me;
@@ -169,10 +165,6 @@ exSVG.Node = SVG.invent({
 		}
     }
 });
-
-//define(exSVG.Node, 'NOT_DELETABLE', 1);
-
-define(window, 'READ_ONLY', 1);
 
 
 SVG.extend(exSVG.Worksheet, {
@@ -192,19 +184,16 @@ SVG.extend(exSVG.Worksheet, {
 		node.addTo(parent);
 		if(pos){
 			pos = {x: Number.parseInt(pos[0]), y: Number.parseInt(pos[1])};
-			if(parent.snapToGrid && parent.getGrid)
+			if(typeof parent.snapToGrid === 'function')
 				pos = parent.snapToGrid(pos);
 			node.x(pos.x);
 			node.y(pos.y);
 		}
-		//if(data.attr('svgid'))
-		//	data.attr('svgid', node.id());
-		//data.svg = node;
 		return node;
 	},
 	
 	importMacro: function(){
-		return exSVG.Worksheet.prototype.importNode.apply(this, arguments);
+		return this.importNode.apply(this, arguments);
 	}
 });
 

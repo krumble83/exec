@@ -17,13 +17,13 @@ exSVG.Link = SVG.invent({
 		init: function(startPin, out){
 			var me = this;
 			
-			console.assert(startPin instanceof exSVG.Pin);
+			assert(startPin instanceof exSVG.Pin);
 			
 			me.setDataType(startPin.getDataType());
 			me.stroke({color: startPin.getColor(), width: 2});
 			me.mColor = startPin.getColor();
 			me.addClass('exLink');
-			me.data('startPin', startPin.id());
+			me.setStartPin(startPin);
 			
 			if(out instanceof MouseEvent){
 				// If the second argument of the function call is a mouse event
@@ -36,6 +36,17 @@ exSVG.Link = SVG.invent({
 			exSVG.execPlugins(this, arguments, exSVG.Link);
 			return me;
         },
+		
+		hasFlag: function(flag){
+			var flags = parseInt(this.data('flags') || 0);
+			
+			return flags & flag == flag;
+		},
+
+		setStartPin: function(pin){
+			assert(pin instanceof exSVG.Pin);
+			this.data('startPin', pin.id());
+		},
 		
 		getStartPin: function(){
 			if(!this.data('startPin'))
@@ -88,9 +99,8 @@ exSVG.Link = SVG.invent({
 			me.setColor(exLIB.getDataType2(datatype).Color());
 			if(pinIn){
 				me.stroke({color: me.getColor(), width: 3});
-				//me.draw();
 			}
-		
+			return me;
 		},
 		
 		
@@ -98,19 +108,18 @@ exSVG.Link = SVG.invent({
 		/* override the default svg.js method
 		/* when a link is delete from the document
 		/* we must tell at each pin that the link was deleted to her to update their datatype/color if needed
-		*/
-		
+		*/	
 		remove: function(){
-			//console.group('Link.remove()');
+			//console.log('exSVG.Link.remove()');
 			var me = this
 			, doc = me.doc()
 			, ret
 			
-			console.assert(doc);
+			assert(doc);
 			me.parent(exSVG.Worksheet).off('export.link' + me.id());
 			
 			if(me.hasClass('exLinkStart')){
-				console.log('link-cancel')
+				//console.log('link-cancel')
 				me.parent(exSVG.Worksheet).select('.exLink, .exPin').animate(50).opacity(1);
 				ret = SVG.Path.prototype.remove.apply(me, arguments);
 				me.fire('cancel');
@@ -125,7 +134,6 @@ exSVG.Link = SVG.invent({
 
 			// send an event to the main SVG // this event is used by undo/redo
 			doc.fire('link-remove', {link: me});
-			//console.groupEnd();
 			return ret;
 		},
 		
@@ -140,17 +148,12 @@ exSVG.Link = SVG.invent({
 			var me = this
 			, ret = SVG.Path.prototype.addTo.apply(me, arguments);
 			
-			me.parent(exSVG.Worksheet).on('export.link' + me.id(), function(e){
-				me.export(e.detail.parent);
-			});			
-
 			me.fire('add');
 			SVG.off(document, '.linkStart-link' + me.id());
 			me.off('cancel');
 			
 			// send an event to the main SVG // this event is used by undo/redo
 			me.doc().fire('link-add', {link: me});
-			//console.groupEnd();
 			return ret;
 		},
 
@@ -161,16 +164,15 @@ exSVG.Link = SVG.invent({
 		/* otherwise, the link is created programmaticaly.
 		*/
 		finish: function(endPin, e){
-			//console.group('Link.finish()');
-			//console.log('link.finish', endPin);
+			//console.log('exSVG.Link.finish()');
 			var me = this
 			, startPin = me.getStartPin()
 			, worksheet = me.parent(exSVG.Worksheet);
 			
-			console.assert(worksheet);
-			console.assert(startPin instanceof exSVG.Pin);
-			console.assert(endPin instanceof exSVG.Pin);
-			console.assert(startPin.getType() != endPin.getType());
+			assert(worksheet);
+			assert(startPin instanceof exSVG.Pin);
+			assert(endPin instanceof exSVG.Pin);
+			assert(startPin.getType() != endPin.getType());
 			
 			// register start pin / end pin ids directly in the link node
 			if(endPin.getType() == exSVG.Pin.PIN_IN || startPin.getType() == exSVG.Pin.PIN_OUT){
@@ -200,7 +202,6 @@ exSVG.Link = SVG.invent({
 				me.off('finish');
 				worksheet.select('.exLink, .exPin').animate(50).opacity(1);
 			}
-			//console.groupEnd();
 			return me;
 		},
 		
@@ -249,12 +250,23 @@ exSVG.Link = SVG.invent({
 		*/
 		export: function(graph){
 			var me = this
+			, pinIn = me.getInputPin()
+			, pinOut = me.getOutputPin()
 			, link = graph.Link();
-						
-			link.Input(me.getInputPin().getNode().id(), me.getInputPin().getId()).attr('linkref', me.getInputPin().getNode().id() + '-' + me.getInputPin().getId());
-			link.Output(me.getOutputPin().getNode().id(), me.getOutputPin().getId()).attr('linkref', me.getOutputPin().getNode().id() + '-' + me.getOutputPin().getId());
+			
+			assert(pinIn instanceof exSVG.Pin);
+			assert(pinOut instanceof exSVG.Pin);
+			
+			link.Input(pinIn.getNode().id(), pinIn.getId()).attr('linkref', pinIn.getNode().id() + '-' + pinIn.getId());
+			link.Output(pinOut.getNode().id(), pinOut.getId()).attr('linkref', pinOut.getNode().id() + '-' + pinOut.getId());
 			link.attr('datatype', me.getDataType());
 			link.attr('color', me.getColor());
+			
+
+			graph.GetNode(pinIn.getNode().id()).Input(pinIn.getId()).add(new exGRAPH.Linkref().init(pinIn.getNode().id(), pinIn.getId()));
+			graph.GetNode(pinOut.getNode().id()).Output(pinOut.getId()).add(new exGRAPH.Linkref().init(pinOut.getNode().id(), pinOut.getId()));
+
+			return link;
 		},
 
 		import: function(graph){
@@ -311,52 +323,6 @@ exSVG.Link = SVG.invent({
 				return;
 			}
 			
-			//me.parent(exSVG.Worksheet).line(startpos.x, startpos.y, cp1.x, cp1.y).stroke({width:1});
-			//me.parent(exSVG.Worksheet).line(stoppos.x, stoppos.y, cp2.x, cp2.y).stroke({width:1});
-			
-			// drawing the path
-			me.plot('M' + startpos.x + ',' + startpos.y + ' C' + (cp1.x) + ',' + cp1.y + ' ' + (cp2.x) + ',' + cp2.y + ' ' + stoppos.x + ',' + stoppos.y);
-
-			return me;
-		},
-		
-		draw2: function(e){
-			//console.log('exlink.draw', e);
-			var me = this
-			, startpos
-			, stoppos
-			, cp1
-			, cp2
-			, startPin
-			, smooth = 60;
-			
-			// if a mouse event is passed as first argument of the function, the user currently drawing a new link
-			if(e instanceof MouseEvent) {
-				startPin = me.getStartPin();
-				stoppos = me.parent(exSVG.Worksheet).point(e);
-			} else {
-				startPin = me.getInputPin();
-				stoppos = me.getOutputPin().getCenter();
-			}
-			
-			// Calculate the path coordinates
-			startpos = startPin.getCenter();
-			
-			// check the way of drawing (left to right, right to left, top to bottom ...)
-			var w = (startpos.y > stoppos.y) ? (startpos.y - stoppos.y) / 2 : (stoppos.y - startpos.y) / 2;
-			
-			if(startPin.getType() == exSVG.Pin.PIN_IN){
-				cp1 = {x: Math.min(startpos.x - w, startpos.x - smooth), y: startpos.y};
-				cp2 = {x: Math.max(stoppos.x + w, stoppos.x + smooth), y: stoppos.y};
-			}
-			else if(startPin.getType() == exSVG.Pin.PIN_OUT){
-				cp1 = {x: Math.max(startpos.x + w, startpos.x + smooth), y: startpos.y};
-				cp2 = {x: Math.min(stoppos.x - w, stoppos.x - smooth), y: stoppos.y};				
-			}
-			
-			//me.parent(exSVG.Worksheet).line(startpos.x, startpos.y, cp1.x, cp1.y).stroke({width:1});
-			//me.parent(exSVG.Worksheet).line(stoppos.x, stoppos.y, cp2.x, cp2.y).stroke({width:1});
-			
 			// drawing the path
 			me.plot('M' + startpos.x + ',' + startpos.y + ' C' + (cp1.x) + ',' + cp1.y + ' ' + (cp2.x) + ',' + cp2.y + ' ' + stoppos.x + ',' + stoppos.y);
 
@@ -398,18 +364,20 @@ exSVG.plugin(exSVG.Worksheet, {
 		return link;
 	},
 	
-	importLink0: function(link){
-		console.log(link);
+	importLink: function(linkGraph){
+		//console.log(link);
 		var me = this
 		, worksheet = me
 		, pinIn
 		, pinOut;
 		
-		pinIn = worksheet.select('.exPin[data-linkref="' + link.select('input').first().attr('linkref') + '"]');
-		pinOut = worksheet.select('.exPin[data-linkref="' + link.select('output').first().attr('linkref') + '"]');
-		me.createLink(pinIn.first(), pinOut.first());
-		console.log(pinIn);
-		
+		pinIn = worksheet.select('linkref[node="' + linkGraph.select('input').first().attr('node') + '"][pin="' + linkGraph.select('input').first().attr('pin') + '"]').first().parent(exSVG.Pin);
+		pinOut = worksheet.select('linkref[node="' + linkGraph.select('output').first().attr('node') + '"][pin="' + linkGraph.select('output').first().attr('pin') + '"]').first().parent(exSVG.Pin);
+
+		pinIn.select('linkref').first().remove();
+		pinOut.select('linkref').first().remove();
+				
+		return me.createLink(pinIn, pinOut);
 	},
 	
 	getLinksLayer: function(){

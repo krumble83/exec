@@ -17,7 +17,7 @@ function map(array, block) {
 }
 
 
-var exGEN = {};
+var exGEN = {document: document.implementation.createDocument(null, 'library')};
 ctx.exGEN = exGEN;
 
 exGEN.extend = function() {
@@ -53,7 +53,7 @@ exGEN.invent = function(config) {
 };
 
 exGEN.create = function(name) {
-	return document.createElement(name);
+	return exGEN.document.createElement(name);
 };
 
 exGEN.adopt = function(node, parent) {
@@ -68,8 +68,8 @@ exGEN.adopt = function(node, parent) {
 
 	var element;
 
-	if (parent[capitalize(node.nodeName)])
-		element = new parent[capitalize(node.nodeName)]();
+	if (parent[node.nodeName.capitalize()])
+		element = new parent[node.nodeName.capitalize()]();
 	else
 		element = new parent.Element(node);
 
@@ -222,7 +222,7 @@ exGEN.Element = exGEN.invent({
 		clone: function(parent){
 			//console.log(capitalize(this.node.nodeName));
 			parent = parent || exGEN;
-			var element = new parent[capitalize(this.node.nodeName)]();
+			var element = new parent[this.node.nodeName.capitalize()]();
 			element.type  = this.node.nodeName;
 			element.node  = this.node.cloneNode();
 			element.mergeAttrs(this);

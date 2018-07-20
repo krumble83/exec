@@ -118,7 +118,7 @@ exSVG.plugin(exSVG.Worksheet, {
 							pins = node.getPins({input: {type: startPin.getDataType()}}, true);
 							//pins = node.select('.exPin.input[data-dataType="' + startPin.getDataType() + '"],.exPin.output[data-isWildcards="1"]');
 
-						console.assert(pins.length() > 0);
+						assert(pins.length() > 0);
 
 						
 					} catch(err){
@@ -153,7 +153,7 @@ exSVG.plugin(exSVG.Worksheet, {
 		});
 
 		// event handler to show the library menu when user right click on the grid
-		me.doc().on('contextmenu.library', function(ev){
+		me.on('contextmenu.library', function(ev){
 			var menu = me.showLibMenu(ev);
 			
 			ev.preventDefault();

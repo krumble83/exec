@@ -29,8 +29,8 @@ exSVG.RereouteNode = SVG.invent({
 			, out = me.getPin('out')
 			, inout = me.getPin('inout');
 
-			console.assert(eoutp instanceof exSVG.Pin);
-			console.assert(einp instanceof exSVG.Pin);
+			assert(eoutp instanceof exSVG.Pin);
+			assert(einp instanceof exSVG.Pin);
 			
 			link.remove();
 			inp.setDataType(eoutp.getDataType(), true);
@@ -80,6 +80,9 @@ exSVG.RereouteNode = SVG.invent({
 		},
 		
 		drawPins: function(){
+			var me = this;
+			me.getPin('in').show();
+			me.getPin('out').show();
 			return;
 		}
 	}
@@ -111,10 +114,13 @@ exSVG.PinReroute = SVG.invent({
 		addLink: function(link){
 			//console.log('exSVG.PinReroute.addLink()', link);
 			var me = this
-			, otherPin = link.getOtherPin(me);
+			, otherPin = link.getOtherPin(me) || link.getOtherPin(me.getNode().getPin('in')) || link.getOtherPin(me.getNode().getPin('out'));
 
-			console.assert(link instanceof exSVG.Link, 'link should be instance of exSVG.Link');
-			console.assert(otherPin instanceof exSVG.Pin, 'otherPin should be instance of exSVG.Pin');
+			assert(link instanceof exSVG.Link, 'link should be instance of exSVG.Link');
+			assert(otherPin instanceof exSVG.Pin, function(){
+				console.log(otherPin);
+				link.remove();
+			});
 
 			if(otherPin.getType() == exSVG.Pin.PIN_IN){
 				link.data('pinOut', me.getNode().getPin('out').id());
@@ -146,7 +152,7 @@ exSVG.PinReroute = SVG.invent({
 			var me = this
 			, ret = 0;
 
-			console.assert(otherPin instanceof exSVG.Pin);
+			assert(otherPin instanceof exSVG.Pin);
 			
 			if(otherPin.getNode() == me.getNode())
 				return {code: exSVG.Pin.PIN_LINK_ACCEPT_SAME_NODE, label: '<div><img src="exsvg/img/none.png"> Both Pin are on same Node'};
@@ -167,7 +173,62 @@ exSVG.PinReroute = SVG.invent({
 		
 		startLink: function(target, className){
 			//console.log('exSVG.PinReroute.startLink()');
-			return exSVG.PinWildcards.prototype.startLink.call(this, target, exSVG.LinkReroute);
+			var me = this
+			, worksheet = me.parent(exSVG.Worksheet)
+			, link
+			
+			//overide all pin's mousemove event listener, because Pinreroute should accept all type of pin
+			worksheet.select('.exPin.linkable').on('mousemove.reroute', function(e){
+				var links = worksheet.select('.exLinkStart');
+				
+				if(links.length() == 0 || this == me)
+					return;
+
+				worksheet.showTooltip(e, me.acceptLink(this).label, 10);
+				e.stopPropagation();
+				
+				console.log('TODO: remove this event listener');
+				
+				// to prevent drag link drawing not updated when mouse cursor is moving over the pin, because of e.stopPropagation(), 
+				// dispatch the mouse event directly to the link draw method
+				links.last().draw(e);
+			}, undefined, {capture: true});
+			
+			worksheet.select('.exPin.linkable').on('mouseup.reroute', function(e){
+				var link = worksheet.select('.exLinkStart');
+
+				worksheet.select('.exPin.linkable').off('.reroute');
+				
+				if(link.length() == 0 || this == me)
+					return;
+
+				e.stopImmediatePropagation();
+
+				assert(link.length() == 1);
+				link = link.first();
+				
+				if(!me.hasClass('linkable') || me.acceptLink(this).code != 0){
+					console.log('Pin \'' + me.getId() + '\' dont accept link');
+					link.remove();
+					return;
+				}
+				link.setStartPin((this.getType() == exSVG.PIN_IN) ? me.getNode().getPin('out') : me.getNode().getPin('in'));
+				this.endLink(link, e);
+				
+			}, undefined, {capture: true});
+			
+			console.log('ok');
+			
+			link = exSVG.PinWildcards.prototype.startLink.call(this, target, exSVG.LinkReroute);			
+			assert(link instanceof exSVG.Link);
+			
+			link.on('finish', function(){
+				me.off('.reroute');
+			});
+			link.on('cancel', function(){
+				me.off('.reroute');
+			});
+			return link;
 		},
 		
 		setDataType: function(datatypeid){
@@ -281,7 +342,7 @@ exSVG.plugin(exSVG.Link, {
 
 		worksheet.startSequence();
 		node = worksheet.import(exLIB.getNode2('special.reroutenode'));
-		console.assert(node instanceof exSVG.Node);
+		assert(node instanceof exSVG.Node);
 		if(worksheet.snapToGrid){
 			var snap = worksheet.snapToGrid(point.point.x, point.point.y);
 			node.move(snap.x, snap.y)

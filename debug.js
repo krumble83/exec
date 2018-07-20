@@ -10,12 +10,14 @@ console.warn('TODO: Quand on modifie le graph apres un undo, on doit détruire p
 //console.warn('TODO: Quand on cree un lien, verifier q\'un lien identique n\'existe pas deja (meme pins)');
 console.warn('TODO: deplacer la fonction snap toGrid de facon a l\'executer auto qd ajout noeud');
 console.warn('TODO: les reroute node ne fonctionnent pas avec les DataTypes en mode Array et dans certains cas avec le ExecDatatType');
-console.warn('TODO: lors de l\'export de noeud, exporter les liens avec');
+//console.warn('TODO: lors de l\'export de noeud, exporter les liens avec');
 //console.warn('TODO: les rerouteNode ne sont pas correctement placés sur la grille');
 //console.warn('TODO: quand on utilise un PinEditor et qu\'on appuie sur entrer pour valider, le svg ne reprend pas le focus');
 //console.warn('TODO: quand on colle un graph, la position de la souris n\'est pas pris en compte');
-console.warn('TODO: les split de StructurePin ne fonctionnent plus');
-console.warn('Reroute: quand on tire un lien depuis une pin PIN_INOUT et qu\'on affiche le LibraryMenu, le noeud se créee mais la Pin n\'est plus reliée');
-console.warn('Reroute: quand on copie/colle un node avec une pin special.add, la pin ne reapparait pas au bon endroit');
-console.warn('Reroute: quand on colle un node le exapnd n\'est pas pris en compte');
+console.warn('BUG: les StructurePin en output bug lors d\'un split');
+console.warn('BUG: les liens depuis/vers les StructurePin "splitté" ne sont pas exporté');
+console.warn('BUG: quand on tire un lien depuis une pin PIN_INOUT et qu\'on affiche le LibraryMenu, le noeud se créee mais la Pin n\'est plus reliée');
+console.warn('BUG: quand on copie/colle un node avec une pin special.add, la pin ne reapparait pas au bon endroit');
+//console.warn('Reroute: quand on colle un node le exapnd n\'est pas pris en compte');
+//console.warn('TODO: imlementer les flags pour les nodes.');
 

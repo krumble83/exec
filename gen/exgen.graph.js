@@ -39,7 +39,18 @@ exGRAPH.Base = exGEN.invent({
 		
 		clone: function(){
 			return exGEN.Element.prototype.clone.call(this, exGRAPH);
-		}
+		},
+		
+		Flags: function(flags){
+			return this.attr('flags', flags);
+		},
+		
+		HasFlag: function(flag){
+			var flags = parseInt(this.attr('flags') || 0);
+			
+			return flags & flag === flag;
+		},
+		
 	}
 });
 
@@ -60,7 +71,7 @@ exGRAPH.Library = exGEN.invent({
 		},
 		
 		GetNode: function(id, package){
-			if(package instanceof exGRAPH.Package)
+			if(package && package instanceof exGRAPH.Package)
 				package = package.Id();
 			
 			return this.querySelector('node[id="' + package + '.' + id + '"],macro[id="' + package + '.' + id + '"]') || this.querySelector('node[id="' + id + '"],macro[id="' + id + '"]');
@@ -250,6 +261,7 @@ exGRAPH.Graph = exGEN.invent({
 		},
 								
 		Node: function(id){
+			//console.log(this.node);
 			var ret = this.querySelector('node[id="' + this.attr('id') + '.' + id + '"]') || this.create('Node');
 			ret.init.apply(ret, arguments);
 			ret.attr('id', this.attr('id') + '.' + id)
@@ -258,7 +270,7 @@ exGRAPH.Graph = exGEN.invent({
 		},
 
 		Link: function(){
-			return this.create('Link0', arguments);
+			return this.create('Link', arguments);
 		},
 		
 		Macro: function(id){
@@ -856,13 +868,14 @@ exGRAPH.Node = exGEN.invent({
 		Id: function(id){
 			return this.attr('id', id);
 		},
-		
+				
 		Import: function(name){
 			this.ImportAttrs(name);
-			return this.ImportPins(name);
+			this.ImportPins(name);
+			return this;
 		},
 		
-		ImportTpl: function(tpl, type, title){
+		ImportTpl: function(tpl, type, name){
 			var me = this
 			, tpl = this.parent(exGRAPH.Library).GetNodeTpl(tpl)
 			, label
@@ -872,14 +885,17 @@ exGRAPH.Node = exGEN.invent({
 				this.Ctor(null);
 			
 			this.mergeAttrs(tpl);
+			this.Title(this.Title().split('*1').join(name));
+			
+			if(this.Subtitle())
+				this.Subtitle(this.Subtitle().split('*1').join(name));
 			
 			tpl.select('input,output').each(function(){
 				clone = this.clone();
 				if(clone.Type() == '*1'){
-					label = clone.Label();
 					clone.Type(type);
-					if(label)
-						clone.Label(label.split('*').join(title));
+					if(clone.Label())
+						clone.Label(clone.Label().split('*1').join(name));
 				}
 				me.add(clone);
 			});
@@ -976,7 +992,7 @@ exGRAPH.Category = exGEN.invent({
 });
 
 exGRAPH.Nodetpl = exGEN.invent({
-    create: 'Nodetpl',
+    create: 'nodetpl',
 	inherit: exGRAPH.Node,
 	
     extend: {
@@ -1051,8 +1067,8 @@ exGRAPH.Input = exGEN.invent({
 /**************************************************************************************
 	LINK / LINKREF
 **************************************************************************************/
-exGRAPH.Link0 = exGEN.invent({
-    create: 'link0',
+exGRAPH.Link = exGEN.invent({
+    create: 'link',
 	inherit: exGRAPH.Base,
 	
     extend: {

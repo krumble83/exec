@@ -10,10 +10,6 @@ exSVG.Pin = SVG.invent({
 			//console.log('exSVG.Pin.init()', data);
 			var me = this;
 
-			this.getNode().on('export', function(e){
-				me.export(e.detail.parent);
-			});
-
 			this.getNode().on('destroy', me.destroy, me);
 			
 			for (var i = 0, atts = data.attr(), n = atts.length; i < n; i++){
@@ -23,18 +19,12 @@ exSVG.Pin = SVG.invent({
 			}
 			me.setId(data.Id());
 			me.addClass('exPin');
-			me.mMaxLink = -1;
-			
-			
-			if(data.type == 'INPUT'){
-				this.addClass('input')
-				.setMaxLink(1);
-			}
-			if(data.type == 'OUTPUT'){
-				this.addClass('output')
-				.setMaxLink(-1);
-			}
+			me.setType(data.type);
 
+			this.getNode().on('export.pin-' + me.getId(), function(e){
+				me.export(e.detail.parent);
+			});
+		
 			data.select(':scope > *').each(function(){
 				if(me['import' + this.type.capitalize()])
 					me['import' + this.type.capitalize()](this, me);
@@ -77,8 +67,17 @@ exSVG.Pin = SVG.invent({
 
 		},
 		
+		hide: function(){
+			this.setData('hidden', true);
+			return SVG.G.prototype.hide.apply(this, arguments);
+		},
+		
+		show: function(){
+			this.setData('hidden', false);
+			return SVG.G.prototype.show.apply(this, arguments);			
+		},
+
 		getNode: function(){
-			//console.log(this);
 			return this.parent(exSVG.Node);
 		},
 		
@@ -89,13 +88,12 @@ exSVG.Pin = SVG.invent({
 		setId: function(id){
 			this.id(this.getNode().id() + '-' + id);
 			this.setData('id', id);
+			return this;
 		},
 		
 		setDataType: function(datatypeid){
-			var me = this
-			, libdatatype = exLIB.getDataType2(datatypeid);
-			
-			me.setData('type', datatypeid);
+			this.setData('type', datatypeid);
+			return this;
 		},
 		
 		getDataType: function(){
@@ -114,6 +112,18 @@ exSVG.Pin = SVG.invent({
 			if(me.hasClass('output'))
 				ret += exSVG.Pin.PIN_OUT;
 			return ret;
+		},
+		
+		setType: function(type){
+			if(type == 'INPUT' || type == 'input' || type === exSVG.Pin.PIN_IN){
+				this.addClass('input')
+				.setMaxLink(1);
+			}
+			if(type == 'OUTPUT' || type == 'output' || type === exSVG.Pin.PIN_OUT){
+				this.addClass('output')
+				.setMaxLink(-1);
+			}
+			return this;
 		},
 				
 		setData: function(name, value){
@@ -145,7 +155,7 @@ exSVG.Pin = SVG.invent({
 		},
 		
 		export: function(graph){
-			//console.log('+++++++++++++++++', graph);
+			//console.warn('exSVG.Pin.export()', graph);
 			var me = this
 			, attrs = me.attr()
 			, pin;
@@ -154,7 +164,6 @@ exSVG.Pin = SVG.invent({
 			if(me.getType() == exSVG.Pin.PIN_IN){
 				pin = (graph && graph.Input) ? graph.Input() : false;
 				if(!pin){
-					console.log('create');
 					pin = new exGRAPH.Input();
 					if(graph)
 						graph.add(pin);
@@ -180,8 +189,10 @@ exSVG.Pin = SVG.invent({
 
 		destroy: function(){
 			this.fire('destroy');
+			this.getNode().off('.pin-' + this.getId());
 			this.off();
 			this.remove();
+			delete this;
 		}
 	}
 });
@@ -214,16 +225,32 @@ SVG.extend(exSVG.Node, {
 		else if(data.type.toLowerCase() == 'output')
 			return me.createPin(data, me.mOutputPinGroup);
 		
+		assert(false);
+		
 	},
 	
 	importInput: function(data){
 		//console.log('exSVG.Node.importInput()', data);
-		return this.importPin.apply(this, arguments);
+		var me = this;
+
+		if(!me.mInputPinGroup)
+			me.mInputPinGroup = me.group();
+		if(!me.mOutputPinGroup)
+			me.mOutputPinGroup = me.group();
+
+		return me.createPin(data, me.mInputPinGroup);
 	},
 	
 	importOutput: function(data){
 		//console.log('exSVG.Node.importOutput()', data);
-		return this.importPin.apply(this, arguments);
+		var me = this;
+
+		if(!me.mInputPinGroup)
+			me.mInputPinGroup = me.group();
+		if(!me.mOutputPinGroup)
+			me.mOutputPinGroup = me.group();
+
+		return me.createPin(data, me.mOutputPinGroup);
 	},
 	
 	createPin: function(data, parent){
@@ -231,12 +258,14 @@ SVG.extend(exSVG.Node, {
 		var me = this
 		, type = exLIB.getDataType2(data.Type())
 		, pin = new exSVG[(data.Ctor && data.Ctor()) ? data.Ctor() : type.Ctor()]();
-			
+		
+		assert(pin instanceof exSVG.Pin);
+		assert(parent);
+		
 		parent.put(pin);
 		pin.setColor(type.Color());
 		pin.init(data);
 		me.fire('pin-add', {pin: pin});
-		data.svg = pin;
 		return pin;	
 	},
 	

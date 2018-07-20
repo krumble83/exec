@@ -46,7 +46,8 @@ exSVG.Selection = SVG.invent({
 		selectNode: function(el){
 			var me = this;
 			if(!el){
-				me.mWorksheet.select('.exNode').each(function(){
+				var sel = me.mWorksheet.getNodes();
+				sel.each(function(){
 					me.selectNode(this);
 				});
 				return;
@@ -57,14 +58,14 @@ exSVG.Selection = SVG.invent({
 				});
 				return;
 			}
-			if(el.parent() == me)
+			if(el.parent() == me || !(el instanceof exSVG.Node))
 				return;
 			toParent(el, me);
 			me.mWorksheet.fire('node-selected', {node: el});
 			me.front();
 			if(me.mWorksheet.getWorkspace)
 				me.mWorksheet.getWorkspace().back();
-			me.mWorksheet.setFocus();
+			me.mWorksheet.focus();
 		},
 	
 		unselectNode: function(el){
@@ -84,7 +85,7 @@ exSVG.Selection = SVG.invent({
 				return;
 			}
 
-			if(el.parent() == me.mWorksheet || !el.parent())
+			if(el.parent() == me.mWorksheet || !el.parent() || !(el instanceof exSVG.Node))
 				return;
 			toParent(el, me.mWorksheet);
 			me.mWorksheet.fire('node-unselected', {node: el});
@@ -104,24 +105,20 @@ exSVG.Selection = SVG.invent({
 			return node.parent() == this;
 		},
 		
-		selectedNodes: function(){
-			
-		},
-		
-		deleteSelection: function(){
+		deleteSelection: function(selection){
 			var me = this
-			, sel = me.nodes()
+			, selection = selection || me.nodes()
 			, out = new SVG.Set;
 			
 			// we start a sequence because we want only one undo action for all deleted nodes
 			me.mWorksheet.startSequence();
-			sel.each(function(){
+			selection.each(function(){
 				me.unselectNode(this);
 				this.remove();
 				out.add(this);
 			});
 			me.doc().fire('selection-remove', {selection: out});
-			me.mWorksheet.stopSequence('Selection.deleteSelection');
+			me.mWorksheet.stopSequence();
 		},
 		
 		initSelectionEventHandlers: function(){
@@ -211,7 +208,7 @@ exSVG.Selection = SVG.invent({
 				, viewb
 				, scrollTimer
 				
-				me.mWorksheet.setFocus();
+				me.mWorksheet.focus();
 
 				// first we checking if the mouse button is valid, selection rectangle working only with left button
 				// after, we check if selectionRect is not allready assigned, in normal condition he's not, but in case a bug (multiple rectangle selection ?)
@@ -309,7 +306,6 @@ exSVG.Selection = SVG.invent({
 			
 			//when we add a node in the document, we need to do some stuff
 			me.doc().on('node-add.selection', function(e){
-				//console.log('selection:nodeadd');
 				var node = e.detail.node;
 				
 				// here we are transforming the node context menu to adapt some action on all selected nodes
@@ -346,7 +342,7 @@ exSVG.Selection = SVG.invent({
 					el = menu.getMenu('copy');
 					if(el){
 						el.callback(function(e){
-							me.mWorksheet.copy(me.nodes());
+							me.mWorksheet.copy(me);
 						});
 					};
 
@@ -382,7 +378,7 @@ exSVG.Selection = SVG.invent({
 				node.on('mousedown.selection', function(e){
 					var selected;
 					
-					me.mWorksheet.setFocus();
+					me.mWorksheet.focus();
 					
 					if(e.button == 2) // right button is reserved for panning
 						return;
@@ -428,9 +424,8 @@ exSVG.Selection = SVG.invent({
 			});
 
 			me.doc().on('paste.selection', function(e){
-				console.log(e.detail);
 				me.unselectNode();
-				me.selectNode(e.detail.data.first());
+				me.selectNode(e.detail.data);
 			});
 			
 			
@@ -438,14 +433,12 @@ exSVG.Selection = SVG.invent({
 			// needed because transformations are applied when node is in selection SVG.G
 			// and when we reput it via undo/redo, transformations are lost
 			me.doc().on('node-remove.selection', function(e){
-				//console.log('selection:node-remove', me);
 				me.unselectNode(e.detail.node);
 			});
 
 			
 			// Handle some keyboard shortcut
 			SVG.on(window, 'keydown.selection', function(e){
-				//console.log('selection.keyup', e);
 				if(!me.mWorksheet.hasFocus())
 					return;
 				
@@ -464,32 +457,20 @@ exSVG.Selection = SVG.invent({
 	}
 });
 
+
 exSVG.plugin(exSVG.Worksheet, {
 
 	init: function(options) {
 		var me = this;
 		
-		me.attr('tabindex', -1);
-		me.setFocus();
-
 		// initialize the selection SVG group
 		// when a node is selected by the user, he is putted is this group
-		// and when is unselected he will be removed from this group and go back in the nested SVG (Workesheet)
+		// and when is unselected he will be removed from this group and go back in the nested SVG (Worksheet)
 		me.mSelection = new exSVG.Selection().addClass('selection').addTo(me).init(me);
 			
-		// if drag plugin is available, we can drag all seleted nodes
-		// so make selection SVG group draggable
-		// we are snapping the movment to the grid (if available)
-
-		//me.initSelectionEventHandlers();
 		return me;
 	},
-	
-	setFocus: function(){
-		if(this.node.focus)
-			this.node.focus();
-	},
-	
+
 	unselectNode: function(el){
 		return this.mSelection.unselectNode(el);
 	},
@@ -518,9 +499,8 @@ exSVG.plugin(exSVG.Worksheet, {
 		});
 		me.doc().fire('selection-remove', {selection: out});
 		me.stopSequence('Selection.deleteSelection');
+		return me;
 	}
 })
-
-//exSVG.Worksheet.prototype.plugins.selection = {name: 'Selection', initor: 'initSelection'}
 
 }());

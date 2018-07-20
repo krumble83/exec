@@ -54,7 +54,7 @@ exSVG.PinWildcards = SVG.invent({
 			, datatype = link.getDataType()
 			, oPin = link.getOtherPin(me);
 			
-			console.assert(oPin instanceof exSVG.Pin);			
+			assert(oPin instanceof exSVG.Pin);			
 			exSVG.Pin.prototype.addLink.apply(this, arguments);
 
 			if(exLIB.isWildcardsDataType(datatype) && !exLIB.isWildcardsDataType(oPin.getDataType()))
@@ -121,7 +121,7 @@ exSVG.PinWildcards = SVG.invent({
 			links = me.parent(exSVG.Worksheet).select('.exLink[data-pinIn="' + me.id() + '"],.exLink[data-pinOut="' + me.id() + '"]');
 			links.each(function(){
 				pin = this.getOtherPin(me);
-				console.assert(pin instanceof exSVG.Pin);
+				assert(pin instanceof exSVG.Pin);
 				set.add(this);
 				if(pin.checkDataTypeChange)
 					pin.checkDataTypeChange(datatype, set);
@@ -202,58 +202,74 @@ exSVG.PinStructure = SVG.invent({
 	
     extend: {
 		init: function(){
-			var me = this
-			, node = me.parent(exSVG.Node)
-			, datatype
-			, type;
+			var me = this;
 			
 			//me.setData('ctor', 'PinStructure');
 			exSVG.Pin.prototype.init.apply(me, arguments);
 			
-			datatype = exLIB.getDataType2(me.getDataType());
-			
+			console.log(me.getData('expanded'));
+			if(me.getData('expanded') == '1')
+				me.expandPins();
 					
 			me.on('menu.pinstructure', function(e){
 				var menu = e.detail.menu
+				, el
 				
-				var rem = menu.addItem('Split Struct Pin', 'split', function(){
-					console.log();
-					var pins = datatype.select('pin')
-					, pos = me.y()
-					, pin
-					, importer = me.getType() == exSVG.Pin.PIN_IN ? node.importInput : node.importOutput
-					
-					pins.each(function(){
-						pin = importer.call(node, this);
-						pin.after(me);
-						pin.setId(me.getId() + '-' + pin.getId());
-						pin.move(0, pos);
-						
-						pin.on('menu', function(ee){
-							var cmenu = ee.detail.menu;
-							var rec = cmenu.addItem('Recombine Struct Pin', 'recombine', function(){
-								// check if any pin is linked
-								if(node.select('.exPin.linked[id^="' + node.id() + '-' + me.getId() + '-"]').length() > 0)
-									return false;
-								
-								node.select('.exPin[id^="' + node.id() + '-' + me.getId() + '-"]').each(function(){
-									this.remove();
-								});
-								me.show();
-							});
-							if(node.select('.exPin.linked[id^="' + node.id() + '-' + me.getId() + '-"]').length() > 0)
-								rec.enabled(false);
-						});
-						
-						pos += pin.bbox().height+4;
-					});
-					me.hide();
-					node.paint();
-				});				
+				el = menu.addItem('Split Struct Pin', 'split', function(){
+					me.expandPins();
+					me.getNode().paint();
+				});
+				if(me.getLinks().length() > 0)
+					el.enabled(false);
 				
 			});
 			
 			return me;
+		},
+		
+		expandPins: function(){
+			var me = this
+			, node = me.getNode()
+			, datatype
+			, type;
+
+			datatype = exLIB.getDataType2(me.getDataType()).clone();
+			var pins = datatype.select('pin')
+			, pos = me.y()
+			, importer = me.getType() == exSVG.Pin.PIN_IN ? node.importInput : node.importOutput
+			, pin;
+			
+			pins.each(function(){
+				this.Id(me.getId() + '-' + this.Id());
+				pin = importer.call(node, this);
+				pin.setType(me.getType());
+				pin.move(0, pos);							
+				node.off('.pin-' + pin.getId());
+				
+				pin.on('menu', function(ev){
+					var cmenu = ev.detail.menu
+					, menuEl;
+					
+					menuEl = cmenu.addItem('Recombine Struct Pin', 'recombine', function(){
+						// check if any pin is linked
+						if(node.select('.exPin.linked[data-id^="' + me.getId() + '-"]').length() > 0)
+							return false;
+						
+						node.select('.exPin[data-id^="' + me.getId() + '-"]').each(function(){
+							this.destroy();
+						});
+						me.setData('expanded', '0');
+						me.show();
+						me.getNode().paint();
+					});
+					if(node.select('.exPin.linked[data-id^="' + me.getId() + '-"]').length() > 0)
+						menuEl.enabled(false);
+				});
+				
+				pos += pin.bbox().height+4;
+			});
+			me.setData('expanded', '1');
+			me.hide();
 		}
 	}
 	
@@ -387,7 +403,7 @@ exSVG.PinAdd = SVG.invent({
 			
 			if(!me.getData('targetarray')){
 				pin = me.getNode().select('.exPin[data-id="' + me.getData('target') + '"');
-				console.assert(pin.length() == 1);
+				assert(pin.length() == 1);
 				if(!pin.first().getData('arrayId')){
 					arrayId = Math.floor((Math.random() * 10000) + 1);
 					me.setData('targetarray', arrayId);
@@ -436,7 +452,7 @@ exSVG.PinAdd = SVG.invent({
 			newPin.setDataType(pin.getDataType());
 
 			//newPin = me.parent(exSVG.Node).addPin(d);
-			console.assert(newPin instanceof exSVG.Pin);
+			assert(newPin instanceof exSVG.Pin);
 			
 			pins.last().after(newPin); // bug? why insert after, shoul be before...
 			refreshPins.call(me);

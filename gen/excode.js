@@ -33,7 +33,7 @@ exGEN.extend(exGRAPH.Node, {
 	GetPin: function(name){
 		console.log(name, this);
 		var set = this.select('input[id="' + name + '"], output[id="' + name + '"]');
-		console.assert(set.length() == 1);
+		assert(set.length() == 1);
 		return set.first();
 	},
 	
