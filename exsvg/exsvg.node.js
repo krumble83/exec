@@ -17,7 +17,7 @@ exSVG.Node = SVG.invent({
 
 			me.addClass('exNode');
 			for (var i = 0, atts = data.attr(), n = atts.length; i < n; i++){
-				if(['import', 'keywords'].indexOf(atts[i].nodeName) > -1)
+				if(['import', 'keywords', 'svgid'].indexOf(atts[i].nodeName) > -1)
 					continue;
 				me.setData(atts[i].nodeName, atts[i].value);
 			}						
@@ -43,24 +43,36 @@ exSVG.Node = SVG.invent({
 							
 		export: function(graph){
 			var me = this
-			, node = ((graph && graph.Node) ? graph.Node() : new exGRAPH.Node ).attr('svgid', me.id())
-			, attrs = me.attr();
+			, node = (graph && graph.Node) ? graph.Node() :  false
+			, attrs = me.attr()
+			, pos
 
+			if(!node){
+				node = new exGRAPH.Node();
+				if(graph)
+					graph.add(node);
+			}
+			node.attr('svgid', me.id());
+			
 			for (var key in attrs) {
-				if(!Object.prototype.hasOwnProperty.call(attrs, key) || key.substr(0,5) != 'data-')
+				if(!Object.prototype.hasOwnProperty.call(attrs, key) 
+					|| key.substr(0,5) != 'data-')
 					continue;
 				node.attr(key.substr(5), attrs[key]);
 				//node.attr('pos', '');
 			}
+			if(graph && graph.box)
+				pos = {x: me.x()-graph.box.x, y:me.y()-graph.box.y}
+			else
+				pos = {x: me.x(), y: me.y()};
 
-			var p = me.rbox(me.parent(exSVG.Worksheet));
-			node.attr('pos', p.x + ',' + p.y);
+			node.attr('pos', pos.x + ',' + pos.y);
 			me.fire('export', {parent: node});
 			return node;
 		},
 				
 		move: function(){
-			//console.log('exnodebase.move');
+			console.log('exnodebase.move');
 			var me = this
 			, ret = SVG.G.prototype.move.apply(me, arguments);
 			
@@ -89,8 +101,7 @@ exSVG.Node = SVG.invent({
 				me.fire('move');
 				me.doc().fire('node-move', {node:me});
 			}
-			return ret;
-			
+			return ret;			
 		},
 		
 		y: function(){

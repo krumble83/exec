@@ -34,8 +34,8 @@ exSVG.Pin = SVG.invent({
 				this.addClass('output')
 				.setMaxLink(-1);
 			}
-			
-			data.select('*').each(function(){
+
+			data.select(':scope > *').each(function(){
 				if(me['import' + this.type.capitalize()])
 					me['import' + this.type.capitalize()](this, me);
 			});
@@ -145,15 +145,29 @@ exSVG.Pin = SVG.invent({
 		},
 		
 		export: function(graph){
+			//console.log('+++++++++++++++++', graph);
 			var me = this
-			, ret = {}
 			, attrs = me.attr()
 			, pin;
 			
-			if(me.getType() == exSVG.Pin.PIN_IN)
-				pin = (graph && graph.Input) ? graph.Input() : new exGRAPH.Input();
-			else
-				pin = (graph && graph.Output) ? graph.Output() : new exGRAPH.Output();
+			
+			if(me.getType() == exSVG.Pin.PIN_IN){
+				pin = (graph && graph.Input) ? graph.Input() : false;
+				if(!pin){
+					console.log('create');
+					pin = new exGRAPH.Input();
+					if(graph)
+						graph.add(pin);
+				}
+			}
+			else{
+				pin = (graph && graph.Output) ? graph.Output() : false;
+				if(!pin){
+					pin = new exGRAPH.Output();
+					if(graph)
+						graph.add(pin);
+				}
+			}
 			
 			for (var key in attrs) {
 				if(!Object.prototype.hasOwnProperty.call(attrs, key) || key.substr(0,5) != 'data-')

@@ -153,7 +153,7 @@ exSVG.PinWildcards = SVG.invent({
 			exSVG.Pin.prototype.setDataType.call(this, datatypeid);
 		},
 		
-		export: function(graph){
+		zexport: function(graph){
 			var me = this
 			, pin = exSVG.Pin.prototype.export.apply(this, arguments);
 			
@@ -355,7 +355,7 @@ function pinAddContextMenu(e, pin){
 
 function refreshPins(){
 	var me = this
-	, arrayId = me.getData('targetArray')
+	, arrayId = me.getData('targetarray')
 	, pins = me.getNode().select('.exPin[data-arrayid="' + arrayId + '"]')
 	, a = 0;
 	
@@ -385,19 +385,19 @@ exSVG.PinAdd = SVG.invent({
 			exSVG.Pin.prototype.init.apply(me, arguments);
 			me.addClass('exPinAdd');
 			
-			if(!me.getData('targetArray')){
+			if(!me.getData('targetarray')){
 				pin = me.getNode().select('.exPin[data-id="' + me.getData('target') + '"');
 				console.assert(pin.length() == 1);
 				if(!pin.first().getData('arrayId')){
 					arrayId = Math.floor((Math.random() * 10000) + 1);
-					me.setData('targetArray', arrayId);
+					me.setData('targetarray', arrayId);
 					pin.first().setData('arrayid', arrayId);
 				}
 				pin.first().setId(pin.first().getId() + '_0');
 				me.setData('target', pin.first().getId());
 			}
 			else
-				arrayId = me.getData('targetArray');
+				arrayId = me.getData('targetarray');
 
 			//in case of the parent node was pasted, init all event handler for added pins
 			me.getNode().select('.exPin[data-arrayid="' + arrayId + '"]').each(function(){
@@ -413,13 +413,18 @@ exSVG.PinAdd = SVG.invent({
 				e.preventDefault();
 			});
 			
+			setTimeout(function(){
+				var p = me.parent();
+				me.remove().addTo(p);
+			}, 2000);
+			
 			return me;
 		},
 		
 		addPin: function(){
 			var me = this
 			, newPin
-			, arrayId = me.getData('targetArray')
+			, arrayId = me.getData('targetarray')
 			, pins = me.getNode().select('.exPin[data-arrayid="' + arrayId + '"]')
 			, lastId = parseInt(pins.last().getId().match('\[\\d+\]')[0])
 			, pin = pins.first();

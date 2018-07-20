@@ -46,9 +46,66 @@ exSVG.plugin(exSVG.Worksheet, {
 	
 	getGrid: function(){
 		return (this.getWorkspace) ? this.getWorkspace() : this;
-	}
+	},
+	
 });
 
-//exSVG.Worksheet.prototype.plugins.grid = {name: 'Grid', initor: 'initGrid'}
+exSVG.plugin(exSVG.SelectionZ, {
+	x: function(x){
+		//console.log('exSVG.Node.x()');
+		var me = this
+		, ret
+		, selection
+		, snap;
+		
+		if(arguments.length > 0){
+			snap = me.mWorksheet.snapToGrid(x,0);
+			if(snap.x != x)
+				ret = SVG.G.prototype.x.call(me, snap.x);
+			else
+				return SVG.G.prototype.x.apply(me, arguments);
+			//console.log(x, snap);
+			selection = me.nodes();
+			selection.fire('move');
+			return ret;
+		}
+		return SVG.G.prototype.x.apply(me, arguments);
+	},
+				
+	y: function(y){
+		//console.log('exSVG.Node.y()');
+		var me = this
+		, ret
+		, selection
+		, snap;
+		
+		if(arguments.length > 0){
+			snap = me.mWorksheet.snapToGrid(0,y);
+			if(snap.y != y)
+				ret = SVG.G.prototype.y.call(me, snap.y);
+			else
+				return SVG.G.prototype.y.apply(me, arguments);
+			//console.log(x, snap);
+			selection = me.nodes();			
+			selection.fire('move');
+			return ret;
+		}
+		return SVG.G.prototype.y.apply(me, arguments);
+	},
+
+	zmove: function(){
+		console.log('exnodebase.move');
+		var me = this
+		, ret = SVG.G.prototype.move.apply(me, arguments)
+		, selection
+		, snap;
+		
+		if(arguments.length > 0){
+			selection = me.nodes();			
+			selection.fire('move');
+		}
+		return ret;
+	}
+});
 
 }(this));

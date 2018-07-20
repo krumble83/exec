@@ -14,42 +14,30 @@ exSVG.plugin(exSVG.Worksheet, {
 		
 		SVG.on(window, 'paste', me.paste, me);
 		SVG.on(window, 'copy', me.copy, me);
-		SVG.on(window, 'cut', me.copy, me);
+		SVG.on(window, 'cut', me.cut, me);
 		
 		return me;
 	},
 	
 	cut: function(data){
 		//console.log('Clipboard.cut()', data);
-		var me = this
-		, expt = new exGRAPH.Graph()
-		, clipboardData;
+		var me = this;
 		
-
 		if(data instanceof ClipboardEvent){
 			if(!me.hasFocus() || !me.getSelection)
 				return me;
 			data.stopPropagation();
 			data.preventDefault();		
-			console.log('data cutted to clipboard');
 			return me.cut(me.getSelection());
 		}
 		
-		console.assert(data instanceof SVG.Set);
+		console.assert(data.each);
+		me.copy(data);
 		me.startSequence();
 		data.each(function(){
-			expt.add(this.export());
 			this.remove();
 		});
 		me.stopSequence();
-		
-		clipboardData = document.createElement('textarea');
-		document.body.appendChild(clipboardData);
-		clipboardData.value = expt.node.outerHTML;
-		clipboardData.select();
-		document.execCommand('copy');
-		document.body.removeChild(clipboardData);
-		me.focus();
 		return me;
 	},
 	
@@ -57,21 +45,23 @@ exSVG.plugin(exSVG.Worksheet, {
 		//console.log('Clipboard.copy()', data);
 		var me = this
 		, expt = new exGRAPH.Graph()
-		, clipboardData;
+		, clipboardData
+		, box;
 		
 		if(data instanceof ClipboardEvent){
 			if(!me.hasFocus() || !me.getSelection)
 				return me;
 			data.stopPropagation();
 			data.preventDefault();		
-			console.log('data copied to clipboard');
+			//console.log('data copied to clipboard');
 			return me.copy(me.getSelection());
 		}
-		
-		console.assert(data instanceof SVG.Set);
+			
+		expt.box = data.bbox();
 		data.each(function(){
-			expt.add(this.export());
+			this.export(expt);
 		});
+		//expt.attr('box', box.x + ',' + box.y + ',' + box.width + ',' + box.height);
 		
 		clipboardData = document.createElement('textarea');
 		document.body.appendChild(clipboardData);
@@ -85,7 +75,11 @@ exSVG.plugin(exSVG.Worksheet, {
 	
 	paste: function(data){
 		//console.log('Clipboard.paste()', data);
-		var me = this;
+		var me = this
+		, ev = me.point(mousePosEvent)
+		, pos
+		, graph
+		, set;
 
 		if(data instanceof ClipboardEvent){
 			if(!me.hasFocus())
@@ -93,18 +87,30 @@ exSVG.plugin(exSVG.Worksheet, {
 			data.stopPropagation();
 			data.preventDefault();		
 			var clipboardData = data.clipboardData || window.clipboardData;
-			console.log('data pasted from clipboard');
+			//console.log('data pasted from clipboard');
 			return me.paste(clipboardData.getData('Text'));
 		}
 		
-		var graph = new exGRAPH.Graph();
+		graph = new exGRAPH.Graph();
 		graph.node.innerHTML = data;
-				
+		
+		graph.select('graph > *').each(function(){			
+			if(this.attr('pos')){
+				pos = this.attr('pos').split(',');
+				pos[0] = parseInt(pos[0]) + ev.x;
+				pos[1] = parseInt(pos[1]) + ev.y;
+				this.attr('pos',  pos[0] + ',' + pos[1]);
+			}
+		});
+						
 		me.doc().fire('before-paste', {data: graph});
 
+		//me.unselectNode();
 		me.startSequence();
-		me.import(graph);
+		set = me.import(graph);
+		//me.selectNode();
 		me.stopSequence();
+		me.doc().fire('paste', {data: set});
 		return me;
 	}
 });

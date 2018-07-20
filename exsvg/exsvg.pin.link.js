@@ -1,8 +1,15 @@
 ;(function() {
 "use strict";
 
-// backup original draw function
-var gfxDraw = exSVG.Pin.prototype.paint.clone();
+
+exSVG.LinkRef = SVG.invent({
+    create: 'foreignObject', 
+    inherit: SVG.ForiegnObject,
+	
+    extend: {
+		
+	}
+});
 
 exSVG.plugin(exSVG.Pin, {
 	
@@ -10,7 +17,9 @@ exSVG.plugin(exSVG.Pin, {
 		//console.warn('Pin.init()[plugin]');
 		var me = this;
 		me.addClass('linkable');
-			
+
+		//me.element('linkref');			
+
 		me.on('mousedown.link-handler', function(e){
 			//console.log('pinBase.onMouseDown()', e.buttons);
 			e.stopImmediatePropagation();
@@ -28,15 +37,7 @@ exSVG.plugin(exSVG.Pin, {
 				me.startLink(e);
 			}
 		});
-		
-		/*
-		me.on('paint', function(){
-			if(me.getLinks().length() > 0)
-				me.addClass('linked')
-			else
-				me.removeClass('linked')			
-		});
-		*/
+
 		me.on('mousemove.link-handler', function(e){
 			//console.log('pinbase.onMouseMove()', e.buttons);
 			if(e.buttons != 1)
@@ -82,6 +83,40 @@ exSVG.plugin(exSVG.Pin, {
 			me.endLink(link.last(), e);
 		});
 		
+		me.on('export', function(e){
+			var me = this
+			, pin = e.detail.parent
+			, graph = pin.parent(exGRAPH.Graph)
+			, links
+			, linkref;
+			
+			if(!graph || !me.hasClass('linkable'))
+				return;
+			
+			links = me.getLinks();
+			if(links.length() == 0)
+				return console.log('no link');
+			
+			//linkref = new exGRAPH.Linkref;
+			//linkref.init(me.getNode().id(), me.getId());
+			//pin.add(linkref);
+			pin.attr('linkref', me.getNode().id() + '-' + me.getId());
+
+			links.each(function(){
+				var oPin = this.getOtherPin(me);
+				if(graph.GetNode(oPin.getNode().id())){
+					//console.log('yes');
+					this.export(graph);
+				}
+			});
+			return;
+		});
+		
+	},
+	
+	importLinkref: function(linkref){
+		var me = this;
+		me.element('linkref').attr('node', linkref.Node()).attr('pin', linkref.Pin());
 	},
 	
 	getLinks: function(ignore){
@@ -238,7 +273,7 @@ exSVG.plugin(exSVG.Pin, {
 			link.off('.linknode' + me.id());
 		});
 		return me;
-	},
+	}
 
 });
 

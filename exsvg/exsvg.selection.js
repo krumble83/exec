@@ -3,10 +3,14 @@
 
 
 function toParent(node, parent){
-    var ctm = node.screenCTM();
-    var pCtm = parent.screenCTM().inverse();
-	parent.put(node);
-	node.untransform().transform(pCtm.multiply(ctm));
+	if(typeof node.screenCTM !== 'function')
+		parent.put(node);
+	else {
+		var ctm = node.screenCTM();
+		var pCtm = parent.screenCTM().inverse();
+		parent.put(node);
+		node.untransform().transform(pCtm.multiply(ctm));
+	}
 }
 
 
@@ -425,8 +429,8 @@ exSVG.Selection = SVG.invent({
 
 			me.doc().on('paste.selection', function(e){
 				console.log(e.detail);
-				var selection = e.detail.data;
-				me.selectNode(selection);
+				me.unselectNode();
+				me.selectNode(e.detail.data.first());
 			});
 			
 			
@@ -487,7 +491,7 @@ exSVG.plugin(exSVG.Worksheet, {
 	},
 	
 	unselectNode: function(el){
-		return me.mSelection.unselectNode(el);
+		return this.mSelection.unselectNode(el);
 	},
 	
 	selectNode: function(el){
@@ -495,7 +499,7 @@ exSVG.plugin(exSVG.Worksheet, {
 	},
 	
 	getSelection: function(){
-		return this.mSelection.nodes();
+		return this.mSelection;
 	},
 	
 	deleteSelection: function(){

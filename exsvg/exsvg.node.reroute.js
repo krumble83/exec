@@ -282,8 +282,12 @@ exSVG.plugin(exSVG.Link, {
 		worksheet.startSequence();
 		node = worksheet.import(exLIB.getNode2('special.reroutenode'));
 		console.assert(node instanceof exSVG.Node);
-		node.x(point.point.x - 20);
-		node.y(point.point.y - 15);
+		if(worksheet.snapToGrid){
+			var snap = worksheet.snapToGrid(point.point.x, point.point.y);
+			node.move(snap.x, snap.y)
+		}
+		else
+			console.log('coucou');
 		node.rerouteLink(this);
 		worksheet.stopSequence();
 	},

@@ -17,6 +17,8 @@ exSVG.Link = SVG.invent({
 		init: function(startPin, out){
 			var me = this;
 			
+			console.assert(startPin instanceof exSVG.Pin);
+			
 			me.setDataType(startPin.getDataType());
 			me.stroke({color: startPin.getColor(), width: 2});
 			me.mColor = startPin.getColor();
@@ -247,23 +249,15 @@ exSVG.Link = SVG.invent({
 		*/
 		export: function(graph){
 			var me = this
-			, link;
-			
-			console.assert(me.parent(), 'can\'t find link parent to export');
-			
-			if(!graph.GetNode(me.getInputPin().getNode().id()) || !graph.GetNode(me.getOutputPin().getNode().id())){
-				console.error('can\'t find node to export link');
-				return;
-			}
-			
-			link = graph.Link();
-			link.Input(me.getInputPin().getNode().id(), me.getInputPin().getId());
-			link.Output(me.getOutputPin().getNode().id(), me.getOutputPin().getId());
+			, link = graph.Link();
+						
+			link.Input(me.getInputPin().getNode().id(), me.getInputPin().getId()).attr('linkref', me.getInputPin().getNode().id() + '-' + me.getInputPin().getId());
+			link.Output(me.getOutputPin().getNode().id(), me.getOutputPin().getId()).attr('linkref', me.getOutputPin().getNode().id() + '-' + me.getOutputPin().getId());
 			link.attr('datatype', me.getDataType());
 			link.attr('color', me.getColor());
 		},
 
-		import: function(data){
+		import: function(graph){
 
 		},
 
@@ -404,7 +398,17 @@ exSVG.plugin(exSVG.Worksheet, {
 		return link;
 	},
 	
-	importLink0: function(data){
+	importLink0: function(link){
+		console.log(link);
+		var me = this
+		, worksheet = me
+		, pinIn
+		, pinOut;
+		
+		pinIn = worksheet.select('.exPin[data-linkref="' + link.select('input').first().attr('linkref') + '"]');
+		pinOut = worksheet.select('.exPin[data-linkref="' + link.select('output').first().attr('linkref') + '"]');
+		me.createLink(pinIn.first(), pinOut.first());
+		console.log(pinIn);
 		
 	},
 	

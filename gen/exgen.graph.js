@@ -258,7 +258,7 @@ exGRAPH.Graph = exGEN.invent({
 		},
 
 		Link: function(){
-			return this.create('Link', arguments);
+			return this.create('Link0', arguments);
 		},
 		
 		Macro: function(id){
@@ -1049,9 +1049,9 @@ exGRAPH.Input = exGEN.invent({
 
 
 /**************************************************************************************
-	LINK
+	LINK / LINKREF
 **************************************************************************************/
-exGRAPH.Link = exGEN.invent({
+exGRAPH.Link0 = exGEN.invent({
     create: 'link0',
 	inherit: exGRAPH.Base,
 	
@@ -1071,5 +1071,25 @@ exGRAPH.Link = exGEN.invent({
 	}
 });
 
+exGRAPH.Linkref = exGEN.invent({
+    create: 'linkref',
+	inherit: exGRAPH.Base,
+	
+    extend: {
+		init: function(node, pin){
+			this.Node(node);
+			this.Pin(pin);
+			return this;
+		},
+		
+		Node: function(nodeid){
+			return this.attr('node', nodeid);
+		},
+
+		Pin: function(pinid){
+			return this.attr('pin', pinid);
+		}
+	}
+});
 
 })(this);

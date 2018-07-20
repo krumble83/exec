@@ -57,6 +57,7 @@ exGEN.create = function(name) {
 };
 
 exGEN.adopt = function(node, parent) {
+	//console.log(node, parent);
 	if (!node) 
 		return null;
 
@@ -107,6 +108,7 @@ exGEN.Element = exGEN.invent({
 
 			while(parent && parent instanceof window.exGEN.Element){
 				if(typeof type === 'string' ? parent.matches(type) : parent instanceof type) return parent;
+				if(!parent.node.parentNode) return null;
 				if(parent.node.parentNode.nodeName == '#document') return null; // #720
 				parent = exGEN.adopt(parent.node.parentNode);
 			}

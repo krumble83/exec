@@ -4,8 +4,8 @@
 
 var pluginsList = [
 	'exsvg/exsvg.workspace.js'
-	, 'exsvg/exsvg.grid.js'
 	, 'exsvg/exsvg.selection.js'
+	, 'exsvg/exsvg.grid.js'
 	, 'exsvg/exsvg.undo.js'
 	, 'exsvg/exsvg.clipboard.js'
 	, 'exsvg/exsvg.menu.js'
@@ -185,22 +185,33 @@ exSVG.Worksheet = SVG.invent({
 		},
 		
 		import: function(data, parent){
-			//console.log('worksheet.import()', data);
+			//console.log('exSVG.Worksheet.import()', data);
 			var me = this;
 			
 			if(typeof data === 'string')
-				data = exLIB.getNode2(data);
-			
+				return me.import(exLIB.getNode2(data), parent);
+
 			if(me['import' + data.type.capitalize()])
 				return me['import' + data.type.capitalize()](data, me);
-
+		},
+		
+		importGraph: function(data, parent){
+			//console.log('exSVG.Worksheet.importGraph()', data);
+			var me = this
+			, set = new SVG.Set();
+			
 			me.startSequence();
 			data.select(':scope > *').each(function(){
-				//console.log(this);
-				me.import(this);
-			});
+				set.add(me.import(this, parent));
+			});			
 			me.stopSequence();
-			return me;
+			return set;
+		},
+		
+		
+		exportGraph: function(graph){	
+			var me = this;	
+			me.fire('export', {parent: graph});	
 		},
 		
 		showTooltip: function(e, text, timeout){

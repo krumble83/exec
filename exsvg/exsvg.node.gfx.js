@@ -262,7 +262,7 @@ exSVG.plugin(exSVG.Node, {
 		}
 		
 		me.mGfx.body.height(me.mGfx.body.height() + 12);
-		bodyBox = me.mGfx.body.rbox();
+		bodyBox = me.mGfx.body.bbox();
 
 		me.mGfx.expand.select('rect').width(bodyBox.w - 8);			
 		me.mGfx.expand.y(bodyBox.h - 18);

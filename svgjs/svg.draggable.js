@@ -197,7 +197,16 @@
       else
         this.el.move(x, y)
 	  */
+	  //console.log('rrr', this.el);
 	  this.el.move(x, y)
+		this.el.fire('dragmove', {
+			event: e
+		  , p: p
+		  , m: this.m
+		  , handler: this
+		})
+
+	if(this.el.event().defaultPrevented) return p		  
 	  // end krumble
     }
 
