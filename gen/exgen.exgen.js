@@ -1,5 +1,5 @@
 ;(function(ctx){
-"use strict";
+
 
 function capitalize(s) {
   return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
@@ -7,8 +7,8 @@ function capitalize(s) {
 
 function map(array, block) {
 	var i
-	  , il = array.length
-	  , result = [];
+		, il = array.length
+		, result = [];
 
 	for (i = 0; i < il; i++)
 	  result.push(block(array[i]));
@@ -16,12 +16,14 @@ function map(array, block) {
 	return result;
 }
 
-
-var exGEN = {document: document.implementation.createDocument(null, 'library')};
+var exGEN = {'xml': (new DOMParser()).parseFromString("<library/>", 'text/xml')};
 ctx.exGEN = exGEN;
 
 exGEN.extend = function() {
-  var modules, methods, key, i;
+  var modules
+	  , methods
+	  , key
+	  , i;
 
   modules = [].slice.call(arguments);
   methods = modules.pop();
@@ -53,7 +55,7 @@ exGEN.invent = function(config) {
 };
 
 exGEN.create = function(name) {
-	return exGEN.document.createElement(name);
+	return exGEN.xml.createElement(name);
 };
 
 exGEN.adopt = function(node, parent) {
@@ -126,6 +128,7 @@ exGEN.Element = exGEN.invent({
 		
 		top: function(){
 			var parent = this.parent();
+
 			this.remove();
 			parent.prepend(this);
 			return this;			
@@ -188,6 +191,7 @@ exGEN.Element = exGEN.invent({
 		create: function(type, args){
 			//console.log(args);
 			var ret = new exGEN[type]();
+
 			this.add(ret);
 			if(typeof ret.init === 'function')
 				ret.init.apply(ret, args);
@@ -222,6 +226,7 @@ exGEN.Element = exGEN.invent({
 		clone: function(parent){
 			//console.log(capitalize(this.node.nodeName));
 			parent = parent || exGEN;
+
 			var element = new parent[this.node.nodeName.capitalize()]();
 			element.type  = this.node.nodeName;
 			element.node  = this.node.cloneNode();

@@ -139,11 +139,13 @@ var undoManager = new UndoManager();
 exSVG.plugin(exSVG.Worksheet, {
 
 	init: function() {
-		var me = this;
+		var me = this
+			, bar;
+
 		me.sequenceEnabled = true;
 				
 		if(me.getTitleBar){
-			var bar = me.getTitleBar();
+			bar = me.getTitleBar();
 			assert(bar instanceof SVG.G);
 			me.mUndoIcon = bar.image('exsvg/img/undo.png')
 				.move(10,3)
@@ -181,6 +183,7 @@ exSVG.plugin(exSVG.Worksheet, {
 	
 	startSequence: function(name){
 		var me = this;
+
 		if(!me.sequenceEnabled)
 			return;
 		if(typeof name === 'function'){
@@ -195,6 +198,7 @@ exSVG.plugin(exSVG.Worksheet, {
 	
 	stopSequence: function(){
 		var me = this;
+
 		if(!me.sequenceEnabled)
 			return;
 		undoManager.stopSequence();
@@ -203,12 +207,14 @@ exSVG.plugin(exSVG.Worksheet, {
 	
 	enableSequence: function(enable){
 		var me = this;
+
 		me.sequenceEnabled = (typeof enable !== 'undefined') ? enable : true;
 		return me;
 	},
 
 	undo: function(viewbox){
 		var me = this;
+
 		undoManager.undo();
 		me.updateUndoButtons();
 		me.fire('undoredo-undo');
@@ -216,6 +222,7 @@ exSVG.plugin(exSVG.Worksheet, {
 	
 	redo: function(){
 		var me = this;
+
 		undoManager.redo();
 		me.updateUndoButtons();
 		me.fire('undoredo-redo');
@@ -223,12 +230,14 @@ exSVG.plugin(exSVG.Worksheet, {
 	
 	clearUndo: function(){
 		var me = this;
+
 		undoManager.clear();		
 		me.updateUndoButtons();
 	},
 	
 	updateUndoButtons: function(){
 		var me = this;
+
 		if(undoManager.hasUndo())
 			me.mUndoIcon.removeClass('disabled');
 		else
@@ -245,7 +254,7 @@ exSVG.plugin(exSVG.Worksheet, {
 		me.mUndoIcon.off();
 		me.mRedoIcon.off()
 	}
-})
+});
 
 
 exSVG.plugin(exSVG.Node, {
@@ -315,7 +324,7 @@ exSVG.plugin(exSVG.Node, {
 exSVG.plugin(exSVG.Link, {
 	init: function(){
 		var me = this
-		, worksheet = me.parent(exSVG.Worksheet);
+			, worksheet = me.parent(exSVG.Worksheet);
 		
 		me.on('add.undo', function(e){
 			undoManager.add({

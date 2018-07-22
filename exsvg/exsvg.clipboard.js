@@ -94,7 +94,7 @@ exSVG.plugin(exSVG.Worksheet, {
 			//console.log('data pasted from clipboard');
 			return me.paste(clipboardData.getData('Text'));
 		}
-		else if(typeof data === 'string'){		
+		else if(typeof data === 'string'){
 			graph = me.strToGraph(data);
 			if(!graph)
 				return;

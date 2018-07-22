@@ -11,7 +11,7 @@ exSVG.plugin(exSVG.Worksheet, {
 		
 		if(!workSpace)
 			return;
-		var options = options || {};
+		options = options || {};
 		options.small = options.small || 16;
 		options.big = options.big || 128;
 		
@@ -20,20 +20,20 @@ exSVG.plugin(exSVG.Worksheet, {
 	
 		var s = me.pattern(options.small, options.small, function(add) {
 			add.path('M ' + (options.small) + ' 0 L 0 0 0 ' + (options.small)).fill('none')
-		}).attr('patternUnits', 'userSpaceOnUse').addClass('smallGrid')
+		}).attr('patternUnits', 'userSpaceOnUse').addClass('smallGrid');
 
 		var m = me.pattern(options.big, options.big, function(add) {
-			add.rect(options.big, options.big).fill('url(#' + s.id() + ')')
+			add.rect(options.big, options.big).fill('url(#' + s.id() + ')');
 			add.path('M ' + (options.big) + ' 0 L 0 0 0 ' + (options.big)).fill('none')
-		}).attr('patternUnits', 'userSpaceOnUse').addClass('medGrid')
+		}).attr('patternUnits', 'userSpaceOnUse').addClass('medGrid');
 		
 		
 		workSpace.fill('url(#' + m.id() + ')')
 			.removeClass('workspace')
 			.addClass('grid');
-		
-		if(workSpace != me.doc())
-			workSpace.back();
+
+        if (workSpace !== me.doc())
+    		workSpace.back();
 		return me;
 	},
 	
@@ -60,7 +60,7 @@ exSVG.plugin(exSVG.SelectionZ, {
 		
 		if(arguments.length > 0){
 			snap = me.mWorksheet.snapToGrid(x,0);
-			if(snap.x != x)
+			if(snap.x !== x)
 				ret = SVG.G.prototype.x.call(me, snap.x);
 			else
 				return SVG.G.prototype.x.apply(me, arguments);
@@ -81,7 +81,7 @@ exSVG.plugin(exSVG.SelectionZ, {
 		
 		if(arguments.length > 0){
 			snap = me.mWorksheet.snapToGrid(0,y);
-			if(snap.y != y)
+			if(snap.y !== y)
 				ret = SVG.G.prototype.y.call(me, snap.y);
 			else
 				return SVG.G.prototype.y.apply(me, arguments);

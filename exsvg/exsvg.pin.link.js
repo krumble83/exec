@@ -72,10 +72,10 @@ exSVG.plugin(exSVG.Pin, {
 		me.on('export.pinlink', function(e){
 			//console.log('exSVG.Pin.export()[pinlink plugin]', this.getId());
 			var me = this
-			, pin = e.detail.parent
-			, graph = pin.parent(exGRAPH.Graph)
-			, links
-			, linkref;
+				, pin = e.detail.parent
+				, graph = pin.parent(exGRAPH.Graph)
+				, links
+				, linkref;
 			
 			if(!graph || !me.hasClass('linkable'))
 				return;
@@ -89,12 +89,12 @@ exSVG.plugin(exSVG.Pin, {
 			// we can export the link
 			links.each(function(){
 				var oPin = this.getOtherPin(me);
+
 				assert(oPin instanceof exSVG.Pin);
 				if(graph.GetNode(oPin.getNode().id())){
 					this.export(graph);
 				}
 			});
-			return;
 		});
 		
 	},
@@ -107,7 +107,8 @@ exSVG.plugin(exSVG.Pin, {
 	getLinks: function(){
 		//console.log('exSVG.Pin.getLinks()[pinlink plugin]', this);
 		var me = this
-		, type = (me.getType() == exSVG.Pin.PIN_IN) ? 'pinIn' : 'pinOut';
+			, type = (me.getType() == exSVG.Pin.PIN_IN) ? 'pinIn' : 'pinOut';
+
 		return me.parent(exSVG.Worksheet).select('.exLink[data-' + type + '="' + me.id() + '"]');
 	},
 		
@@ -118,7 +119,7 @@ exSVG.plugin(exSVG.Pin, {
 	startLink: function(target, className){
 		//console.warn('exSVG.Pin.startLink()');
 		var me = this
-		, link;
+			, link;
 		
 		if(target instanceof MouseEvent)
 			link = me.parent(exSVG.Worksheet).createLink(me, target, className);
@@ -160,10 +161,11 @@ exSVG.plugin(exSVG.Pin, {
 	
 	acceptLink: function(otherPin){
 		//console.log('exSVG.Pin.acceptLink()');
-		assert(otherPin instanceof exSVG.Pin)
 		var me = this
-		, ret = 0;
-					
+			, ret = 0;
+
+        assert(otherPin instanceof exSVG.Pin);
+
 		if(otherPin.getNode() == me.getNode())
 			return {code: exSVG.Pin.PIN_LINK_ACCEPT_SAME_NODE, label: '<div><img src="exsvg/img/none.png"> Both Pin are on same Node'};
 
@@ -193,7 +195,7 @@ exSVG.plugin(exSVG.Pin, {
 	addLink: function(link){
 		//console.warn('exSVG.Pin.addLink()', link);
 		var me = this
-		, links = me.getLinks();
+			, links = me.getLinks();
 
 		assert(link instanceof exSVG.Link);
 		me.addClass('linked');
@@ -216,12 +218,13 @@ exSVG.plugin(exSVG.Pin, {
 	
 	removeLink: function(link){
 		//console.log('exSVG.Pin.removeLink()');
-		var me = this;
+		var me = this
+			, links;
 
 		assert(link instanceof exSVG.Link);
 		
 		//check if we have remaining links on this pin
-		var links = me.getLinks();
+		links = me.getLinks();
 		if(links.length() > 0){
 			me.paint();
 			return;

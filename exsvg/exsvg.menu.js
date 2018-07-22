@@ -7,7 +7,7 @@ exSVG.plugin(exSVG.Worksheet, {
 	
 	init: function(){
 		var me = this
-		, menuEl = document.querySelector('#exMenu');
+			, menuEl = document.querySelector('#exMenu');
 		
 		if(menuEl && menuEl.instance)
 			menuRoot = menuEl.instance;
@@ -21,12 +21,13 @@ exSVG.plugin(exSVG.Worksheet, {
 		me.doc().on('link-start.menu', menuRoot.close, menuRoot);				
 		return me;
 	}
-})
+});
 
 
 exSVG.plugin(exSVG.Link, {
 	init: function(){
 		var me = this;
+
 		me.on('contextmenu', function(e){
 			me.showLinkContextMenu(me, e);
 		}, me, {capture: true});
@@ -34,8 +35,9 @@ exSVG.plugin(exSVG.Link, {
 	
 	showLinkContextMenu: function(link, e){
 		var me = this
-		, worksheet = me.parent(exSVG.Worksheet)
-		, el
+			, worksheet = me.parent(exSVG.Worksheet)
+			, el
+			, pt;
 
 		e.preventDefault();
 		e.stopPropagation();
@@ -59,7 +61,7 @@ exSVG.plugin(exSVG.Link, {
 			return;
 		
 		//menuRoot.node = node;
-		var pt = {x: e.pageX, y: e.pageY};
+		pt = {x: e.pageX, y: e.pageY};
 		menuRoot.showAt(pt, link);
 		link.fire('menu', {menu: menuRoot});
 		
@@ -71,6 +73,7 @@ exSVG.plugin(exSVG.Link, {
 exSVG.plugin(exSVG.Pin, {
 	init: function(){
 		var me = this;
+
 		me.on('contextmenu', function(e){
 			me.showPinContextMenu(this, e);			
 		});
@@ -78,7 +81,9 @@ exSVG.plugin(exSVG.Pin, {
 	
 	showPinContextMenu: function(pin, e){		
 		var me = this
-		, worksheet = me.parent(exSVG.Worksheet);
+			, worksheet = me.parent(exSVG.Worksheet)
+			, links = pin.getLinks()
+			, breaq;
 		
 		e.preventDefault();
 		e.stopPropagation();
@@ -88,16 +93,13 @@ exSVG.plugin(exSVG.Pin, {
 		
 		menuRoot.clear()
 			.addTitleItem('Pin Actions');
-		
-		var breaq;
-		var links = pin.getLinks();
-		
-		if(links.length() == 0){
+
+		if(links.length() === 0){
 			breaq = menuRoot.addItem('Break Link(s)', 'breaklink')
 				.setMeta('Remove link(s) to this pin')
 				.enabled(false);
 		}
-		else if(links.length() == 1){
+		else if(links.length() === 1){
 			var p = links.last().getOtherPin(pin);
 			assert(p instanceof exSVG.Pin, 'instanceof "exSVG.Pin expected" but "' + p.constructor.name + '" found');
 			menuRoot.addItem('Break Link to `' + p.getNode().getData('title') + '`', 'breaklink', function(){
@@ -118,7 +120,7 @@ exSVG.plugin(exSVG.Pin, {
 
 			links.each(function(){
 				var link = this
-				, p = link.getOtherPin(pin);
+					, p = link.getOtherPin(pin);
 				
 				assert(p instanceof exSVG.Pin, 'instanceof "exSVG.Pin expected" but "' + p.constructor.name + '" found');
 				breaks.addItem('Break Link to `' + p.getNode().getData('title') + '`', 'breaklinks', function(){
@@ -157,9 +159,9 @@ exSVG.plugin(exSVG.Node, {
 
 	showNodeContextMenu: function(node, e){
 		var me = this
-		, worksheet = me.parent(exSVG.Worksheet)
-		, el
-		, point = {x: e.pageX || 0, y: e.pageY || 0};
+			, worksheet = me.parent(exSVG.Worksheet)
+			, el
+			, point = {x: e.pageX || 0, y: e.pageY || 0};
 
 		e.preventDefault();
 		e.stopPropagation();

@@ -9,8 +9,8 @@ exSVG.plugin(exSVG.Worksheet, {
 	init: function() {
 		//console.log('exSVG.Worksheet.initWorkspace()');
 		var me = this
-		, panEl
-		, panElCursor;	
+			, panEl
+			, panElCursor;
 		
 		me.mWorkspace = me.rect(100000,100000)
 			.x(-50000)
@@ -85,7 +85,7 @@ exSVG.plugin(exSVG.Node, {
 	
 	init: function(){
 		var me = this
-		, worksheet = me.parent(exSVG.Worksheet);
+			, worksheet = me.parent(exSVG.Worksheet);
 		
 		me.on('contextmenu.workspace', function(e){
 			if(panStart.pan){

@@ -7,6 +7,7 @@ exSVG.RampNode = SVG.invent({
     extend: {
         init: function(data){
 			var me = this;
+
 			exSVG.Node.prototype.init.apply(me, arguments);
 			me.addClass('exRamp');
 			
@@ -30,7 +31,7 @@ exSVG.RampNode = SVG.invent({
 		
 		drawBody: function(){
 			var me = this
-			, box = me.rbox();
+				, box = me.rbox();
 			
 			if(!me.mGfx.body){
 				me.mGfx.body = me.rect(150, 10)
@@ -64,7 +65,7 @@ exSVG.RampNode = SVG.invent({
 		
 		width: function(width){
 			var me = this
-			, ret = SVG.G.prototype.width.apply(me, arguments);
+				, ret = SVG.G.prototype.width.apply(me, arguments);
 			
 			if(width){
 				me.mGfx.body.width(width);
@@ -77,7 +78,7 @@ exSVG.RampNode = SVG.invent({
 		
 		drawPins: function(){
 			var me = this
-			, offset = 8;
+				, offset = 8;
 			
 			me.select('.exPin.input').each(function(){
 				this.move(0, offset);
@@ -96,12 +97,13 @@ exSVG.RampNode = SVG.invent({
 		},
 		
 		drawLink: function(input, output){
-			var me = this;
+			var me = this
+				, link;
 			
 			assert(input instanceof exSVG.Pin);
 			assert(output instanceof exSVG.Pin);
 			
-			var link = me.parent(exSVG.Worksheet).createLink(input, output, exSVG.RampLink);
+			link = me.parent(exSVG.Worksheet).createLink(input, output, exSVG.RampLink);
 			return;
 			
 			var link = new exSVG.RampLink();
@@ -113,9 +115,9 @@ exSVG.RampNode = SVG.invent({
 		
 		importInput: function(data){
 			var me = this
-			, a = 0
-			, input
-			, output
+				, a = 0
+				, input
+				, output;
 			
 			input = exSVG.Node.prototype.importInput.apply(me, arguments);
 			assert(input instanceof exSVG.Pin);
@@ -132,7 +134,7 @@ exSVG.RampNode = SVG.invent({
 		
 		onMenu: function(e){
 			var me = this
-			, menu = e.detail.menu;
+				, menu = e.detail.menu;
 			
 			menu.sep();
 			menu.addTitleItem('Tracks');
@@ -164,7 +166,7 @@ exSVG.RampPin = SVG.invent({
 		
 		onMenu: function(e){
 			var me = this
-			, menu = e.detail.menu;
+				, menu = e.detail.menu;
 			
 			menu.sep();
 			menu.addTitleItem('Track');
@@ -209,6 +211,7 @@ exSVG.RampLink = SVG.invent({
     extend: {
 		init: function(){
 			var me = this;
+
             exSVG.Link.prototype.init.apply(me, arguments);
 			me.style({'pointer-events': 'all'});
 			

@@ -106,7 +106,7 @@ exSVG.Pin = SVG.invent({
 				
 		getType: function(){
 			var me = this
-			, ret = 0;
+				, ret = 0;
 			if(me.hasClass('input'))
 				ret += exSVG.Pin.PIN_IN;
 			if(me.hasClass('output'))
@@ -128,7 +128,7 @@ exSVG.Pin = SVG.invent({
 				
 		setData: function(name, value){
 			var me = this
-			, data = me.data(name);
+				, data = me.data(name);
 			
 			if(data && data != value || data == undefined){
 				me.data(name, value);
@@ -157,8 +157,8 @@ exSVG.Pin = SVG.invent({
 		export: function(graph){
 			//console.warn('exSVG.Pin.export()', graph);
 			var me = this
-			, attrs = me.attr()
-			, pin;
+				, attrs = me.attr()
+				, pin;
 			
 			
 			if(me.getType() == exSVG.Pin.PIN_IN){
@@ -257,8 +257,8 @@ SVG.extend(exSVG.Node, {
 	createPin: function(data, parent){
 		//console.log('exSVG.Node.createPin()', data);
 		var me = this
-		, type = exLIB.getDataType2(data.Type())
-		, pin = new exSVG[(data.Ctor && data.Ctor()) ? data.Ctor() : type.Ctor()]();
+			, type = exLIB.getDataType2(data.Type())
+			, pin = new exSVG[(data.Ctor && data.Ctor()) ? data.Ctor() : type.Ctor()]();
 		
 		assert(pin instanceof exSVG.Pin);
 		assert(parent);
@@ -278,9 +278,9 @@ SVG.extend(exSVG.Node, {
 
 	getPins: function(filters){
 		var me = this
-		, pins
-		, type
-		, out
+			, pins
+			, type
+			, out
 		
 		filters = filters || {};
 		

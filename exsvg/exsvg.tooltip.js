@@ -8,7 +8,7 @@ SVG.extend(SVG.Element, {
 		me.doc().group()
 			.rect(100,20)
 			.move(200,100)
-			.addClass('tooltip')
+			.addClass('tooltip');
 			
 		me.on('mouseover', function(e){
 

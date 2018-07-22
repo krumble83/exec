@@ -19,7 +19,28 @@
  <body style="background-color:#262626;padding:0;margin:0; overflow:hidden">
 	<div id="drawing" style="height:870px"></div><a href="javascript: exportGraph()" style="color:#fff">export</a>&nbsp;&nbsp;<a href="javascript:exportTest()" style="color:#fff">generate</a><br />
 	<textarea id="ttest"></textarea><textarea width="10" id="tesfst"></textarea>
+	<img id="drag1" src="img_logo.gif" draggable="true" ondragstart="drag(event)" width="336" height="69">
 	<script>
+	
+	
+function allowDrop(ev) {
+    ev.preventDefault();
+}
+
+function drag(ev) {
+	var ex = new exGRAPH.Graph()
+	var n = ex.Node('test', 'Caca');
+	n.Input('test', 'core.type.string');
+    ev.dataTransfer.setData("application/xml", ex.node.outerHTML);
+}
+
+function drop(ev) {
+    ev.preventDefault();
+    var data = ev.dataTransfer.getData("text");
+    ev.target.appendChild(document.getElementById(data));
+}	
+	
+	
 	
 	var format = require('xml-formatter');
 /*	
@@ -64,7 +85,7 @@
 			n2.getPin('add').addPin();
 			me.createLink(n1.getPin('array'), n2.getPin('array'));
 
-			n1 = me.import(exLIB.getNode2('core.type.string.makeliteral').attr('pos', '400,100'));
+			n1 = me.import(exLIB.getNode2('core.string.makeliteral').attr('pos', '400,100'));
 			me.createLink(n2.getPin('item_1'), n1.getPin('value'));
 
 			n1 = forloop = me.import(exLIB.getNode2('core.flow.forloop').attr('pos','500,360'));
@@ -83,11 +104,13 @@
 			me.createLink(n2.getPin('entry'), forloop.getPin('completed'));
 			me.createLink(n2.getPin('param_0'), forloop.getPin('index'));
 
-			me.import(exLIB.getNode2('core.type.date.break').attr('pos','1500,300'));
+			me.import(exLIB.getNode2('core.date.break').attr('pos','1500,300'));
 			
 			
 			me.import(exLIB.getNode2('special.reroutenode').attr('pos','850,300'));
 
+			var test = new exGRAPH.Library();
+			test.GetNode('ok');
 			//me.import(exLIB.getNode2('special.rampnode').attr('pos','650,700')).width(800);
 			
 			return;

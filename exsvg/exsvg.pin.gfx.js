@@ -8,7 +8,7 @@ exSVG.plugin(exSVG.Pin, {
 		me.mGfx = me.mGfx || {};
 		
 		me.on('mousemove.pingfx', function(e){
-			if(e.buttons == 1)
+			if(e.buttons === 1)
 				return;
 
 			// If no mouse button is pressed, display a tooltip when the mouse cursor is over the pin
@@ -20,7 +20,7 @@ exSVG.plugin(exSVG.Pin, {
 		});
 		
 		me.on('data-change', function(e){
-			if(e.detail.name == 'type') {
+			if(e.detail.name === 'type') {
 				var t = exLIB.getDataType2(me.getDataType());
 				me.setColor(t.Color());
 				me.updateTooltip();
@@ -38,7 +38,7 @@ exSVG.plugin(exSVG.Pin, {
 	setColor: function(color){
 		//console.log('Pin.setColor()', color);
 		var me = this;
-		if(typeof color == 'string')
+		if(typeof color === 'string')
 			me.mColor = new SVG.Color(color);
 		else if(color instanceof SVG.Color)
 			me.mColor = color;
@@ -52,8 +52,9 @@ exSVG.plugin(exSVG.Pin, {
 	},
 	
 	getCenter: function(){
-		var me = this;
-		var ret = me.parent(exSVG.Worksheet).point(this.mGfx.pin.rbox());
+		var me = this
+			,ret = me.parent(exSVG.Worksheet).point(this.mGfx.pin.rbox());
+
 		ret.x += 5;
 		ret.y += 5;
 		return ret;
@@ -61,9 +62,9 @@ exSVG.plugin(exSVG.Pin, {
 		
 	updateTooltip: function(){
 		var me = this
-		, dataType = exLIB.getDataType2(me.getDataType())
-		, text = me.getTooltip() || dataType.Tooltip() || ''
-		, type = exLIB.isArrayDataType(me.getDataType()) ? 'Array of ' + dataType.Label() : dataType.Label();
+			, dataType = exLIB.getDataType2(me.getDataType())
+			, text = me.getTooltip() || dataType.Tooltip() || ''
+			, type = exLIB.isArrayDataType(me.getDataType()) ? 'Array of ' + dataType.Label() : dataType.Label();
 
 		me.mTooltip = '<span>' + me.getId() + '</span><span>' + type + '</span><span>' + text + '</span>';
 		return me;
@@ -72,8 +73,8 @@ exSVG.plugin(exSVG.Pin, {
 	paint: function(){
 		//console.log('exSVG.Pin.paint()');
 		var lbox
-		, pbox
-		, me = this;
+			, pbox
+			, me = this;
 				
 		if(me.isArrayDataType())
 			pbox = me.drawPinArray();
@@ -89,10 +90,10 @@ exSVG.plugin(exSVG.Pin, {
 	
 	drawEditor: function(){
 		var me = this
-		, dataType = exLIB.getDataType2(me.getDataType())
-		, labelbox = (me.mGfx.label) ? me.mGfx.label.bbox() : {x: 0, y:0};
+			, dataType = exLIB.getDataType2(me.getDataType())
+			, labelbox = (me.mGfx.label) ? me.mGfx.label.bbox() : {x: 0, y:0};
 		
-		if(me.getType() == exSVG.Pin.PIN_OUT || exLIB.isArrayDataType(me.getDataType()) || !dataType.Editor().Name()){
+		if(me.getType() === exSVG.Pin.PIN_OUT || exLIB.isArrayDataType(me.getDataType()) || !dataType.Editor().Name()){
 			if(me.mGfx.editor){
 				me.mGfx.editor.destroy();
 				me.mGfx.editor = null;
@@ -117,8 +118,8 @@ exSVG.plugin(exSVG.Pin, {
 	
 	drawBackground: function(x, y, w, h){
 		var me = this
-		, grad
-		, color = me.getColor();
+			, grad
+			, color = me.getColor();
 		
 		if(!me.mGfx.bg){
 			grad = SVG.getDef('pinFocus' + color.toHex().replace('#', '_'), me, function(){
@@ -135,7 +136,7 @@ exSVG.plugin(exSVG.Pin, {
 			me.fire('resize');
 			
 			me.on('data-change', function(e){
-				if(e.detail.name != 'color')
+				if(e.detail.name !== 'color')
 					return;
 				color = me.getColor();
 				grad = SVG.getDef('pinFocus' + color.toHex().replace('#', '_'), me, function(){
@@ -153,7 +154,7 @@ exSVG.plugin(exSVG.Pin, {
 		else
 			me.mGfx.bg.width(me.mGfx.pin.bbox().w+20);
 		
-		if(me.getType() == exSVG.Pin.PIN_OUT && me.mGfx.label){
+		if(me.getType() === exSVG.Pin.PIN_OUT && me.mGfx.label){
 			me.mGfx.bg.x(-(me.mGfx.label.bbox().w+5));
 		}
 		me.mGfx.bg.back();
@@ -163,8 +164,8 @@ exSVG.plugin(exSVG.Pin, {
 	drawPin: function(x, y, size){
 		//console.log('exscgpin.drawPin', this);
 		var me = this
-		, box
-		, color = color || me.getColor();
+			, box
+			, color = color || me.getColor();
 		
 		if(!me.mGfx.pin) {
 			me.mGfx.pin = me.circle(size || 10)
@@ -178,7 +179,7 @@ exSVG.plugin(exSVG.Pin, {
 			me.mGfx.line = me.line((x || box.cx) + 7, (y || box.cy), (x || box.cx) + 7, y || box.cy)
 				.stroke({color: color, width: 5})
 				.attr('stroke-linecap', 'round')
-				.attr('pointer-events', 'none')
+				.attr('pointer-events', 'none');
 			me.fire('resize');
 		}
 		me.mGfx.pin.stroke({color: color})
@@ -189,8 +190,9 @@ exSVG.plugin(exSVG.Pin, {
 	},
 	
 	drawPinArray: function(x, y, color, size){
-		var me = this
-		, color = color || me.getColor();
+		var me = this;
+
+		color = color || me.getColor();
 		
 		if(!me.mGfx.pin) {
 			me.addClass('exPinArray');
@@ -200,7 +202,7 @@ exSVG.plugin(exSVG.Pin, {
 				.addClass('pin')
 		}
 
-		me.mGfx.pin.stroke({width:4, color: color || color})
+		me.mGfx.pin.stroke({width:4, color: color || color});
 		var pat = SVG.getDef('pinArrayPattern' + color.toHex().replace('#','-'), me, function(){
 			return me.pattern(11, 10, function(add) {
 				add.rect(5,4).move(3,3).fill(color);
@@ -219,7 +221,7 @@ exSVG.plugin(exSVG.Pin, {
 				.addClass('label');
 		}
 		me.mGfx.label.plain(text);
-		if(me.getType() == exSVG.Pin.PIN_OUT){
+		if(me.getType() === exSVG.Pin.PIN_OUT){
 			me.mGfx.label.x(-(me.mGfx.label.bbox().width + 27));
 		}
 		return me;

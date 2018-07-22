@@ -22,7 +22,7 @@ exSVG.PinEditorBase = SVG.invent({
 		
 		draw: function(){
 			var me = this
-			, pin = me.parent(exSVG.Pin);
+				, pin = me.parent(exSVG.Pin);
 			
 			if(pin.hasClass('linked'))
 				me.hide();
@@ -49,9 +49,9 @@ exSVG.PinEditorInput = SVG.invent({
 		
 		init: function(){
 			var me = this
-			, pin = me.parent(exSVG.Pin)
-			, editor = exLIB.getDataType2(pin.getDataType()).Editor()
-			, worksheet = me.parent(exSVG.Worksheet);
+				, pin = me.parent(exSVG.Pin)
+				, editor = exLIB.getDataType2(pin.getDataType()).Editor()
+				, worksheet = me.parent(exSVG.Worksheet);
 			
 			exSVG.PinEditorBase.prototype.init.apply(me, arguments);
 			
@@ -64,7 +64,7 @@ exSVG.PinEditorInput = SVG.invent({
 				pin.fire('field-change');
 			}
 
-			pin.addClass('exPinTextInput')
+			pin.addClass('exPinTextInput');
 			
 			me.appendChild('div', {class : 'textareaWrapper'})
 				.on('mousedown', function(e){
@@ -114,11 +114,11 @@ exSVG.PinEditorInput = SVG.invent({
 		
 		draw: function(){
 			var me = this
-			, pin = me.parent(exSVG.Pin);
+				, pin = me.parent(exSVG.Pin);
 			
 			exSVG.PinEditorBase.prototype.draw.apply(me, arguments);
 			
-			if(pin.hasClass('linked') && typeof me.input != 'undefined'){
+			if(pin.hasClass('linked') && typeof me.input !== 'undefined'){
 				me.input.innerHTML = '';
 				me.width(20).height(22);
 			}
@@ -145,11 +145,11 @@ exSVG.PinEditorBool = SVG.invent({
 		
 		init: function(){
 			var me = this
-			, pin = me.parent(exSVG.Pin);
+				, pin = me.parent(exSVG.Pin);
 			
 			exSVG.PinEditorBase.prototype.init.apply(me, arguments);
 			
-			pin.addClass('exPinBoolInput')
+			pin.addClass('exPinBoolInput');
 			
 			me.appendChild('input', {type: 'checkbox'})
 				.style('pointer-events', 'all')
@@ -176,11 +176,11 @@ exSVG.PinEditorBool = SVG.invent({
 		
 		draw: function(){
 			var me = this
-			, pin = me.parent(exSVG.Pin);
+				, pin = me.parent(exSVG.Pin);
 			
 			exSVG.PinEditorBase.prototype.draw.apply(me, arguments);
 			
-			if(pin.hasClass('linked') && typeof me.input != 'undefined'){
+			if(pin.hasClass('linked') && typeof me.input !== 'undefined'){
 				me.input.checked = false;
 				me.width(20).height(22);
 			}
@@ -205,13 +205,13 @@ exSVG.PinEditorSelect = SVG.invent({
 		
 		init: function(){
 			var me = this
-			, pin = me.parent(exSVG.Pin)
-			, type = exLIB.getDataType2(pin.getDataType())
-			, worksheet = me.parent(exSVG.Worksheet);
+				, pin = me.parent(exSVG.Pin)
+				, type = exLIB.getDataType2(pin.getDataType())
+				, worksheet = me.parent(exSVG.Worksheet);
 			
 			exSVG.PinEditorBase.prototype.init.apply(me, arguments);
 			me.width(100);
-			pin.addClass('exPinSelectInput')
+			pin.addClass('exPinSelectInput');
 			
 			me.appendChild('select')
 				.style('pointer-events', 'all')
@@ -256,7 +256,7 @@ exSVG.PinEditorSelect = SVG.invent({
 			
 			exSVG.PinEditorBase.prototype.draw.apply(me, arguments);
 			
-			if(pin.hasClass('linked') && typeof me.input != 'undefined'){
+			if(pin.hasClass('linked') && typeof me.input !== 'undefined'){
 				me.input.checked = false;
 				me.width(20).height(22);
 			}

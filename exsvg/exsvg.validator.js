@@ -29,7 +29,8 @@ exSVG.plugin(exSVG.Node, {
 
 	init: function() {
 		var me = this
-		, worksheet = me.parent(exSVG.Worksheet);
+			, worksheet = me.parent(exSVG.Worksheet);
+
 		me.on('add', worksheet.checkGraph, worksheet);
 	}
 });

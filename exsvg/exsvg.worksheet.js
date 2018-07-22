@@ -50,8 +50,25 @@ exSVG.Worksheet = SVG.invent({
 				 me.doc().removeClass('blur');
 			});
 			
+			me.initDnd();
+			
 			return me;
         },
+		
+		initDnd: function(){
+			var me = this;
+			
+			me.on('dragover.worksheet', function(e){
+				var isLink = e.dataTransfer.types.indexOf('application/xml') > -1;
+				if (isLink)
+					e.preventDefault();
+			});
+
+			me.on('drop.worksheet', function(e){
+				console.dir(e.dataTransfer.getData('application/xml'));
+				me.import(me.strToGraph(e.dataTransfer.getData('application/xml')));
+			});			
+		},
 		
 		doLayout: function(){
 			//console.log(this.mTitle.bbox().width, this.doc().parent().clientWidth);
@@ -83,7 +100,7 @@ exSVG.Worksheet = SVG.invent({
 			me.doc().on('node-add.worksheet-dragnode', function(e){
 				//console.log('worksheet:nodeadd.worksheet-drag');
 				var dragPoint = null
-				, node = e.detail.node;
+					, node = e.detail.node;
 
 				if(!node.draggable)
 					return;
@@ -93,7 +110,7 @@ exSVG.Worksheet = SVG.invent({
 					//console.log('node.dragstart', e);
 					this.fire('startmove', e);
 					dragPoint = e.detail.p;
-				})
+				});
 				node.on('dragend.worksheet-dragnode', function(e){
 					//console.log('node.dragend', e);
 					var m = {x: e.detail.p.x - dragPoint.x, y: e.detail.p.y - dragPoint.y};
@@ -109,9 +126,9 @@ exSVG.Worksheet = SVG.invent({
 
 			me.doc().on('before-pin-menu', function(e){
 				var menu
-				, pin
-				, links
-				, jumps;
+					, pin
+					, links
+					, jumps;
 				
 				if(!me.zoom) // if panZoom not avaiable
 					return;
@@ -141,8 +158,9 @@ exSVG.Worksheet = SVG.invent({
 				else {
 					jumps = menu.addSubMenu('Jump to... ', 'jump');
 					links.each(function(){
-						var link = this;
-						var p = link.getOtherPin(pin);
+						var link = this
+							, p = link.getOtherPin(pin);
+
 						assert(p instanceof exSVG.Pin, 'instanceof "exSVG.Pin expected" but "' + p.constructor.name + '" found');
 						jumps.addItem('Jump to `' + p.getNode().getData('title') + '`', 'jumpto', function(){
 							console.warn('TODO : Jump to node');
@@ -158,6 +176,7 @@ exSVG.Worksheet = SVG.invent({
 		createHeader: function(){
 			//console.log('exSVG.Worksheet.createHeader()');
 			var me = this;
+
 			me.mTitleGroup = me.doc()
 				.group()
 				.id('gtitle')
@@ -177,6 +196,7 @@ exSVG.Worksheet = SVG.invent({
 		createTooltip: function(){
 			//console.log('exSVG.Worksheet.createTooltip()');
 			var me = this;
+
 			me.mToolTip = document.querySelector('#exTooltip');
 			if(!me.mToolTip){
 				me.mToolTip = document.createElement('div');
@@ -209,7 +229,7 @@ exSVG.Worksheet = SVG.invent({
 		importGraph: function(data, parent){
 			//console.log('exSVG.Worksheet.importGraph()', data);
 			var me = this
-			, set = new SVG.Set();
+				, set = new SVG.Set();
 			
 			me.startSequence();
 			data.select(':scope > *').each(function(){
@@ -222,7 +242,8 @@ exSVG.Worksheet = SVG.invent({
 		
 		exportGraph: function(graph){	
 			//console.log('exSVG.Worksheet.exportGraph()', data);
-			var me = this;	
+			var me = this;
+
 			me.fire('export', {parent: graph});	
 		},
 		
@@ -245,6 +266,7 @@ exSVG.Worksheet = SVG.invent({
 		hideTooltip: function(){
 			//console.log('exSVG.Worksheet.hideTooltip()');
 			var me = this;
+
 			me.mToolTip.timer = null;
 			me.mToolTip.setAttribute('class', 'exTooltip');
 			return me;
@@ -270,14 +292,14 @@ exSVG.Worksheet = SVG.invent({
 		strToGraph: function(str){
 			//console.log('exSVG.Worksheet.getPoint()');
 			var graph = new exGRAPH.Graph()
-			, parser = new DOMParser()
-			, xmlDoc = parser.parseFromString(str, "text/xml");
+				, parser = new DOMParser()
+				, xmlDoc = parser.parseFromString(str, "text/xml");
 			//document.getElementById('ttest').value = xmlDoc.innerHTML;
 			
 			if(xmlDoc.querySelector('parsererror')){
 				return console.error('cant paste from clipboard');
 			}
-			
+			//console.log(xmlDoc.firstChild.innerHTML);
 			graph.node.innerHTML = xmlDoc.firstChild.innerHTML;
 			return graph;
 		},
@@ -288,8 +310,9 @@ exSVG.Worksheet = SVG.invent({
 	}, 
 	construct: {
 		worksheet: function(callback, plugins) {
-			var ret = new exSVG.Worksheet()
-			, plugins = plugins || pluginsList;
+			var ret = new exSVG.Worksheet();
+
+			plugins = plugins || pluginsList;
 			
 			this.put(ret);
 			loadCss('exsvg/css/css.css');

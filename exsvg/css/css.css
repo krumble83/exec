@@ -13,6 +13,9 @@
 	stroke: #333;
 }
 
+.progress{
+	cursor: progress;
+}
 
 .hidden {
 	display: none;

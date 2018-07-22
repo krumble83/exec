@@ -2,7 +2,7 @@
 
 
 
-var createTab = function(target, callback){
+var createTab = function(target, attributes, callback){
 	var tab
 	, me = this
 	, title  = '<span style="display:none">g</span>' + target;
@@ -11,7 +11,7 @@ var createTab = function(target, callback){
 		title: target,
 		closable:true,
 		iconCls : 'icon-graph-small',
-		attributes: {svg: null},
+		attributes: attributes
 	});
 	tab = $('#uiTabs').tabs('getTab', target);
 	tab.panel('body').append('<div style="height:100%;width:100%;background-color:#262626" id="svg_g' + target + '">');
@@ -21,7 +21,7 @@ var createTab = function(target, callback){
 		if(typeof callback == 'function')
 			callback.call(this);		
 	});
-	//$(tab).panel('doLayout');
+	return tab;
 }
 
 
@@ -57,21 +57,21 @@ ctx.Workspace.prototype.addDevice = function(deviceId){
 
 ctx.Workspace.prototype.addGraph = function(name, callback){
 	var me = this
-	, tab
+	, node
 	, svg
 	, askName = false;
 	
-	if(!name || $('#uiTabs').tabs('getTab', name)){
+	if(!name){
 		askName = true;
-		var n = name || 'NewGraph';
+		var n = 'NewGraph';
 		var a=0;
-		var t = true;
-		while(t != null){
+		while(this.mProject.Get().Graphs(n+a)){
 			a++;
-			t = $('#uiTabs').tabs('getTab', n + a);
 		}
 		name = n + a;
 	}
+	
+	var g = this.mProject.Graph(name);
 
 	$('#uiTree').tree('append', {
 		parent: me.treeNodes.graphs,
@@ -82,13 +82,27 @@ ctx.Workspace.prototype.addGraph = function(name, callback){
 			attributes: {draggable: false, name: name}
 		}]
 	});
-	var node = $('#uiTree').tree('find', name);
-	if(askName)
-		$('#uiTree').tree('beginEdit', node.target);
+	node = $('#uiTree').tree('find', name);
+	g.uidata.tree = node;
 	
-	node.attributes.tab = createTab.call(me, name, callback);
-	return node.attributes.tab;
+	this.openGraph(name, function(){
+		$('#uiTree').tree('beginEdit', node.target);
+	});	
 };
+
+ctx.Workspace.prototype.openGraph = function(name, callback){
+	var me = this
+	, node = $('#uiTree').tree('find', name)
+	, g = this.mProject.Get().Graphs(name);
+	
+	if(!g.uidata.svg){
+		node.attributes.tab = createTab.call(me, name, {draggable: false}, function(){
+			g.uidata.svg = this;
+			if(typeof callback == 'function')
+				callback();
+		});
+	}
+}
 
 
 ctx.Workspace.prototype.openProject = function(project){
@@ -267,7 +281,38 @@ ctx.Workspace.prototype.initTree = function(){
 		attributes: {
 			root: true,
 			tool: function(){me.addGraph();},
-			draggable: false
+			draggable: false,
+			callbacks: {
+				drag: function(treenode, worksheet, e){
+					var n = worksheet.parent(exSVG.Worksheet).addNode('core.callfunc', e);
+					n.setData('title', treenode.text);
+				},
+				contextMenu: function(e, node){
+					var m = $('#exMenu')
+					, menu = new MenuObject(m[0]);
+					
+					menu.clear();
+					menu.addTitleItem('Graph Actions');
+					menu.addItem('Open', 'open', function(){
+						
+					});
+					menu.addItem('Delete', 'delete', function(){
+						
+					});
+					menu.addItem('Rename', 'rename', function(){
+						
+					});
+					menu.addItem('Duplicate', 'duplicate', function(){
+						
+					});
+					menu.sep();
+					menu.addItem('Add New', 'new', function(){
+						
+					});
+					
+					menu.showAt({x: e.clientX, y: e.clientY});						
+				},
+			}
 		},
 		children: []
 	};
@@ -275,7 +320,9 @@ ctx.Workspace.prototype.initTree = function(){
 	this.mProject.Get().Graphs().each(function(){
 		t.children.push({
 			text: this.Id(),
-			id: this.Id()
+			id: this.Id(),
+			iconCls : 'icon-graph-small',
+			attributes: {draggable: false}
 		});
 	})
 	data.push(t);
@@ -418,15 +465,6 @@ ctx.Workspace.prototype.initTree = function(){
 				node.attributes.tool();
 		});
 		me.treeNodes[node.id] = node.target;
-	});
-
-	$('#uiTree').find('.tree-node').each(function(){
-		/*$(this).draggable({
-			handle:'clone'
-		});*/
-		var opts = $(this).draggable('options');
-		//opts.onStopDrag = function(){console.log('rrr')};
-		//console.log(opts);
 	});	
 }
 

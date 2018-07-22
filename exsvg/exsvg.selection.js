@@ -6,8 +6,8 @@ function toParent(node, parent){
 	if(typeof node.screenCTM !== 'function')
 		parent.put(node);
 	else {
-		var ctm = node.screenCTM();
-		var pCtm = parent.screenCTM().inverse();
+		var ctm = node.screenCTM()
+			, pCtm = parent.screenCTM().inverse();
 		parent.put(node);
 		node.untransform().transform(pCtm.multiply(ctm));
 	}
@@ -21,9 +21,9 @@ exSVG.Selection = SVG.invent({
     extend: {
 		init: function(parent){
 			var me = this;
+
 			me.mWorksheet = parent;
-			
-			
+
 			//add the node selection marquee gradient to the svg defs
 			// we can customize it in the css with #selectionHandlerStroke
 			me.gradient('linear', function(stop) {
@@ -49,8 +49,10 @@ exSVG.Selection = SVG.invent({
 	
 		selectNode: function(el){
 			var me = this;
+
 			if(!el){
 				var sel = me.mWorksheet.getNodes();
+
 				sel.each(function(){
 					me.selectNode(this);
 				});
@@ -75,6 +77,7 @@ exSVG.Selection = SVG.invent({
 		unselectNode: function(el){
 			//console.log(el);
 			var me = this;
+
 			if(!el){
 				var sel = me.nodes();
 				sel.each(function(){
@@ -99,6 +102,7 @@ exSVG.Selection = SVG.invent({
 		
 		swapSelectNode: function(el){
 			var me = this;
+
 			if(el.parent() == me)
 				toParent(el, me.mWorksheet);
 			else
@@ -111,9 +115,10 @@ exSVG.Selection = SVG.invent({
 		
 		deleteSelection: function(selection){
 			var me = this
-			, selection = selection || me.nodes()
-			, out = new SVG.Set;
-			
+                , out = new SVG.Set;
+
+			selection = selection || me.nodes()
+
 			// we start a sequence because we want only one undo action for all deleted nodes
 			me.mWorksheet.startSequence();
 			selection.each(function(){
@@ -128,8 +133,8 @@ exSVG.Selection = SVG.invent({
 		initSelectionEventHandlers: function(){
 			//console.log('Selection.initSelectionEventHandlers()');
 			var me = this
-			, dragPoint
-			, selectionRect;
+				, dragPoint
+				, selectionRect;
 
 			me.on('dragstart.selection', function(e){
 				//console.log('Selection:dragstart.selection');
@@ -157,7 +162,7 @@ exSVG.Selection = SVG.invent({
 				.on('dragend.selection', function(ev){
 					//console.log('selection.dragend');
 					var selection
-					, movement;
+						, movement;
 
 					// remove listeners
 					me.off('dragmove.selection').off('dragend.selection');
@@ -196,22 +201,22 @@ exSVG.Selection = SVG.invent({
 					dragPoint = null;
 				});			
 							
-			})
+			});
 
 			// Rectangle selection stuff
 			me.doc().on('mousedown.selection-rectangle', function(e){
 				//console.log('selection.mousedown');
 				var coordsCache = {}
-				, nodes = false
-				, box
-				, x1
-				, x2
+					, nodes = false
+					, box
+					, x1
+					, x2
 				
-				, bound = me.doc().parent().getBoundingClientRect()
-				, scrollX = 0
-				, scrollY = 0
-				, viewb
-				, scrollTimer
+					, bound = me.doc().parent().getBoundingClientRect()
+					, scrollX = 0
+					, scrollY = 0
+					, viewb
+					, scrollTimer;
 				
 				me.mWorksheet.focus();
 
@@ -230,9 +235,9 @@ exSVG.Selection = SVG.invent({
 				// to check if a node is in the selection rectangle we need it's coordinates (x, y, w, h)
 				// put in cache all node position and size to avoid performances issues
 				nodes.each(function(){
-					var box = this.rbox();
-					var x1 = this.parent(exSVG.Workesheet).point(box);
-					var x2 = this.parent(exSVG.Workesheet).point(box.x + box.w, box.y + box.h);
+					var box = this.rbox()
+						, x1 = this.parent(exSVG.Workesheet).point(box)
+						, x2 = this.parent(exSVG.Workesheet).point(box.x + box.w, box.y + box.h);
 					//console.log(p);
 					coordsCache[this.id()] = {x1:x1.x, y1:x1.y, x2:x2.x, y2:x2.y};
 				});
@@ -257,10 +262,14 @@ exSVG.Selection = SVG.invent({
 					// here we check if each node is in the selection rectangle
 					// actually we check only if one of it's four corners is in
 					// in future we can check for middle point border too
-					var sel = {x1 :selectionRect.x(), y1: selectionRect.y(), x2: selectionRect.x() + selectionRect.width(), y2: selectionRect.y() + selectionRect.height()};
+					var sel = {
+						x1 :selectionRect.x(), y1: selectionRect.y(),
+						x2: selectionRect.x() + selectionRect.width(),
+						y2: selectionRect.y() + selectionRect.height()}
+						, coords;
 
 					nodes.each(function(){
-						var coords = coordsCache[this.id()];
+						coords = coordsCache[this.id()];
 						if(sel.x2 < coords.x1 || sel.y2 < coords.y1 || sel.x1 > coords.x2 || sel.y1 > coords.y2){
 							// if the user not hold the ctl key, we unselect the node, because he's not in the selection rectangle
 							if(!e.detail.event.ctrlKey)
@@ -318,7 +327,7 @@ exSVG.Selection = SVG.invent({
 				node.on('menu.selection', function(e){
 					var menu = e.detail.menu
 					, el = menu.getMenu('delete')
-					, oldF = {}
+					, oldF = {};
 					
 					if(el){
 						if(!el.enabled() && me.nodes().length() > 1)
@@ -326,14 +335,14 @@ exSVG.Selection = SVG.invent({
 						el.callback(function(){
 							me.deleteSelection();
 						});
-					};
+					}
 					
 					el = menu.getMenu('duplicate');
 					if(el){
 						el.callback(function(){
 							console.warn('TODO : Duplicate selection');
 						});
-					};
+					}
 					
 					el = menu.getMenu('cut');
 					if(el){
@@ -342,28 +351,28 @@ exSVG.Selection = SVG.invent({
 							me.unselectNode();
 							me.mWorksheet.cut(sel);
 						});
-					};
+					}
 
 					el = menu.getMenu('copy');
 					if(el){
 						el.callback(function(e){
 							me.mWorksheet.copy(me);
 						});
-					};
+					}
 
 					el = menu.getMenu('breaklinks');
 					if(el){
 						oldF['breaklinks'] = el.callback();
 						el.callback(function(){
 							me.mWorksheet.startSequence()
-								.enableSequence(false)
+								.enableSequence(false);
 							me.nodes().each(function(e){
 								oldF['breaklinks'].call(this, e);
 							});
 							me.mWorksheet.enableSequence()
 								.stopSequence();
 						});
-					};
+					}
 
 					el = menu.getMenu('selectlinked');
 					if(el){
@@ -373,7 +382,7 @@ exSVG.Selection = SVG.invent({
 								oldF['selectlinked'].call(this, e);
 							});
 						});
-					};
+					}
 					
 				});
 
@@ -490,8 +499,8 @@ exSVG.plugin(exSVG.Worksheet, {
 	
 	deleteSelection: function(){
 		var me = this
-		, sel = me.getSelection()
-		, out = new SVG.Set;
+			, sel = me.getSelection()
+			, out = new SVG.Set;
 		
 		// we start a sequence because we want only one undo action for all deleted nodes
 		me.startSequence('Selection.deleteSelection');

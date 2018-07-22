@@ -9,12 +9,14 @@ var MenuObject = function(parent){
 	else
 		this.el = parent;
 	this.el.instance = this;
-}
+};
 
 MenuObject.prototype.initEventHandlers = function(){
 	var me = this;
+
 	this.el.addEventListener('click', function(e){
 		var target = e.target.parentNode;
+
 		if(target.getAttribute('class') == 'disabled')
 			return;
 		if(typeof target.callback === 'function')
@@ -23,9 +25,10 @@ MenuObject.prototype.initEventHandlers = function(){
 	});
 	
 	document.addEventListener('mousedown', function(e){
+        var p = e.target;
+
 		if(me.el.getAttribute('class') != 'visible')
 			return;
-		var p = e.target;
 		while(p != me.el && p)
 			p = p.parentNode;
 		if(!p)
@@ -37,9 +40,9 @@ MenuObject.prototype.initEventHandlers = function(){
 MenuObject.prototype.clear = function(parent){
 	while (this.el.firstChild) {
 		this.el.removeChild(this.el.firstChild);
-	};
+	}
 	return this;
-}
+};
 
 MenuObject.prototype.showAt = function(point, context){
 	if(point instanceof MouseEvent)
@@ -50,25 +53,27 @@ MenuObject.prototype.showAt = function(point, context){
 	if(context)
 		this.mContext = context;
 	return this;
-}
+};
 
 MenuObject.prototype.close = function(){
 	this.el.setAttribute('class', '');
-}
+};
 
 MenuObject.prototype.addTitleItem = function(text){
-	var li = document.createElement('li');
-	var a = document.createElement('a');
+	var li = document.createElement('li')
+		, a = document.createElement('a');
+
 	a.innerHTML = text;
 	li.appendChild(a);
 	li.setAttribute('class', 'title');
 	this.el.appendChild(li);
 	return this;
-}
+};
 
 MenuObject.prototype.addItem = function(text, id, callback){
-	var li = document.createElement('li');
-	var a = document.createElement('a');
+	var li = document.createElement('li')
+		, a = document.createElement('a');
+
 	a.innerHTML = text;
 	if(id)
 		li.setAttribute('data-id', id);
@@ -77,21 +82,23 @@ MenuObject.prototype.addItem = function(text, id, callback){
 	li.appendChild(a);
 	this.el.appendChild(li);
 	return new MenuObject(li);
-}
+};
 
 MenuObject.prototype.addSubMenu = function(text, id){
-	var ul = document.createElement('ul');
-	var li = document.createElement('li');
+	var ul = document.createElement('ul')
+		, li = document.createElement('li')
+		, a;
+
 	li.setAttribute('class', 'sub');
 	if(id)
 		li.setAttribute('data-id', id);
-	var a = document.createElement('a');
+	a = document.createElement('a');
 	a.innerHTML = text;
 	li.appendChild(a);
 	li.appendChild(ul);
 	this.el.appendChild(li);
 	return new MenuObject(ul);
-}
+};
 
 MenuObject.prototype.enabled = function(enabled){
 	if(enabled === true)
@@ -104,20 +111,21 @@ MenuObject.prototype.enabled = function(enabled){
 		return this.el.getAttribute('class').search('disabled') == -1;
 	}
 	return this;
-}
+};
 
 MenuObject.prototype.callback = function(callback){
 	if(callback)
 		this.el.callback = callback;
 	return this.el.callback;
-}
+};
 
 MenuObject.prototype.sep = function(){
 	var li = document.createElement('li');
+
 	li.setAttribute('class', 'sep');
 	this.el.appendChild(li);
 	return this;
-}
+};
 
 MenuObject.prototype.setMeta = function(tooltip, shortcut){
 	if(tooltip && this.el.tagName == 'LI')
@@ -130,12 +138,13 @@ MenuObject.prototype.setMeta = function(tooltip, shortcut){
 	else if(shortcut && this.el.parentNode.tagName == 'LI')
 		this.el.parentNode.setAttribute('data-shortcut', shortcut);
 	return this;
-}
+};
 
 MenuObject.prototype.getMenu = function(id){
 	var ret = this.el.querySelector('[data-id="' + id + '"]');
+
 	if(ret)
 		return new MenuObject(ret);
-}
+};
 
 loadCss('menu.css');

@@ -8,6 +8,7 @@ exSVG.RereouteNode = SVG.invent({
         init: function(data){
 			//console.log('exSVG.RereouteNode.init()');
 			var me = this;
+
 			exSVG.Node.prototype.init.apply(me, arguments);
 			me.setData('title', 'Reroute Node');
 			me.addClass('exReroute');
@@ -23,11 +24,11 @@ exSVG.RereouteNode = SVG.invent({
 		rerouteLink: function(link){
 			//console.log('exSVG.RereouteNode.rerouteLink()');
 			var me = this
-			, einp = link.getInputPin()
-			, eoutp = link.getOutputPin()
-			, inp = me.getPin('in')
-			, out = me.getPin('out')
-			, inout = me.getPin('inout');
+				, einp = link.getInputPin()
+				, eoutp = link.getOutputPin()
+				, inp = me.getPin('in')
+				, out = me.getPin('out')
+				, inout = me.getPin('inout');
 
 			assert(eoutp instanceof exSVG.Pin);
 			assert(einp instanceof exSVG.Pin);
@@ -52,6 +53,7 @@ exSVG.RereouteNode = SVG.invent({
 		drawShape: function(x, y){
 			//console.log('exSVG.RereouteNode.drawShape()');
 			var me = this;
+
 			if(!me.mGfx.body){
 				me.mGfx.body = me.rect(40, 30)
 					.back()
@@ -83,7 +85,6 @@ exSVG.RereouteNode = SVG.invent({
 			var me = this;
 			me.getPin('in').show();
 			me.getPin('out').show();
-			return;
 		}
 	}
 });
@@ -114,7 +115,7 @@ exSVG.PinReroute = SVG.invent({
 		addLink: function(link){
 			//console.log('exSVG.PinReroute.addLink()', link);
 			var me = this
-			, otherPin = link.getOtherPin(me) || link.getOtherPin(me.getNode().getPin('in')) || link.getOtherPin(me.getNode().getPin('out'));
+				, otherPin = link.getOtherPin(me) || link.getOtherPin(me.getNode().getPin('in')) || link.getOtherPin(me.getNode().getPin('out'));
 
 			assert(link instanceof exSVG.Link, 'link should be instance of exSVG.Link');
 			assert(otherPin instanceof exSVG.Pin, function(){
@@ -122,11 +123,11 @@ exSVG.PinReroute = SVG.invent({
 				link.remove();
 			});
 
-			if(otherPin.getType() == exSVG.Pin.PIN_IN){
+			if(otherPin.getType() === exSVG.Pin.PIN_IN){
 				link.data('pinOut', me.getNode().getPin('out').id());
 				me.getNode().getPin('out').addLink(link);
 			}
-			else if(otherPin.getType() == exSVG.Pin.PIN_OUT){
+			else if(otherPin.getType() === exSVG.Pin.PIN_OUT){
 				link.data('pinIn', me.getNode().getPin('in').id());
 				me.getNode().getPin('in').addLink(link);
 			}
@@ -142,7 +143,8 @@ exSVG.PinReroute = SVG.invent({
 		removeLink: function(link){
 			//console.log('exSVG.PinReroute.removeLink()', link);
 			var me = this;
-			if(me.getNode().getLinks().length() == 0)
+
+			if(me.getNode().getLinks().length() === 0)
 				me.removeClass('linked');
 			link.off('.pinreroute');
 		},
@@ -150,21 +152,21 @@ exSVG.PinReroute = SVG.invent({
 		acceptLink: function(otherPin){
 			//console.log('exSVG.PinReroute.acceptLink()', otherPin);
 			var me = this
-			, ret = 0;
+				, ret = 0;
 
 			assert(otherPin instanceof exSVG.Pin);
 			
-			if(otherPin.getNode() == me.getNode())
+			if(otherPin.getNode() === me.getNode())
 				return {code: exSVG.Pin.PIN_LINK_ACCEPT_SAME_NODE, label: '<div><img src="exsvg/img/none.png"> Both Pin are on same Node'};
 			
 			if(exLIB.isWildcardsDataType(me.getDataType()))
 				return {code: 0, label: '<img src="exsvg/img/linkok.png"> Place a new Link'};
 			
-			if(otherPin.getType() == exSVG.Pin.PIN_IN
+			if(otherPin.getType() === exSVG.Pin.PIN_IN
 				&& !exLIB.isDataTypeCompatible(otherPin.getDataType(), me.getDataType()))
 					return {code: exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE, label: '<div><img src="exsvg/img/none.png"> Datatype is not compatible'};
 
-			else if(otherPin.getType() == exSVG.Pin.PIN_OUT
+			else if(otherPin.getType() === exSVG.Pin.PIN_OUT
 				&& !exLIB.isDataTypeCompatible(me.getDataType(), otherPin.getDataType()))
 					return {code: exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE, label: '<div><img src="exsvg/img/none.png"> Datatype is not compatible'};
 					
@@ -174,22 +176,22 @@ exSVG.PinReroute = SVG.invent({
 		startLink: function(target, className){
 			console.log('exSVG.PinReroute.startLink()');
 			var me = this
-			, worksheet = me.parent(exSVG.Worksheet)
-			, link
+				, worksheet = me.parent(exSVG.Worksheet)
+				, link;
 			
 			//overide all pin's mousemove/mouseout/mouseup event listener, because Pinreroute should accept all kind of pins
 			worksheet.select('.exPin.linkable').on('mousemove.reroute', function(e){
 				var links = worksheet.select('.exLinkStart')
-				, accept;
+					, accept;
 				
-				if(links.length() == 0 || this == me)
+				if(links.length() === 0 || this === me)
 					return;
 
 				accept = me.acceptLink(this);
 				worksheet.showTooltip(e, accept.label, 10);
 				
-				if(accept.code == 0){
-					me.setType((this.getType() == exSVG.Pin.PIN_IN) ? exSVG.Pin.PIN_OUT : exSVG.Pin.PIN_IN);
+				if(accept.code === 0){
+					me.setType((this.getType() === exSVG.Pin.PIN_IN) ? exSVG.Pin.PIN_OUT : exSVG.Pin.PIN_IN);
 					me.setDataType(this.getDataType());
 				}
 			}, undefined, {capture: true});
@@ -250,6 +252,7 @@ exSVG.LinkReroute = SVG.invent({
 		init: function(){
 			//console.log('exSVG.LinkReroute.init()');
 			var me = this;
+
             exSVG.Link.prototype.init.apply(me, arguments);
             return me;
         },
@@ -257,7 +260,8 @@ exSVG.LinkReroute = SVG.invent({
 		draw: function(e){
 			//console.log('exSVG.LinkReroute.draw()', e);
 			var me = this
-			, startPin = me.getStartPin();
+				, startPin = me.getStartPin()
+            	startpos;
 			
 			if(!startPin)
 				return exSVG.Link.prototype.draw.apply(this, arguments);
@@ -266,10 +270,11 @@ exSVG.LinkReroute = SVG.invent({
 			, stoppos = me.parent(exSVG.Worksheet).point(e)
 			, cp1
 			, cp2
+			, w
 			, smooth = 60;
 						
 			// check the vertical way of drawing (top to bottom / bottom to top)
-			var w = (startpos.y > stoppos.y) ? (startpos.y - stoppos.y) / 2 : (stoppos.y - startpos.y) / 2;
+			w = (startpos.y > stoppos.y) ? (startpos.y - stoppos.y) / 2 : (stoppos.y - startpos.y) / 2;
 			
 			// check the horizontal way of drawing (left to right / right to left)
 			if(stoppos.x < startpos.x){
@@ -293,6 +298,7 @@ exSVG.plugin(exSVG.Link, {
 	init: function(){
 		//console.log('exSVG.Link.init()[NodeReroute plugin]');
 		var me = this;
+
 		me.on('mouseenter.reroute', me.focus, me);
 		me.on('mouseleave.reroute', me.blur, me);
 		me.on('dblclick.reroute', me.addRerouteNode, me, {capture:true});
@@ -304,12 +310,14 @@ exSVG.plugin(exSVG.Link, {
 		
 	focus: function(e){
 		var me = this;
+
 		me.animate(200)
 			.stroke({width: 4});
 	},
 	
 	blur: function(e){
 		var me = this;
+
 		me.unfilter()
 			.animate(300)
 			.stroke({width: 2});
@@ -318,9 +326,9 @@ exSVG.plugin(exSVG.Link, {
 	addRerouteNode: function(e){
 		//console.log('exSVG.Link.addRerouteNode()[NodeReroute plugin]');
 		var me = this
-		, point = me.findMousePoint(e)
-		, worksheet = me.parent(exSVG.Worksheet)
-		, node;
+			, point = me.findMousePoint(e)
+			, worksheet = me.parent(exSVG.Worksheet)
+			, node;
 
 		me.unfilter().stroke({width: 3});
 
@@ -340,15 +348,16 @@ exSVG.plugin(exSVG.Link, {
 	findMousePoint: function(e, resolution){
 		//console.log('exSVG.Link.findMousePoint()[NodeReroute plugin]');
 		var me = this
-		, doc = me.doc()
-		, screenPoint = me.parent(exSVG.Worksheet).point(e)
-		, len = me.length()
-		, bestMatch;
+			, doc = me.doc()
+			, screenPoint = me.parent(exSVG.Worksheet).point(e)
+			, len = me.length()
+			, bestMatch
+			, pt;
 		
 		resolution = resolution || 100;
 		
 		for(var a=1; a < resolution; a++){
-			var pt = me.pointAt((len/(resolution+1))*a);
+			pt = me.pointAt((len/(resolution+1))*a);
 			var l = pt.x - screenPoint.x;
 			if(bestMatch && Math.abs(pt.x - screenPoint.x) > Math.abs(bestMatch.distance))
 				return bestMatch;

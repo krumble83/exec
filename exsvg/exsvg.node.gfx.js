@@ -19,17 +19,19 @@ exSVG.plugin(exSVG.Node, {
 	expandPins: function(){
 		var me = this;
 		
-		me.mExpand = (me.mExpand) ? false : true;
+		me.mExpand = !me.mExpand;
 		me.paint();
 	},
 	
 	getCenter: function(){
 		var me = this
-		, box = this.mGfx.body.rbox();
+			, box = this.mGfx.body.rbox()
+            , ret;
+
 		box.x += box.width/2;
 		box.y += box.height/2;
-		var ret = me.parent(exSVG.Worksheet).point(box);
-		console.log(ret);
+		ret = me.parent(exSVG.Worksheet).point(box);
+		//console.log(ret);
 		return ret;
 	},
 
@@ -39,7 +41,7 @@ exSVG.plugin(exSVG.Node, {
 
 		// Hide optional pins if node is not expanded
 		me.select('.exPin[data-optional="true"]').each(function(){
-			if(!me.mExpand && this.getLinks().length() == 0)
+			if(!me.mExpand && this.getLinks().length() === 0)
 				this.hide();
 			else
 				this.show();
@@ -55,8 +57,8 @@ exSVG.plugin(exSVG.Node, {
 
 	drawShape: function(){
 		var me = this
-		, box
-		, filter;
+            , box
+            , filter;
 		
 		if(!me.mGfx.body){
 			var grad = SVG.getDef('exBgGradient', me, function(){
@@ -78,7 +80,7 @@ exSVG.plugin(exSVG.Node, {
 
 				add.blend('SourceGraphic', blur);
 				this.size(2,2)//.move(-0.5,-0.5)
-			})
+			});
 
 			me.mGfx.body.back();				
 		}
@@ -99,12 +101,12 @@ exSVG.plugin(exSVG.Node, {
 	
 	drawHeader: function(){
 		var me = this
-		, color = me.mColor
-		, offset = 32
-		, tBox
-		, inpBox
-		, outBox
-		, width
+            , color = me.mColor
+            , offset = 32
+            , tBox
+            , inpBox
+            , outBox
+            , width
 		
 		if(!me.mGfx.header){
 			var grad = SVG.getDef('nodeHeader' + color.toHex().replace('#', '_'), me, function(){
@@ -120,7 +122,7 @@ exSVG.plugin(exSVG.Node, {
 
 			me.mGfx.header = me.path()
 				.fill(grad)
-				.stroke('none')
+				.stroke('none');
 
 			if(me.getData('symbol')){
 				me.image(me.getData('symbol')).move(10,4)
@@ -136,7 +138,7 @@ exSVG.plugin(exSVG.Node, {
 				});
 			}
 			me.on('data-change.nodegfx', function(e){
-				if(e.detail.name == 'title')
+				if(e.detail.name === 'title')
 					me.paint();
 			});
 		}
@@ -155,7 +157,7 @@ exSVG.plugin(exSVG.Node, {
 				.fill('#bbb')
 				.translate(offset, 35)
 				.font({size:13, 'font-style': 'italic'})
-				.stroke({width:0})
+				.stroke({width:0});
 			if(me.mGfx.subtitle.bbox().w + offset + 15 > width)
 				width = me.mGfx.subtitle.bbox().w + 15 + offset;
 		}
@@ -173,18 +175,18 @@ exSVG.plugin(exSVG.Node, {
 
 		if(me.getData('subtitle'))
 			me.mGfx.header.plot('m1.5,11.5c0,-5 5,-10 10,-10l' + (width) + ',0c5,0 10,5 10,10l0,30l-' + (width+20) + ',0l0,-30z')
-			.move(1,1)
+			.move(1,1);
 		else
 			me.mGfx.header.plot('m1.5,11.5c0,-5 5,-10 10,-10l' + (width) + ',0c5,0 10,5 10,10l0,13l-' + (width+20) + ',0l0,-13z')
-			.move(1,1)
+			.move(1,1);
 
 		return me;
 	},
 	
 	drawPins: function(startpos){
 		var me = this
-		, optionals = []
-		, offset = 0
+            , optionals = []
+            , offset = 0;
 
 		if(me.mGfx.header){
 			me.mInputPinGroup.move(10, me.mGfx.header.bbox().height + 15);
@@ -233,9 +235,9 @@ exSVG.plugin(exSVG.Node, {
 	
 	drawExpand: function(){
 		var me = this
-		, bodyBox;
+		    , bodyBox;
 
-		if(me.select('.exPin[data-optional="true"]').length() == 0)
+		if(me.select('.exPin[data-optional="true"]').length() === 0)
 			return;
 		
 		
@@ -243,7 +245,7 @@ exSVG.plugin(exSVG.Node, {
 			//me.height(me.height() + 12);
 			me.mGfx.expand = me.group()
 				.addClass('expand')
-				.x(4)
+				.x(4);
 			
 			me.mGfx.expand.rect(15, 16)
 				.radius(7)
@@ -252,7 +254,7 @@ exSVG.plugin(exSVG.Node, {
 					e.stopImmediatePropagation();
 				})
 				.on('click', function(e){
-					me.mExpand = (me.mExpand) ? false : true;
+					me.mExpand = !me.mExpand;
 					me.paint();
 					e.stopPropagation();
 					e.stopImmediatePropagation();

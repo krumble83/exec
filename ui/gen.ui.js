@@ -43,7 +43,9 @@ exGRAPH.Project = exGEN.invent({
 		Get: function(){
 			var me = this;
 			return {
-				Graphs: function(){
+				Graphs: function(id){
+					if(id)
+						return me.select('graph[id="' + id + '"]').first();
 					return me.select('graph');
 				},
 				

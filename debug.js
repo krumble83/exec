@@ -21,4 +21,5 @@ console.warn('BUG: quand on copie/colle un node avec une pin special.add, la pin
 //console.warn('Reroute: quand on colle un node le exapnd n\'est pas pris en compte');
 //console.warn('TODO: imlementer les flags pour les nodes.');
 //console.warn('TODO: fermer le librarymenu quand on tape "echap"');
+console.warn('BUG: dans exGRAPH, si on specifie pas le chemin complet du type quand on creer une "pin datattype Array" le type n est pas trouvé dans la package');
 

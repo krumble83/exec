@@ -9,6 +9,7 @@ exSVG.NodeMacro = SVG.invent({
 		
 		init: function(){
 			var me = this;
+
 			me.addClass('exMacro');
 			exSVG.Node.prototype.init.apply(me, arguments);
 			return me;
@@ -16,11 +17,11 @@ exSVG.NodeMacro = SVG.invent({
 
 		export: function(graph){
 			var me = this
-			, macro = graph.Macro().attr('svgid', me.id())
-			, attrs = me.attr();
+			    , macro = graph.Macro().attr('svgid', me.id())
+		        , attrs = me.attr();
 
 			for (var key in attrs) {
-				if(!Object.prototype.hasOwnProperty.call(attrs, key) || key.substr(0,5) != 'data-')
+				if(!Object.prototype.hasOwnProperty.call(attrs, key) || key.substr(0,5) !== 'data-')
 					continue;
 				macro.attr(key.substr(5), attrs[key]);
 			}
@@ -52,10 +53,10 @@ exSVG.NodeOp = SVG.invent({
 
 		drawHeader: function(){
 			var me = this
-			, offset = me.bbox().w
-			, inpBox
-			, outBox
-			, width;
+			    , offset = me.bbox().w
+			    , inpBox
+			    , outBox
+			    , width;
 			
 			if(!me.mGfx.title){
 				me.mGfx.title = me.plain(me.getData('subtitle') || me.getData('title'))
@@ -100,7 +101,7 @@ exSVG.NodeVarGetter = SVG.invent({
 		
 		setName: function(name){
 			var me = this
-			, pin = me.select('.exPin').first()
+			    , pin = me.select('.exPin').first()
 			
 			me.data('varname', name);
 			pin.setData('label', name);
@@ -110,8 +111,8 @@ exSVG.NodeVarGetter = SVG.invent({
 		
 		paint: function(){
 			var me = this
-			, pin = me.select('.exPin')
-			, box = pin.first().bbox();
+			    , pin = me.select('.exPin')
+			    , box = pin.first().bbox();
 			
 			me.drawShape();
 			pin.first().move(box.width+6, 12);
@@ -120,13 +121,13 @@ exSVG.NodeVarGetter = SVG.invent({
 		
 		drawShape: function(){
 			var me = this
-			, pin = me.select('.exPin')
-			, color = pin.first().getColor()
-			, box = pin.first().bbox()
-			, grad;
+                , pin = me.select('.exPin')
+                , color = pin.first().getColor()
+                , box = pin.first().bbox()
+                , grad;
 
 			
-			if(color instanceof SVG.Color == false)
+			if(color instanceof SVG.Color === false)
 				color = new SVG.Color(color);
 			if(!me.mGfx.body){
 				grad = me.gradient('linear', function(stop) {
@@ -140,13 +141,13 @@ exSVG.NodeVarGetter = SVG.invent({
 				me.mGfx.body = me.rect(box.width + 30,34)
 					.back()
 					.fill(grad)
-					.radius(17)
+					.radius(17);
 
 				me.mGfx.body.filter(function(add) {
 					var blur = add.offset(3, 3)
 						.in(add.sourceAlpha)
-						.gaussianBlur(3)
-					add.blend(add.source, blur)
+						.gaussianBlur(3);
+					add.blend(add.source, blur);
 					this.size('200%','200%').move('-50%', '-50%')
 				})
 			}
@@ -171,7 +172,7 @@ exSVG.NodeVarSetter = SVG.invent({
 		
 		setName: function(name){
 			var me = this
-			, pin = me.select('.exPin.input').first();
+			    , pin = me.select('.exPin.input').first();
 			
 			pin.setData('label', name);
 			me.paint();

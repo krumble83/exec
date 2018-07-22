@@ -33,16 +33,16 @@ exSVG.Node = SVG.invent({
 		
 		hasFlag: function(flag){
 			var me = this
-			, flags = parseInt(me.getData('flags') || 0);
+				, flags = parseInt(me.getData('flags') || 0);
 			
-			return flags & flag == flag;
+			return flags & flag === flag;
 		},
 							
 		export: function(graph){
 			var me = this
-			, node = (graph && graph.Node) ? graph.Node() :  false
-			, attrs = me.attr()
-			, pos
+				, node = (graph && graph.Node) ? graph.Node() :  false
+				, attrs = me.attr()
+				, pos;
 
 			if(!node){
 				node = new exGRAPH.Node();
@@ -53,13 +53,13 @@ exSVG.Node = SVG.invent({
 			
 			for (var key in attrs) {
 				if(!Object.prototype.hasOwnProperty.call(attrs, key) 
-					|| key.substr(0,5) != 'data-')
+					|| key.substr(0,5) !== 'data-')
 					continue;
 				node.attr(key.substr(5), attrs[key]);
 				//node.attr('pos', '');
 			}
 			if(graph && graph.box)
-				pos = {x: me.x()-graph.box.x, y:me.y()-graph.box.y}
+				pos = {x: me.x()-graph.box.x, y:me.y()-graph.box.y};
 			else
 				pos = {x: me.x(), y: me.y()};
 
@@ -71,7 +71,7 @@ exSVG.Node = SVG.invent({
 		move: function(){
 			console.log('exnodebase.move');
 			var me = this
-			, ret = SVG.G.prototype.move.apply(me, arguments);
+				, ret = SVG.G.prototype.move.apply(me, arguments);
 			
 			me.fire('move');
 			//me.doc().fire('node-move', {node:me});
@@ -81,7 +81,7 @@ exSVG.Node = SVG.invent({
 		dmove: function(){
 			//console.log('exnodebase.dmove');
 			var me = this
-			, ret = SVG.G.prototype.dmove.apply(me, arguments);
+				, ret = SVG.G.prototype.dmove.apply(me, arguments);
 			
 			me.fire('move');
 			//me.doc().fire('node-move', {node:me});
@@ -91,7 +91,7 @@ exSVG.Node = SVG.invent({
 		x: function(){
 			//console.log('exSVG.Node.x()');
 			var me = this
-			, ret = SVG.G.prototype.x.apply(me, arguments);
+				, ret = SVG.G.prototype.x.apply(me, arguments);
 			
 			if(arguments.length > 0){
 				//console.log('zz');
@@ -104,7 +104,7 @@ exSVG.Node = SVG.invent({
 		y: function(){
 			//console.log('exnodebase.y');
 			var me = this
-			, ret = SVG.G.prototype.y.apply(me, arguments);
+				, ret = SVG.G.prototype.y.apply(me, arguments);
 			
 			if(arguments.length > 0){
 				me.fire('move');
@@ -116,8 +116,8 @@ exSVG.Node = SVG.invent({
 		remove: function(){
 			//console.group('exSVG.Node.remove()');
 			var me = this
-			, parent
-			, ret
+				, parent
+				, ret;
 			
 			if(me.hasFlag(F_NODELETE))
 				return me;
@@ -136,7 +136,7 @@ exSVG.Node = SVG.invent({
 		addTo: function(parent){
 			//console.group('exSVG.Node.addTo()');
 			var me = this
-			, ret = SVG.G.prototype.addTo.call(me, parent);
+				, ret = SVG.G.prototype.addTo.call(me, parent);
 			
 			me.fire('add');
 			me.doc().fire('node-add', {node: me});
@@ -147,9 +147,9 @@ exSVG.Node = SVG.invent({
 		
 		setData: function(name, value){
 			var me = this
-			, data = me.data(name);
+				, data = me.data(name);
 			
-			if(data && data != value || data == undefined){
+			if(data && data !== value || data === undefined){
 				me.data(name, value);
 				me.fire('data-change', {name: name, value: value});
 			}
@@ -182,7 +182,7 @@ SVG.extend(exSVG.Worksheet, {
 	importNode: function(data, parent){
 		//console.log('exSVG.Worksheet.importNode()', data, data.Ctor());
 		var node = new exSVG[data.Ctor()]
-		, pos = data.attr('pos') ? data.attr('pos').split(',') : false;
+			, pos = data.attr('pos') ? data.attr('pos').split(',') : false;
 		
 		parent.put(node);
 		data.attr('pos', null);
