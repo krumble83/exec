@@ -3,15 +3,24 @@
 <head>
 	<title>SVG.js</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	
 	<script type="text/javascript" src="jeasyui/jquery.min.js"></script>
 	<script type="text/javascript" src="jeasyui/jquery.easyui.min.js"></script>
+	
 	<script type="text/javascript" src="defs.js"></script>
-	<script type="text/javascript" src="menu.js"></script>
-	<script type="text/javascript" src="project.js"></script>
+	<script type="text/javascript" src="xml-formatter.js"></script>
 	<script type="text/javascript" src="svgjs/svg.js"></script>
 	<script type="text/javascript" src="exsvg/exsvg.worksheet.js"></script>
-	<script type="text/javascript" src="ui/ui.workspace.js"></script>
 	<script type="text/javascript" src="lib/library.base.js"></script>
+
+	<script type="text/javascript" src="gen/exgen.exgen.js"></script>
+	<script type="text/javascript" src="gen/exgen.graph.js"></script>
+	<script type="text/javascript" src="ui/gen.ui.js"></script>
+	
+	<script type="text/javascript" src="menu.js"></script>
+	
+	<script type="text/javascript" src="ui/ui.workspace.js"></script>
+
 	<link rel="stylesheet" type="text/css" href="jeasyui/themes/icon.css">
 	<link rel="stylesheet" type="text/css" href="jeasyui/themes/black/easyui.css">
 	<link rel="stylesheet" type="text/css" href="css.css">
@@ -162,8 +171,6 @@
     </div>
 	<script>
 
-	exLIB.init();
-	
 	$(function(){
 		$.extend($.fn.datagrid.defaults.editors, {
 			pins: {
@@ -187,19 +194,27 @@
 		});
 		
 		$(document).ready(function(){
-			ws = new Workspace();
-			ws.init();
-			setTimeout(function(){
-				var svg = ws.addGraph('test');
-				setTimeout(function(){
-					svg.addNode('core.array.set', {x: 800, y: 500});
-					svg.addNode('core.flow.sequence', {x: 300, y: 400});
-					svg.addNode('core.array.get', {x: 500, y: 200});
-					svg.addNode('core.string.contains', {x: 100, y: 100});
-				},200);
-			},500);
+			ws = new Workspace().init();
+			exLIB.init(function(){			
 
-		
+					var p = new exGRAPH.Project().init('test');
+					p.Graph('Test Graph');
+					ws.openProject(p);
+
+				/*
+				ws.addGraph('test', function(){
+					var me = this, inp, outp, n1, n2, seq, makearr, forloop;
+					
+					n1 = me.import(exLIB.getNode2('core.entrypoint').attr('pos', '100,100'));
+					n2 = seq = me.import(exLIB.getNode2('core.flow.sequence').attr('pos', '300,200'));
+					n2.getPin('add').addPin();
+					me.createLink(n2.getPin('entry'), n1.getPin('exit'));
+					
+					
+					//exLIB.getNode2('core.entrypoint').Property('test', 'ok');				
+				});
+				*/
+			});
 		});
 	});		
 

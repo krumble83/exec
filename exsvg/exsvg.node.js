@@ -74,7 +74,7 @@ exSVG.Node = SVG.invent({
 			, ret = SVG.G.prototype.move.apply(me, arguments);
 			
 			me.fire('move');
-			me.doc().fire('node-move', {node:me});
+			//me.doc().fire('node-move', {node:me});
 			return ret;
 		},
 		
@@ -84,7 +84,7 @@ exSVG.Node = SVG.invent({
 			, ret = SVG.G.prototype.dmove.apply(me, arguments);
 			
 			me.fire('move');
-			me.doc().fire('node-move', {node:me});
+			//me.doc().fire('node-move', {node:me});
 			return ret;
 		},
 		
@@ -96,7 +96,7 @@ exSVG.Node = SVG.invent({
 			if(arguments.length > 0){
 				//console.log('zz');
 				me.fire('move');
-				me.doc().fire('node-move', {node:me});
+				//me.doc().fire('node-move', {node:me});
 			}
 			return ret;			
 		},
@@ -108,7 +108,7 @@ exSVG.Node = SVG.invent({
 			
 			if(arguments.length > 0){
 				me.fire('move');
-				me.doc().fire('node-move', {node:me});
+				//me.doc().fire('node-move', {node:me});
 			}
 			return ret;
 		},
@@ -126,7 +126,9 @@ exSVG.Node = SVG.invent({
 			me.fire('before-remove');
 			ret = SVG.G.prototype.remove.apply(me, arguments);
 			me.fire('remove');
-			parent.fire('node-remove', {node: me});
+			
+			if(parent) // needed for me.destroy()?
+				parent.fire('node-remove', {node: me});
 			//console.groupEnd();
 			return ret;
 		},
@@ -159,8 +161,12 @@ exSVG.Node = SVG.invent({
 		},
 		
 		destroy: function(){
-			this.fire('destroy');
-			this.off();
+			//this.fire('destroy');
+			return;
+			this.select('.exPin').each(function(){
+				this.destroy();
+			});
+			//this.off();
 			this.remove();
 		}
     }

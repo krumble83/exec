@@ -254,10 +254,12 @@ exGRAPH.Graph = exGEN.invent({
 	inherit: exGRAPH.Base,
 	
     extend: {
-		init: function(){
-			this.node.style = 'display:none';
-			document.body.appendChild(this.node);
-			return this;
+		init: function(id){
+			return this.Id(id);
+		},
+		
+		Id: function(id){
+			return this.attr('id', id);
 		},
 								
 		Node: function(id){
@@ -281,6 +283,10 @@ exGRAPH.Graph = exGEN.invent({
 		
 		GetNode: function(svgid){
 			return this.querySelector('node[svgid="' + svgid + '"],macro[svgid="' + svgid + '"]');
+		},
+		
+		Context: function(context){
+			return this.attr('context', context);
 		}
 	}
 });
@@ -494,29 +500,6 @@ exGRAPH.Require = exGEN.invent({
 			return this.attr('id', id);
 		}
 
-	}
-});
-
-exGRAPH.Function = exGEN.invent({
-    create: 'function', 
-    inherit: exGRAPH.Graph,
-	
-    extend: {
-		init: function(name){
-			if(typeof name !== 'undefined')
-				this.node.setAttribute('name', name);
-			return this;
-		},
-		
-		Input: function(id, type, label){
-			var ret = this.querySelector('input[id="' + id + '"]') || this.create('Input');
-			return ret.init.apply(ret, arguments);
-		},
-		
-		Output: function(id, type, label){
-			var ret = this.querySelector('output[id="' + id + '"]') || this.create('Output');
-			return ret.init.apply(ret, arguments);
-		}
 	}
 });
 
@@ -958,6 +941,10 @@ exGRAPH.Node = exGEN.invent({
 
 		Color: function(name){
 			return this.attr('color', name);
+		},
+		
+		Context: function(context){
+			return this.attr('context', context);
 		},
 		
 		MakeEntry: function(){

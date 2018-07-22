@@ -55,7 +55,7 @@ exSVG.Worksheet = SVG.invent({
 		
 		doLayout: function(){
 			//console.log(this.mTitle.bbox().width, this.doc().parent().clientWidth);
-			this.mTitleGroup.select('text').x((this.doc().parent().clientWidth/2)-this.mTitle.bbox().width);
+			//this.mTitleGroup.select('text').first().x((this.doc().parent().clientWidth/2)-this.mTitle.bbox().width);
 			return this;
 		},
 		
@@ -66,6 +66,14 @@ exSVG.Worksheet = SVG.invent({
 		
 		hasFocus: function(){
 			return document.activeElement && document.activeElement.instance && document.activeElement.instance === this;
+		},
+		
+		setContext: function(context){
+			this.mContext = context;
+		},
+		
+		getContext: function(){
+			return this.mContext;
 		},
 		
 		initWorksheetEventHandlers: function(){
@@ -185,7 +193,7 @@ exSVG.Worksheet = SVG.invent({
 		
 		setTitle: function(title){
 			//console.log('exSVG.Worksheet.setTitle()');
-			this.mTitleGroup.select('text').text(title);
+			this.mTitleGroup.select('text').first().text(title);
 			return this;
 		},
 		
@@ -264,7 +272,7 @@ exSVG.Worksheet = SVG.invent({
 			var graph = new exGRAPH.Graph()
 			, parser = new DOMParser()
 			, xmlDoc = parser.parseFromString(str, "text/xml");
-			document.getElementById('ttest').value = xmlDoc.innerHTML;
+			//document.getElementById('ttest').value = xmlDoc.innerHTML;
 			
 			if(xmlDoc.querySelector('parsererror')){
 				return console.error('cant paste from clipboard');

@@ -2,7 +2,7 @@
 
 
 
-var createTab = function(target, svg){
+var createTab = function(target, callback){
 	var tab
 	, me = this
 	, title  = '<span style="display:none">g</span>' + target;
@@ -12,22 +12,16 @@ var createTab = function(target, svg){
 		closable:true,
 		iconCls : 'icon-graph-small',
 		attributes: {svg: null},
-		onResize : function(){
-			if(tab)
-				tab[0].SVG.doLayout();
-		}
 	});
 	tab = $('#uiTabs').tabs('getTab', target);
-	tab.panel('body').append('<div style="height:100%;width:100%" id="svg_g' + target + '">');
+	tab.panel('body').append('<div style="height:100%;width:100%;background-color:#262626" id="svg_g' + target + '">');
 	svg = SVG('svg_g' + target).worksheet(function(){
 		this.setTitle(target);
-		this.doLayout();
-
 		me.initWorksheetEvents(this);
-		tab[0].SVG = this;
+		if(typeof callback == 'function')
+			callback.call(this);		
 	});
-	$(tab).panel('doLayout');
-	return svg;
+	//$(tab).panel('doLayout');
 }
 
 
@@ -35,34 +29,17 @@ var createTab = function(target, svg){
 
 ctx.Workspace = function(){
 	var me = this;
-	me.mProject = new Project;
 };	
 
 ctx.Workspace.prototype.init = function(){
 	var me = this;
 	me.treeNodes = {};
 	me.tmp = {};
-	me.initTree();
 	me.initDeviceTree();
-	this.getConfig();
-
-
-	me.mIframe = document.querySelector('#uiiframe');
-	if(!me.mIframe){
-		me.mIframe = document.createElement('iframe');
-		me.mIframe.setAttribute('id', 'uiiframe');
-
-		me.mIframe.setAttribute('id', 'uiiframe');
-		document.body.appendChild(me.mIframe);
-		me.mIframe.src = 'test.html';
-		//me.mIframe.contentDocument.location.reload();
-		//me.mIframe.setAttribute('style', ''
-		
-	}
-	//me.test();
+	return this;
 };
 
-
+/*
 ctx.Workspace.prototype.createProject = function(projectId){
 	if(!projectId){
 		$('#uiProjectCreateWin').window('open').css('display', '');
@@ -76,9 +53,9 @@ ctx.Workspace.prototype.createProject = function(projectId){
 ctx.Workspace.prototype.addDevice = function(deviceId){
 	$('#uiDevicesList').css('display', '');$('#uiDevicesList').datalist()
 };
+*/
 
-
-ctx.Workspace.prototype.addGraph = function(name, opened){
+ctx.Workspace.prototype.addGraph = function(name, callback){
 	var me = this
 	, tab
 	, svg
@@ -109,30 +86,35 @@ ctx.Workspace.prototype.addGraph = function(name, opened){
 	if(askName)
 		$('#uiTree').tree('beginEdit', node.target);
 	
-	node.attributes.tab = createTab.call(me, name);
+	node.attributes.tab = createTab.call(me, name, callback);
 	return node.attributes.tab;
 };
 
+
+ctx.Workspace.prototype.openProject = function(project){
+	var me = this;
+	me.mProject = project;
+	me.initTree();
+}
 
 
 ctx.Workspace.prototype.initWorksheetEvents = function(worksheet){
 	var me = this;
 	worksheet.on('node-selected.workspace', function(e){
 		console.log('node selected ', worksheet.getSelection().length());
-		var node = e.detail.node;
+		var selection = worksheet.getSelection()
 		
-		if(worksheet.getSelection().length() != 1){
+		if(selection.length() != 1){
 			me.clearProperties();
 			return;
 		}
-		me.showNodeProperties(worksheet.getSelection().first());
+		if(selection.length() == 1)
+			me.showNodeProperties(selection.first());
 	});
 
 	worksheet.on('node-unselected.workspace', function(){
 		console.log('node unselected ', worksheet.getSelection().length());
-		if(worksheet.getSelection().length() != 1){
-			me.clearProperties();
-		}
+		me.clearProperties();
 	});
 	
 };
@@ -159,22 +141,9 @@ ctx.Workspace.prototype.showNodeProperties = function(node){
 }
 
 
-ctx.Workspace.prototype.openGraph = function(name){
-	
-}
 
-
-ctx.Workspace.prototype.initTree = function(){
-	var me = this;
-	var lastEvent;
-	
-	var dragF = function(e){
-		lastEvent = e;
-	}
-	
-	$('#uiTree').tree({
-		dnd: true,
-		data: [{
+/*
+[{
 			text: 'Graphs',
 			id: 'graphs',
 			attributes: {
@@ -182,107 +151,195 @@ ctx.Workspace.prototype.initTree = function(){
 				callback: function(){me.addGraph();},
 				draggable: false
 			}
-		},{
-			text: 'Functions',
-			id: 'functions',
-			attributes: {
-				root: true,
-				draggable: false,
-				callbacks: {
-					drag: function(treenode, worksheet, e){
-						var n = worksheet.parent(exSVG.Worksheet).addNode('core.callfunc', e);
-						n.setData('title', treenode.text);
-					},
-					contextMenu: function(e, node){
-						var m = $('#exMenu');
-						var menu = new MenuObject(m[0]);
-						menu.clear();
-						menu.addTitleItem('Function Actions');
-						menu.addItem('Open', 'open', function(){
-							
-						});
-						menu.addItem('Delete', 'delete', function(){
-							
-						});
-						menu.addItem('Duplicate', 'duplicate', function(){
-							
-						});
-						menu.sep();
-						menu.addItem('Add New', 'new', function(){
-							
-						});
-						
-						menu.showAt({x: e.clientX, y: e.clientY});						
-					},
-				}
-			},
-			children: [{
-				text: 'Item11 avec tres long titre',
-				iconCls: 'icon-function'
 			},{
-				text: 'Item12',
-				iconCls: 'icon-function'
-			}]
-		},{
-			text: 'Macros',
-			id: 'macros',
-			attributes: {
-				root: true,
-				draggable: false
-			},
-			children: [{
-				text: 'Item11'
+				text: 'Functions',
+				id: 'functions',
+				attributes: {
+					root: true,
+					draggable: false,
+					callbacks: {
+						drag: function(treenode, worksheet, e){
+							var n = worksheet.parent(exSVG.Worksheet).addNode('core.callfunc', e);
+							n.setData('title', treenode.text);
+						},
+						contextMenu: function(e, node){
+							var m = $('#exMenu')
+							, menu = new MenuObject(m[0]);
+							
+							menu.clear();
+							menu.addTitleItem('Function Actions');
+							menu.addItem('Open', 'open', function(){
+								
+							});
+							menu.addItem('Delete', 'delete', function(){
+								
+							});
+							menu.addItem('Duplicate', 'duplicate', function(){
+								
+							});
+							menu.sep();
+							menu.addItem('Add New', 'new', function(){
+								
+							});
+							
+							menu.showAt({x: e.clientX, y: e.clientY});						
+						},
+					}
+				},
+				children: [{}]
 			},{
-				text: 'Item12'
-			}]
-		},{
-			text: 'Variables',
-			id: 'variables',
-			attributes: {
-				root: true,
-				callbacks: {
-					drag: function(treenode, worksheet, e){
-						var m = $('#exMenu');
-						var menu = new MenuObject(m[0]);
-						menu.clear();
-						menu.addTitleItem('Build Menu');
-						menu.addItem('Get', 'get', function(){
-							var n = worksheet.parent(exSVG.Worksheet).addNode(treenode.attributes.type + '.getter', e);
-							n.setName(treenode.text);
-						});
-						menu.addItem('Set', 'set', function(){
-							var n = worksheet.parent(exSVG.Worksheet).addNode(treenode.attributes.type + '.setter', e);
-							n.setName(treenode.text);							
-						});
-						menu.showAt({x: e.clientX, y: e.clientY});
-					},
-				}
-			},
-			children: [{
-				text: 'String',
-				attributes:{
-					type: 'core.type.string'
-				}
+				text: 'Macros',
+				id: 'macros',
+				attributes: {
+					root: true,
+					draggable: false
+				},
+				children: [{
+					text: 'Item11'
+				},{
+					text: 'Item12'
+				}]
 			},{
-				text: 'Integer',
-				attributes:{
-					type: 'core.type.int'
-				}
+				text: 'Variables',
+				id: 'variables',
+				attributes: {
+					root: true,
+					draggable: false,
+					callbacks: {
+						drag: function(treenode, worksheet, e){
+							var m = $('#exMenu');
+							var menu = new MenuObject(m[0]);
+							menu.clear();
+							menu.addTitleItem('Build Menu');
+							menu.addItem('Get', 'get', function(){
+								var n = worksheet.parent(exSVG.Worksheet).addNode(treenode.attributes.type + '.getter', e);
+								n.setName(treenode.text);
+							});
+							menu.addItem('Set', 'set', function(){
+								var n = worksheet.parent(exSVG.Worksheet).addNode(treenode.attributes.type + '.setter', e);
+								n.setName(treenode.text);							
+							});
+							menu.showAt({x: e.clientX, y: e.clientY});
+						},
+					}
+				},
+				children: [{
+					text: 'String',
+					attributes:{
+						type: 'core.type.string'
+					}
+				},{
+					text: 'Integer',
+					attributes:{
+						type: 'core.type.int'
+					}
+				},{
+					text: 'SerailConnection',
+					attributes:{
+						type: 'arduino.serial.connection'
+					}
+				}]
 			},{
-				text: 'SerailConnection',
-				attributes:{
-					type: 'arduino.serial.connection'
-				}
-			}]
-		},{
-			text: 'Locales Variables',
-			id: 'lvariables',
-			attributes: {
-				root: true,
-				draggable: false
-			},
-			children: []
-		}],
+				text: 'Locales Variables',
+				id: 'lvariables',
+				attributes: {
+					root: true,
+					draggable: false
+				},
+				children: []
+			}
+		]
+*/
+
+
+ctx.Workspace.prototype.initTree = function(){
+	var me = this
+	, data = []
+	, lastEvent;
+	
+	var dragF = function(e){
+		lastEvent = e;
+	};
+	
+	var t = {
+		text: 'Graphs',
+		id: 'graphs',
+		attributes: {
+			root: true,
+			tool: function(){me.addGraph();},
+			draggable: false
+		},
+		children: []
+	};
+	
+	this.mProject.Get().Graphs().each(function(){
+		t.children.push({
+			text: this.Id(),
+			id: this.Id()
+		});
+	})
+	data.push(t);
+
+	t = {
+		text: 'Functions',
+		id: 'functions',
+		attributes: {
+			root: true,
+			tool: function(){me.addFunction();},
+			draggable: false
+		},
+		children: []
+	};
+	
+	this.mProject.Get().Functions().each(function(){
+		t.children.push({
+			text: this.Id(),
+			id: this.Id()
+		});
+	})	
+	data.push(t);
+
+	t = {
+		text: 'Variables',
+		id: 'variables',
+		attributes: {
+			root: true,
+			tool: function(){me.addVariable();},
+			draggable: false
+		},
+		children: []
+	};
+	
+	this.mProject.Get().Variables().each(function(){
+		t.children.push({
+			text: this.Id(),
+			id: this.Id()
+		});
+	})	
+	data.push(t);
+
+	t = {
+		text: 'Macros',
+		id: 'macros',
+		attributes: {
+			root: true,
+			tool: function(){me.addMacro();},
+			draggable: false
+		},
+		children: []
+	};
+	
+	this.mProject.Get().Macros().each(function(){
+		t.children.push({
+			text: this.Id(),
+			id: this.Id()
+		});
+	})	
+	data.push(t);
+	
+	$('#uiTree').tree({
+		dnd: true,
+		data: data,
 		onBeforeDrag: function(node){
 			//console.log(node);
 			if(node.attributes && node.attributes.draggable === false)
@@ -317,6 +374,7 @@ ctx.Workspace.prototype.initTree = function(){
 			lastEvent = null;
 			return true;
 		},
+		
 		onContextMenu: function(e, node){
 			//console.log(e);
 			e.preventDefault();
@@ -335,6 +393,7 @@ ctx.Workspace.prototype.initTree = function(){
 				return;
 			}
 		},
+		
 		onDblClick: function(node){
 			console.log(node);
 			if(node.attributes && node.attributes.name){
@@ -346,7 +405,7 @@ ctx.Workspace.prototype.initTree = function(){
 		}
 	});
 
-	var names = ['graphs', 'variables', 'functions', 'macros', 'lvariables'];
+	var names = ['graphs', 'functions', 'variables', 'macros'];//, 'lvariables'];
 	
 	$.each(names, function(i, name){
 		//console.log(a, b);
@@ -355,8 +414,8 @@ ctx.Workspace.prototype.initTree = function(){
 		var bt = $('<div class="uiAdd ' + name + '">');
 		bt.appendTo(node.target);
 		bt.on('click', function(){
-			if(typeof node.attributes.callback == 'function')
-				node.attributes.callback();
+			if(typeof node.attributes.tool == 'function')
+				node.attributes.tool();
 		});
 		me.treeNodes[node.id] = node.target;
 	});

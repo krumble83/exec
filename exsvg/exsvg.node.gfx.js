@@ -280,11 +280,12 @@ exSVG.plugin(exSVG.Node, {
 	},
 	
 	destroyGfx: function(){
-		this.select('.exPin').each(function(){
-			this.destroy();
+		return;
+		this.select(':scope > *').each(function(){
+			if(this.destroy)
+				this.destroy();
+			this.off();
 		});
-		this.mGfx.expand.off();
-		this.off();
 	}
 });
 

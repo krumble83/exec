@@ -18,11 +18,13 @@
 
  <body style="background-color:#262626;padding:0;margin:0; overflow:hidden">
 	<div id="drawing" style="height:870px"></div><a href="javascript: exportGraph()" style="color:#fff">export</a>&nbsp;&nbsp;<a href="javascript:exportTest()" style="color:#fff">generate</a><br />
-	<textarea id="ttest"></textarea>
+	<textarea id="ttest"></textarea><textarea width="10" id="tesfst"></textarea>
 	<script>
 	
 	var format = require('xml-formatter');
-  
+/*	
+	console.log(document.querySelectorAll('textarea[width="10"],textarea:not([width])'));
+ */ 
 	function exportGraph(){
 		var g = new exGRAPH.Graph;
 		draw.exportGraph(g);
@@ -32,7 +34,7 @@
 	}
 	
 	function importGraph(){
-		draw.importGraph(g);	
+		draw.importGraph(g);
 	}
 	
 	function exportTest(){
@@ -46,6 +48,8 @@
 	exLIB.init(function(){
 		draw = SVG('drawing').worksheet(function(){
 			var me = this, inp, outp, n1, n2, seq, makearr, forloop;
+			
+			me.setContext('macro');
 						
 			n1 = me.import(exLIB.getNode2('core.entrypoint').attr('pos', '100,100'));
 			n2 = seq = me.import(exLIB.getNode2('core.flow.sequence').attr('pos', '300,200'));

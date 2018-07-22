@@ -39,6 +39,10 @@ exSVG.Selection = SVG.invent({
 			return me;
 		},
 		
+		length: function(){
+			return this.nodes().length();
+		},
+		
 		nodes: function(){
 			return this.mWorksheet.getNodes(this);
 		},
@@ -185,6 +189,7 @@ exSVG.Selection = SVG.invent({
 					me.mWorksheet.startSequence();
 					selection.each(function(){
 						this.fire('dragend', {event: ev});
+						this.fire('moved', {movement: movement});
 						me.doc().fire('node-moved', {node: this, movement: movement});
 					});
 					me.mWorksheet.stopSequence();
@@ -418,11 +423,11 @@ exSVG.Selection = SVG.invent({
 				});
 				
 			});
-
+			/*
 			me.doc().on('before-paste.selection', function(){
 				me.unselectNode();
 			});
-
+			*/
 			me.doc().on('paste.selection', function(e){
 				me.unselectNode();
 				me.selectNode(e.detail.data);

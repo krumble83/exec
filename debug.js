@@ -20,4 +20,5 @@ console.warn('BUG: quand on tire un lien depuis une pin PIN_INOUT et qu\'on affi
 console.warn('BUG: quand on copie/colle un node avec une pin special.add, la pin ne reapparait pas au bon endroit');
 //console.warn('Reroute: quand on colle un node le exapnd n\'est pas pris en compte');
 //console.warn('TODO: imlementer les flags pour les nodes.');
+//console.warn('TODO: fermer le librarymenu quand on tape "echap"');
 

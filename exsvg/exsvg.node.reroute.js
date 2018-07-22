@@ -172,52 +172,36 @@ exSVG.PinReroute = SVG.invent({
 		},
 		
 		startLink: function(target, className){
-			//console.log('exSVG.PinReroute.startLink()');
+			console.log('exSVG.PinReroute.startLink()');
 			var me = this
 			, worksheet = me.parent(exSVG.Worksheet)
 			, link
 			
-			//overide all pin's mousemove event listener, because Pinreroute should accept all type of pin
+			//overide all pin's mousemove/mouseout/mouseup event listener, because Pinreroute should accept all kind of pins
 			worksheet.select('.exPin.linkable').on('mousemove.reroute', function(e){
-				var links = worksheet.select('.exLinkStart');
+				var links = worksheet.select('.exLinkStart')
+				, accept;
 				
 				if(links.length() == 0 || this == me)
 					return;
 
-				worksheet.showTooltip(e, me.acceptLink(this).label, 10);
-				e.stopPropagation();
+				accept = me.acceptLink(this);
+				worksheet.showTooltip(e, accept.label, 10);
 				
-				console.log('TODO: remove this event listener');
-				
-				// to prevent drag link drawing not updated when mouse cursor is moving over the pin, because of e.stopPropagation(), 
-				// dispatch the mouse event directly to the link draw method
-				links.last().draw(e);
+				if(accept.code == 0){
+					me.setType((this.getType() == exSVG.Pin.PIN_IN) ? exSVG.Pin.PIN_OUT : exSVG.Pin.PIN_IN);
+					me.setDataType(this.getDataType());
+				}
+			}, undefined, {capture: true});
+
+			worksheet.select('.exPin.linkable').on('mouseout.reroute', function(e){
+				me.setDataType(exLIB.getWildcardsDataType());
 			}, undefined, {capture: true});
 			
 			worksheet.select('.exPin.linkable').on('mouseup.reroute', function(e){
-				var link = worksheet.select('.exLinkStart');
-
 				worksheet.select('.exPin.linkable').off('.reroute');
-				
-				if(link.length() == 0 || this == me)
-					return;
-
-				e.stopImmediatePropagation();
-
-				assert(link.length() == 1);
-				link = link.first();
-				
-				if(!me.hasClass('linkable') || me.acceptLink(this).code != 0){
-					console.log('Pin \'' + me.getId() + '\' dont accept link');
-					link.remove();
-					return;
-				}
-				link.setStartPin((this.getType() == exSVG.PIN_IN) ? me.getNode().getPin('out') : me.getNode().getPin('in'));
-				this.endLink(link, e);
-				
 			}, undefined, {capture: true});
-			
-			console.log('ok');
+
 			
 			link = exSVG.PinWildcards.prototype.startLink.call(this, target, exSVG.LinkReroute);			
 			assert(link instanceof exSVG.Link);

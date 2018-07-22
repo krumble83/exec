@@ -1,14 +1,6 @@
 ;(function() {
 "use strict";
 
-
-function removeFromTo(array, from, to) {
-	array.splice(from,
-		!to ||
-		1 + to - from + (!(to < 0 ^ from >= 0) && (to < 0 || -1) * array.length));
-	return array.length;
-}
-
 var UndoManager = function() {
 
 	var commands = [],
@@ -18,8 +10,6 @@ var UndoManager = function() {
 		callback,
 		sequences = [],
 		isSequence = false,
-		
-		// functions
 		execute;
 
 	execute = function(command, action) {
@@ -36,29 +26,29 @@ var UndoManager = function() {
 
 	return {
 
-		/*
-		Add a command to the queue.
-		*/
 		add: function (command) {
-			if (isExecuting) {
+			if (isExecuting)
 				return this;
+					
+			// if we are here after having called undo,
+			// invalidate items higher on the stack
+			while(commands.length > index+1){
+				execute(commands.pop(), 'destroy');
 			}
-			
+			//commands.splice(index + 1, commands.length - index);
+
 			//if we are in a sequence, push the current action 
 			if(isSequence){
 				sequences.push(command);
 				return;
 			}
-			
-			// if we are here after having called undo,
-			// invalidate items higher on the stack
-			commands.splice(index + 1, commands.length - index);
 
 			commands.push(command);
 			
 			// if limit is set, remove items from the start
 			if (limit && commands.length > limit) {
-				removeFromTo(commands, 0, -(limit+1));
+				execute(commands.shift(), 'destroy');
+				//removeFromTo(commands, 0, -(limit+1));
 			}
 			
 			// set the current index to the end
@@ -89,7 +79,12 @@ var UndoManager = function() {
 				redo: function(){
 					// redo sequence in normal order
 					for(var a=0; a < seqs.length; a++)
-						execute(seqs[a], 'redo');					
+						execute(seqs[a], 'redo');
+				},
+				destroy: function(){
+					// destroy sequence in reverse order
+					for(var a=seqs.length-1; a > -1; a--)
+						execute(seqs[a], 'destroy');					
 				}
 			});
 			sequences = [];
@@ -136,8 +131,10 @@ var UndoManager = function() {
 	};
 };
 
-var undoManager = new UndoManager();
 
+
+
+var undoManager = new UndoManager();
 
 exSVG.plugin(exSVG.Worksheet, {
 
@@ -179,115 +176,7 @@ exSVG.plugin(exSVG.Worksheet, {
 			}
 		});
 		
-		me.doc().on('node-add.undo', function(e){
-			//console.log('undo:node-add.undo')
-			var node = e.detail.node;
-			undoManager.add({
-				undo: function() {
-					//console.group('Undo:node-add(undo)');
-					node.fire('before-remove');
-					node.parent().removeElement(node);
-					node.fire('remove');
-					//node.remove(false);
-					//console.groupEnd();
-				},
-				redo: function() {
-					//console.group('Undo:node-add(redo)');
-					me.put(node);
-					node.fire('add');
-					//node.addTo(me, false);
-					//console.groupEnd();
-				}
-			});			
-			me.updateUndoButtons();
-		});
-		
-		me.doc().on('node-remove.undo', function(e){
-			//console.log('undo:node-remove.undo');
-			
-			var node = e.detail.node;
-			undoManager.add({
-				undo: function() {
-					//console.group('Undo:node-remove(undo)');
-					me.put(node);
-					node.fire('add');
-					//console.groupEnd();
-				},
-				redo: function() {
-					//console.group('Undo:node-remove(redo)');
-					node.fire('before-remove');
-					node.parent().removeElement(node);
-					node.fire('remove');
-					//console.groupEnd();
-				}
-			});			
-			me.updateUndoButtons();
-		});
-		
-		me.doc().on('node-moved.undo', function(e){
-			//console.log('undo:node-moved');
-			var node = e.detail.node;
-			var move = e.detail.movement;
-			undoManager.add({
-				undo: function() {
-					node.dmove(-move.x, -move.y);
-				},
-				redo: function() {
-					node.dmove(move.x, move.y);
-				}
-			});			
-			me.updateUndoButtons();
-		});
-		
-		me.doc().on('link-add.undo', function(e){
-			//console.log('undo.link-add');
-			var link = e.detail.link;
-			undoManager.add({
-				undo: function() {
-					//console.group('Undo:link-add(undo)');
-					link.parent().removeElement(link);
-					link.fire('remove');
-					//console.groupEnd();
-					//link.remove(false);
-				},
-				redo: function() {
-					//console.group('Undo:link-add(redo)');
-					me.getLinksLayer().put(link);
-					link.fire('add');
-					//console.groupEnd();
-					//link.addTo(me.getLinksLayer(), false);
-				}
-			});			
-			me.updateUndoButtons();
-		});
-		
-		me.doc().on('link-remove.undo', function(e){
-			//console.log('undo.link-remove');
-			var link = e.detail.link;
-			undoManager.add({
-				undo: function() {
-					//console.group('Undo:link-remove(undo)');
-					
-					// see exSVG.Pin.addLink (link removed when a blur is applied to all links)
-					link.opacity(1);					
-					
-					me.getLinksLayer().put(link);
-					link.fire('add');
-					//console.groupEnd();
-					//link.addTo(, false);
-				},
-				redo: function() {
-					//console.group('Undo:link-remove(redo)');
-					link.parent().removeElement(link);
-					link.fire('remove');
-					//console.groupEnd();
-					//link.remove(false);
-				}
-			});
-			me.updateUndoButtons();
-		});
-		
-		return this;
+		return me;
 	},
 	
 	startSequence: function(name){
@@ -359,8 +248,111 @@ exSVG.plugin(exSVG.Worksheet, {
 })
 
 
-//SVG.Nested.prototype.startSequence = start;
+exSVG.plugin(exSVG.Node, {
+	init: function(){
+		var me = this
+		, worksheet = me.parent(exSVG.Worksheet);
+		
+		me.on('add.undo', function(){
+			undoManager.add({
+				undo: function() {
+					//console.group('Undo:node-add(undo)');
+					me.fire('before-remove');
+					me.parent().removeElement(me);
+					me.fire('remove');
+				},
+				redo: function() {
+					//console.group('Undo:node-add(redo)');
+					worksheet.put(me);
+					me.fire('add');
+				},
+				destroy: function() {
+					me.destroy();
+				}
+			});			
+			worksheet.updateUndoButtons();
+		});
+		
+		me.on('remove.undo', function(e){
+			//console.log('undo:node-remove.undo');
+			undoManager.add({
+				undo: function() {
+					//console.group('Undo:node-remove(undo)');
+					worksheet.put(me);
+					me.fire('add');
+					//console.groupEnd();
+				},
+				redo: function() {
+					//console.group('Undo:node-remove(redo)');
+					me.fire('before-remove');
+					me.parent().removeElement(me);
+					me.fire('remove');
+					//console.groupEnd();
+				},
+				destroy: function() {
+					me.destroy();
+				}
+			});			
+			worksheet.updateUndoButtons();
+		});		
+		
+		me.on('moved.undo', function(e){
+			var move = e.detail.movement;
+			
+			undoManager.add({
+				undo: function() {
+					me.dmove(-move.x, -move.y);
+				},
+				redo: function() {
+					me.dmove(move.x, move.y);
+				}
+			});			
+			worksheet.updateUndoButtons();
+		});		
+	}
+});
 
-//exSVG.Worksheet.prototype.plugins.undo = {name: 'Undo Framework', initor: 'initUndo'};
+exSVG.plugin(exSVG.Link, {
+	init: function(){
+		var me = this
+		, worksheet = me.parent(exSVG.Worksheet);
+		
+		me.on('add.undo', function(e){
+			undoManager.add({
+				undo: function() {
+					me.parent().removeElement(me);
+					me.fire('remove');
+				},
+				redo: function() {
+					worksheet.getLinksLayer().put(me);
+					me.fire('add');
+				},
+				destroy: function() {
+					me.destroy();
+				}
+			});			
+			worksheet.updateUndoButtons();
+		});
+		
+		me.on('remove.undo', function(e){
+			undoManager.add({
+				undo: function() {
+					me.opacity(1);					
+					worksheet.getLinksLayer().put(me);
+					me.fire('add');
+				},
+				redo: function() {
+					me.parent().removeElement(me);
+					me.fire('remove');
+				},
+				destroy: function() {
+					me.destroy();
+				}
+			});
+			worksheet.updateUndoButtons();
+		});
+		
+	}
+});
 
 }());

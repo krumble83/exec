@@ -172,7 +172,9 @@ exSVG.Link = SVG.invent({
 			assert(worksheet);
 			assert(startPin instanceof exSVG.Pin);
 			assert(endPin instanceof exSVG.Pin);
-			assert(startPin.getType() != endPin.getType());
+			assert(startPin.getType() != endPin.getType(), function(){
+				console.log(startPin.getId(), endPin.getId());
+			});
 			
 			// register start pin / end pin ids directly in the link node
 			if(endPin.getType() == exSVG.Pin.PIN_IN || startPin.getType() == exSVG.Pin.PIN_OUT){
@@ -327,6 +329,10 @@ exSVG.Link = SVG.invent({
 			me.plot('M' + startpos.x + ',' + startpos.y + ' C' + (cp1.x) + ',' + cp1.y + ' ' + (cp2.x) + ',' + cp2.y + ' ' + stoppos.x + ',' + stoppos.y);
 
 			return me;
+		},
+		
+		destroy: function(){
+			//this.off();
 		}
 	}
 });

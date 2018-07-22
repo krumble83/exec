@@ -3,6 +3,7 @@
 
 var menuEl = document.querySelector('#librarymenu');
 
+
 exSVG.plugin(exSVG.Worksheet, {
 
 	init: function() {
@@ -61,17 +62,20 @@ exSVG.plugin(exSVG.Worksheet, {
 			
 			
 			SVG.on(document, 'mousemove.library-linkstart-temp', function(e){
-				if(e.target.className.baseVal.trim() == 'grid' || e.target.className.baseVal.trim() == 'workspace')
+				if(e.target.className.baseVal && (e.target.className.baseVal.trim() == 'grid' || e.target.className.baseVal.trim() == 'workspace'))
 					me.showTooltip(e, '<img src="exsvg/img/newnode.png" style="vertical-align:-3px"> Place a new node', 1);
+				else if(!e.target.instance)
+					me.hideTooltip();
 			});
 
 			//when user release the button on the grid, we displaying the library menu
 			SVG.on(document, 'mouseup.library-linkstart-temp', function(e){
 				//console.log('menulibrary.mouseup', e.button, e.buttons);
 				var startPin = link.getStartPin()  // Get the startPin of the link to get all nodes with a valid type (input or output) and valid datatype in the library
-				, dataType = startPin.getDataType()
+				, dataType = link.getDataType()
 				, io = (startPin.getType() == exSVG.Pin.PIN_IN) ? 'output' : 'input'
-				, filters2;
+				, point = me.point(e)
+				, filters = [];
 				
 				if(e.button != 0)
 					return;
@@ -81,67 +85,64 @@ exSVG.plugin(exSVG.Worksheet, {
 				SVG.off(document, 'mousemove.library-linkstart-temp'); // This class to stop displaying tooltip "add a new node" on the document
 				SVG.off(document, '.library-linkstart-temp'); // prevent to retrigger this event twice if we click on the document and not on the menu
 
-				// show the menu only if we leave mouse button on the grid and not anywhere
-				if(e.target.className.baseVal != 'workspace'){
-					//link.remove();
-					//return;
+				// show the menu only if we release mouse button on the grid and not anywhere
+				if(!e.target.instance){
+					terminate();
+					link.remove();
+					return;
+				}
+				
+				me.hideTooltip();
+
+				// if the startPin is a PIN_INOUT type, we need to find a way to determine 
+				// if we want to select library nodes on their input or output (for datatype).
+				// To do this, we check the position of the mouse regarding of the startPin.
+				// So if the startPin is at the left of the mouse cursor, we assume we want a input pin,
+				// and if the mouse cursor is a the right of the link, we assume we want a output pin
+				if(startPin.getType() == exSVG.Pin.PIN_INOUT){
+					if(startPin.getCenter().x > point.x)
+						io = 'output';
+					else
+						io = 'input';
+				}
+									
+				// Before displaying the menu, we get all nodes from library with a comptatible pin,
+				// including widlcards dataType
+				if(exLIB.isWildcardsDataType(dataType)){
+					filters.push(io + ':not([type="' + exLIB.getExecDataType() + '"])');										
+				} else {
+					filters.push(io + '[type="' + dataType + '"]');
+					filters.push(io + '[type="' + exLIB.getWildcardsDataType(exLIB.isArrayDataType(dataType)) + '"]');
 				}
 					
-				me.hideTooltip();
-				
-				// before displaying menu, we get all nodes from library with a comptatible pin
-				filters2 = io + '[type="' + dataType + '"]';										
-				// widlcards dataType
-					filters2 += ',' + io + '[type="' + exLIB.getWildcardsDataType(exLIB.isArrayDataType(dataType)) + '"]';
-
-					
 				// Display the menu
-				//menu = me.showLibMenu(e, filters);
-				menu = me.showLibMenu(e, filters2);
+				menu = me.showLibMenu(e, filters);
 
+
+				// Now we need to catch all events made on menu,
+				// here is the event when the user click on a menu item 
+				// we create the node, get it's pins, and attach the link to the first valid pin (input/output & datatype)
 				SVG.on(menu, 'itemclick.mmenu', function(e){
-					// here is the event when the user click on a menu item 
-					// we create the node, get all compatibles pin on this new node 
-					// and attach the link to the first valid pin (input/output & datatype)
-					//console.log(e);
-					try{
-						me.startSequence();
-						var pt = me.point(e.detail.e.clientX, e.detail.e.clientY)
-						, node = me.import(exLIB.getNode2(e.detail.nodeid).attr('pos', pt.x + ',' + pt.y))
-						//, node = me.addNode(e.detail.nodeid, {x: pt.x, y: pt.y})
-						, pins;
-						
-						if(startPin.getType() == exSVG.Pin.PIN_IN) // if the startPin of the link is a input, we select all output pins
-							pins = node.getPins({output: {type: startPin.getDataType()}}, true);
-							//pins = node.select('.exPin.output[data-dataType="' + startPin.getDataType() + '"],.exPin.output[data-isWildcards="1"]');
-						else if(startPin.getType() == exSVG.Pin.PIN_OUT) // if the startPin of the link is a output, we select all input pins
-							pins = node.getPins({input: {type: startPin.getDataType()}}, true);
-							//pins = node.select('.exPin.input[data-dataType="' + startPin.getDataType() + '"],.exPin.output[data-isWildcards="1"]');
-
-						assert(pins.length() > 0);
-
-						
-					} catch(err){
-						link.remove();
-						console.log('Can\'t create link', err);
-						me.stopSequence();
-						return;
-						//throw e;
-					}
-					finally {
-						// disable menu event handlers
-						terminate();
-						//SVG.off(menu, '.mmenu');
-					}
+					me.startSequence();
+					var pt = me.point(e.detail.e.clientX, e.detail.e.clientY)
+					, node = me.import(exLIB.getNode2(e.detail.nodeid).clone().attr('pos', pt.x + ',' + pt.y))
+					, pins = node.getPin()
+					, pin;
+					
+					pins.each(function(){
+						if(!pin && this.acceptLink(startPin).code == 0 && startPin.acceptLink(this).code == 0)
+							pin = this;
+					});
+					assert(pin);
+					terminate();
 
 					// finally we finish the link beetween two pins node
-					//link.finish(pins.first(), e.detail.e);
-					pins.first().node.dispatchEvent(e.detail.e);
+					pin.node.dispatchEvent(e.detail.e);
 					me.createSmartLink(link);
-					//pins.first().endLink(link, e.detail.e);
 					me.stopSequence();
 				});
 				
+				// If user cancel the menu, remove the link and remove all event listeners
 				SVG.on(menu, 'cancel.mmenu', function(e){
 					link.remove();
 					//SVG.off(menu, '.mmenu');
@@ -152,14 +153,13 @@ exSVG.plugin(exSVG.Worksheet, {
 			
 		});
 
-		// event handler to show the library menu when user right click on the grid
+		// event handler to show the library menu when user right click on the worksheet
 		me.on('contextmenu.library', function(ev){
 			var menu = me.showLibMenu(ev);
 			
 			ev.preventDefault();
 			SVG.on(menu, 'itemclick.mmenu', function(e){
 				var pt = me.point(e.detail.e.clientX, e.detail.e.clientY);
-				
 				me.import(exLIB.getNode2(e.detail.nodeid).attr('pos', pt.x + ',' + pt.y));
 				SVG.off(menu, '.mmenu');
 			});
@@ -178,7 +178,8 @@ exSVG.plugin(exSVG.Worksheet, {
 	showLibMenu: function(ev, filters, callback){
 		//console.log(ev, filters);
 		var me = this
-		, filters = filters || 'node,macro'
+		, filters = filters || ['node', 'macro']
+		, context= me.getContext()
 		, div
 		, input
 		, ul
@@ -186,6 +187,7 @@ exSVG.plugin(exSVG.Worksheet, {
 
 		//hide previously created menus
 		me.hideMenu();
+	
 		
 		function genuid(){
 			function s4() {
@@ -257,7 +259,7 @@ exSVG.plugin(exSVG.Worksheet, {
 		}
 
 		function fill(parent, nodes, expended, highlight){
-			var reg = (highlight) ? new RegExp('(' + highlight + ')', 'gi') : null;
+			var reg = (highlight) ? new RegExp('(' + highlight.replace(/[\*\+\[\(\)\]]/g,function(match) {return '\\'+match;}) + ')', 'gi') : null;
 			
 			// clear old menu if anyone
 			while (parent.firstChild) {
@@ -274,6 +276,9 @@ exSVG.plugin(exSVG.Worksheet, {
 				cats.each(function(){
 					var ul = (this.Name() === '/') ? parent : findUl(this.Name(), parent)
 					, li = document.createElement('li');
+					
+					if(!node.Title())
+						return console.log('no title for ' + node.Id());
 					
 					if(node.Symbol())
 						li.innerHTML = '<img src="' + node.Symbol() + '">&nbsp;';
@@ -299,25 +304,28 @@ exSVG.plugin(exSVG.Worksheet, {
 		input = div.querySelector('input[type="text"]');	
 		ul = div.querySelector('ul.sortable');
 		div.querySelector('.body').scrollTop = 0;
-		input.value = '';
-		
-		
+					
 		SVG.on(input, 'keyup.librarymenu', function(e){
-			var nodes
-			, flters = ((filters != 'node,macro') ? filters : '')
-			
+			var nodes;
+						
 			if(this.value){
-				nodes = exLIB.getNodes2('node[title*="' + this.value + '" i] ' + flters + ', node[keywords*="' + this.value + '" i] ' + flters, ['id', 'symbol', 'title', 'categories']);
+				nodes = exLIB.getNodes(me.getContext(), filters, this.value);
 				fill(ul, nodes, true, this.value);
 			}
 			else{
-				nodes = exLIB.getNodes2(filters, ['id', 'symbol', 'title', 'categories']);
+				nodes = exLIB.getNodes(me.getContext(), filters);
 				fill(ul, nodes);
 			}
 		});
 		
-		nodes = exLIB.getNodes2(filters, ['id', 'symbol', 'title', 'categories']);
-		//console.log(nodes);
+		SVG.on(document, 'keyup.librarymenu', function(e){
+			if (e.keyCode === 27){ // escape
+				me.hideMenu();
+			}			
+		});
+		
+		input.value = '';
+		nodes = exLIB.getNodes(me.getContext(), filters);
 		fill(ul, nodes);
 		
 		SVG.on(ul, 'click.librarymenu', function(e){
@@ -374,6 +382,7 @@ exSVG.plugin(exSVG.Worksheet, {
 	hideMenu: function(menu){
 		var menu = document.querySelector('#librarymenu');
 		menu.style.display = 'none';
+		SVG.off(document, 'keyup.librarymenu');
 	},
 	
 	createSmartLink: function(link){

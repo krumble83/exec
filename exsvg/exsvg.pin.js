@@ -188,6 +188,7 @@ exSVG.Pin = SVG.invent({
 		},
 
 		destroy: function(){
+			return;
 			this.fire('destroy');
 			this.getNode().off('.pin-' + this.getId());
 			this.off();

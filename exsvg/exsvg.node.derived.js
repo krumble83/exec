@@ -61,7 +61,7 @@ exSVG.NodeOp = SVG.invent({
 				me.mGfx.title = me.plain(me.getData('subtitle') || me.getData('title'))
 					.fill('#fff')
 					.opacity(0.2)
-					.font({size:36})
+					.font({size:24})
 					.attr('font-weight', 'bolder')
 					.stroke({width:0});
 					
@@ -71,14 +71,14 @@ exSVG.NodeOp = SVG.invent({
 			outBox = me.mOutputPinGroup.bbox();
 			width = Math.max(inpBox.w + outBox.w, 150);
 			me.mGfx.header.width(width);
-			me.mGfx.title.move(width-me.mGfx.title.bbox().w - 15, 25);
+			me.mGfx.title.move(width-me.mGfx.title.bbox().w - 15, inpBox.height+25);
 		},
 		
 		drawShape: function(){
 			var me = this;
 			
 			exSVG.Node.prototype.drawShape.apply(me, arguments);
-			me.mGfx.body.height(me.mGfx.body.height() - 5);
+			me.mGfx.body.height(me.mGfx.body.height() - 10);
 			return me;
 		}
 	}

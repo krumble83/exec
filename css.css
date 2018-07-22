@@ -59,6 +59,10 @@ body{
 	background-image: url("img/add_function_e.png");
 }
 
+#uiTree .uiRoot .uiAdd.macros:hover{
+	background-image: url("img/add_macro_e.png");
+}
+
 .tabs-title,
 .tabs-narrow{
 	-webkit-user-select: none; /* Safari */        
