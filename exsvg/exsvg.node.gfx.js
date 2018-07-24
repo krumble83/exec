@@ -41,7 +41,7 @@ exSVG.plugin(exSVG.Node, {
 
 		// Hide optional pins if node is not expanded
 		me.select('.exPin[data-optional="true"]').each(function(){
-			if(!me.mExpand && this.getLinks().length() === 0)
+			if(!me.mExpand && this.getLinks().length() == 0)
 				this.hide();
 			else
 				this.show();
@@ -138,7 +138,7 @@ exSVG.plugin(exSVG.Node, {
 				});
 			}
 			me.on('data-change.nodegfx', function(e){
-				if(e.detail.name === 'title')
+				if(e.detail.name == 'title')
 					me.paint();
 			});
 		}
@@ -237,7 +237,7 @@ exSVG.plugin(exSVG.Node, {
 		var me = this
 		    , bodyBox;
 
-		if(me.select('.exPin[data-optional="true"]').length() === 0)
+		if(me.select('.exPin[data-optional="true"]').length() == 0)
 			return;
 		
 		

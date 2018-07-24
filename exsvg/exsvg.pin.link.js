@@ -50,12 +50,13 @@ exSVG.plugin(exSVG.Pin, {
 		
 		me.on('mouseup.link-handler', function(e){
 			//console.log('exPin.mouseup', e.button);
+			var link = SVG.select('.exLinkStart');
+
 			if(e.button != 0){
 				e.stopImmediatePropagation();
 				e.stopPropagation();
 				return;
 			}
-			var link = SVG.select('.exLinkStart'); 
 			if(link.length() == 0)
 				return;
 			e.stopImmediatePropagation();
@@ -208,8 +209,11 @@ exSVG.plugin(exSVG.Pin, {
 		}
 		
 		if(links.length() > me.mMaxLink && me.mMaxLink != -1){
-			console.log('>>> Max links');
-			links.first().remove();
+			console.log('>>> Max links when add ' + link.id() + ', remove ' + links.first());
+			//setTimeout(function(){
+				links.first().remove();
+			//}, 10);
+			
 		}
 		me.paint();
 		me.initLinkEvents(link);

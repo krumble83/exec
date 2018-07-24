@@ -35,7 +35,7 @@ exSVG.Node = SVG.invent({
 			var me = this
 				, flags = parseInt(me.getData('flags') || 0);
 			
-			return flags & flag === flag;
+			return flags & flag == flag;
 		},
 							
 		export: function(graph){
@@ -46,6 +46,7 @@ exSVG.Node = SVG.invent({
 
 			if(!node){
 				node = new exGRAPH.Node();
+				node.init(me.getData('id'), me.getData('title'));
 				if(graph)
 					graph.add(node);
 			}
@@ -149,7 +150,7 @@ exSVG.Node = SVG.invent({
 			var me = this
 				, data = me.data(name);
 			
-			if(data && data !== value || data === undefined){
+			if(data && data !== value || data == undefined){
 				me.data(name, value);
 				me.fire('data-change', {name: name, value: value});
 			}
@@ -190,16 +191,12 @@ SVG.extend(exSVG.Worksheet, {
 		node.addTo(parent);
 		if(pos){
 			pos = {x: Number.parseInt(pos[0]), y: Number.parseInt(pos[1])};
-			if(typeof parent.snapToGrid === 'function')
+			if(typeof parent.snapToGrid == 'function')
 				pos = parent.snapToGrid(pos);
 			node.x(pos.x);
 			node.y(pos.y);
 		}
 		return node;
-	},
-	
-	importMacro: function(){
-		return this.importNode.apply(this, arguments);
 	}
 });
 

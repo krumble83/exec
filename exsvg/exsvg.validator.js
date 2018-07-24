@@ -11,7 +11,7 @@ exSVG.plugin(exSVG.Worksheet, {
 	},
 	
 	addValidator: function(validator){
-		assert(typeof validator === 'function');
+		assert(typeof validator == 'function');
 		validators.push(validators);
 	},
 	

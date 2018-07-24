@@ -37,6 +37,7 @@ var UndoManager = function() {
 			}
 			//commands.splice(index + 1, commands.length - index);
 
+			//console.log('added');
 			//if we are in a sequence, push the current action 
 			if(isSequence){
 				sequences.push(command);
@@ -73,13 +74,20 @@ var UndoManager = function() {
 			undoManager.add({
 				undo: function(){
 					// undo sequence in reverse order
-					for(var a=seqs.length-1; a > -1; a--)
+					for(var a=seqs.length-1; a > -1; a--){
+						//isExecuting = true;
 						execute(seqs[a], 'undo');
+						//isExecuting = true;
+
+					}
 				},
 				redo: function(){
 					// redo sequence in normal order
-					for(var a=0; a < seqs.length; a++)
+					for(var a=0; a < seqs.length; a++){
+						//isExecuting = true;
 						execute(seqs[a], 'redo');
+						//isExecuting = true;
+					}
 				},
 				destroy: function(){
 					// destroy sequence in reverse order
@@ -186,7 +194,7 @@ exSVG.plugin(exSVG.Worksheet, {
 
 		if(!me.sequenceEnabled)
 			return;
-		if(typeof name === 'function'){
+		if(typeof name == 'function'){
 			undoManager.startSequence();
 			name();
 			undoManager.stopSequence();
@@ -202,6 +210,7 @@ exSVG.plugin(exSVG.Worksheet, {
 		if(!me.sequenceEnabled)
 			return;
 		undoManager.stopSequence();
+		me.updateUndoButtons();
 		return me;
 	},
 	
@@ -321,18 +330,24 @@ exSVG.plugin(exSVG.Node, {
 	}
 });
 
+
 exSVG.plugin(exSVG.Link, {
 	init: function(){
 		var me = this
 			, worksheet = me.parent(exSVG.Worksheet);
 		
 		me.on('add.undo', function(e){
+			//console.log('add undo add to link ' + me.id());
 			undoManager.add({
 				undo: function() {
+					//console.log('undo add ' + me.id());
+					if(!me.parent())
+						return;
 					me.parent().removeElement(me);
 					me.fire('remove');
 				},
 				redo: function() {
+					//console.log('redo add ' + me.id());
 					worksheet.getLinksLayer().put(me);
 					me.fire('add');
 				},
@@ -344,13 +359,18 @@ exSVG.plugin(exSVG.Link, {
 		});
 		
 		me.on('remove.undo', function(e){
+			//console.log('add undo remove to link ' + me.id());
 			undoManager.add({
 				undo: function() {
+					//console.log('undo remove ' + me.id());
 					me.opacity(1);					
 					worksheet.getLinksLayer().put(me);
 					me.fire('add');
 				},
 				redo: function() {
+					//console.log('redo remove ' + me.id());
+					if(!me.parent())
+						return;
 					me.parent().removeElement(me);
 					me.fire('remove');
 				},

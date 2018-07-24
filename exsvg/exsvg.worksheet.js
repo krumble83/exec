@@ -82,7 +82,7 @@ exSVG.Worksheet = SVG.invent({
 		},
 		
 		hasFocus: function(){
-			return document.activeElement && document.activeElement.instance && document.activeElement.instance === this;
+			return document.activeElement && document.activeElement.instance && document.activeElement.instance == this;
 		},
 		
 		setContext: function(context){
@@ -312,6 +312,7 @@ exSVG.Worksheet = SVG.invent({
 		worksheet: function(callback, plugins) {
 			var ret = new exSVG.Worksheet();
 
+			console.time('exSVG Init');
 			plugins = plugins || pluginsList;
 			
 			this.put(ret);
@@ -326,7 +327,8 @@ exSVG.Worksheet = SVG.invent({
 					ret.init();
 					exSVG.execPlugins(ret, ret, exSVG.Worksheet);
 					ret.doc().fire('plugins-init');
-					if(typeof callback === 'function')
+					console.timeEnd('exSVG Init');
+					if(typeof callback == 'function')
 						callback.call(ret, ret);			
 			});
 			return ret;

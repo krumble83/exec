@@ -22,6 +22,7 @@ exSVG.Pin = SVG.invent({
 			me.setType(data.type);
 
 			this.getNode().on('export.pin-' + me.getId(), function(e){
+				//console.log('export');
 				me.export(e.detail.parent);
 			});
 		
@@ -115,11 +116,11 @@ exSVG.Pin = SVG.invent({
 		},
 		
 		setType: function(type){
-			if(type == 'INPUT' || type == 'input' || type === exSVG.Pin.PIN_IN){
+			if(type == 'INPUT' || type == 'input' || type == exSVG.Pin.PIN_IN){
 				this.addClass('input')
 				.setMaxLink(1);
 			}
-			if(type == 'OUTPUT' || type == 'output' || type === exSVG.Pin.PIN_OUT){
+			if(type == 'OUTPUT' || type == 'output' || type == exSVG.Pin.PIN_OUT){
 				this.addClass('output')
 				.setMaxLink(-1);
 			}

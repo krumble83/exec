@@ -136,7 +136,7 @@ exSVG.PinWildcards = SVG.invent({
 			var me = this
 				, libdatatype = exLIB.getDataType2(datatypeid);
 			
-			if(me.getDataType() === datatypeid || exLIB.swapArrayDataType(datatypeid) === me.getDataType())
+			if(me.getDataType() == datatypeid || exLIB.swapArrayDataType(datatypeid) == me.getDataType())
 				return;
 			
 			if(me.mGfx.editor){
@@ -207,7 +207,6 @@ exSVG.PinStructure = SVG.invent({
 			//me.setData('ctor', 'PinStructure');
 			exSVG.Pin.prototype.init.apply(me, arguments);
 			
-			console.log(me.getData('expanded'));
 			if(me.getData('expanded') == '1')
 				me.expandPins();
 					
@@ -230,13 +229,11 @@ exSVG.PinStructure = SVG.invent({
 		expandPins: function(){
 			var me = this
 				, node = me.getNode()
-				, datatype
-				, type;
-
-			datatype = exLIB.getDataType2(me.getDataType()).clone();
-			var pins = datatype.select('pin')
+				, datatype = exLIB.getDataType2(me.getDataType()).clone()
+				, type
+				, pins = datatype.select('pin')
 				, pos = me.y()
-				, importer = (me.getType() === exSVG.Pin.PIN_IN) ? node.importInput : node.importOutput
+				, importer = (me.getType() == exSVG.Pin.PIN_IN) ? node.importInput : node.importOutput
 				, pin;
 			
 			pins.each(function(){
@@ -256,9 +253,10 @@ exSVG.PinStructure = SVG.invent({
 							return false;
 						
 						node.select('.exPin[data-id^="' + me.getId() + '-"]').each(function(){
+							this.remove();
 							this.destroy();
 						});
-						me.setData('expanded', '0');
+						me.setData('expanded', null);
 						me.show();
 						me.getNode().paint();
 					});
@@ -268,6 +266,7 @@ exSVG.PinStructure = SVG.invent({
 				
 				pos += pin.bbox().height+4;
 			});
+			
 			me.setData('expanded', '1');
 			me.hide();
 		}
@@ -292,9 +291,9 @@ exSVG.PinExec = SVG.invent({
 			exSVG.Pin.prototype.init.apply(me, arguments);
 			me.addClass('exPinExec');
 
-			if(me.getType() === exSVG.Pin.PIN_IN)
+			if(me.getType() == exSVG.Pin.PIN_IN)
 				me.mMaxLink = -1;
-			if(me.getType() === exSVG.Pin.PIN_OUT)
+			if(me.getType() == exSVG.Pin.PIN_OUT)
 				me.mMaxLink = 1;
 
 			return me;
@@ -318,7 +317,7 @@ exSVG.PinExec = SVG.invent({
 					.style('pointer-events', 'none')
 			}
 			ret = me.mGfx.pin.bbox();
-			if(me.getType() === exSVG.Pin.PIN_OUT){
+			if(me.getType() == exSVG.Pin.PIN_OUT){
 				//me.mGfx.pin.translate(-5,0);
 				//console.log('ttttt')
 				//me.mGfx.pin.translate(5);
@@ -331,7 +330,7 @@ exSVG.PinExec = SVG.invent({
 		drawLabel: function(x, y, text){
 			var me = this;
 
-			if(me.getId() === 'entry' || me.getId() === 'exit'){
+			if(me.getId() == 'entry' || me.getId() == 'exit'){
 				me.rect(10,10).move(9,3).style('pointer-events', 'none');
 				return exSVG.Pin.prototype.drawLabel.call(this, x, y, '  ');
 			}
@@ -405,7 +404,7 @@ exSVG.PinAdd = SVG.invent({
 			
 			if(!me.getData('targetarray')){
 				pin = me.getNode().select('.exPin[data-id="' + me.getData('target') + '"');
-				assert(pin.length() === 1);
+				assert(pin.length() == 1);
 				if(!pin.first().getData('arrayId')){
 					arrayId = Math.floor((Math.random() * 10000) + 1);
 					me.setData('targetarray', arrayId);

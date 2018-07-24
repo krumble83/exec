@@ -8,7 +8,7 @@ exSVG.plugin(exSVG.Pin, {
 		me.mGfx = me.mGfx || {};
 		
 		me.on('mousemove.pingfx', function(e){
-			if(e.buttons === 1)
+			if(e.buttons == 1)
 				return;
 
 			// If no mouse button is pressed, display a tooltip when the mouse cursor is over the pin
@@ -20,7 +20,7 @@ exSVG.plugin(exSVG.Pin, {
 		});
 		
 		me.on('data-change', function(e){
-			if(e.detail.name === 'type') {
+			if(e.detail.name == 'type') {
 				var t = exLIB.getDataType2(me.getDataType());
 				me.setColor(t.Color());
 				me.updateTooltip();
@@ -38,7 +38,7 @@ exSVG.plugin(exSVG.Pin, {
 	setColor: function(color){
 		//console.log('Pin.setColor()', color);
 		var me = this;
-		if(typeof color === 'string')
+		if(typeof color == 'string')
 			me.mColor = new SVG.Color(color);
 		else if(color instanceof SVG.Color)
 			me.mColor = color;
@@ -93,7 +93,7 @@ exSVG.plugin(exSVG.Pin, {
 			, dataType = exLIB.getDataType2(me.getDataType())
 			, labelbox = (me.mGfx.label) ? me.mGfx.label.bbox() : {x: 0, y:0};
 		
-		if(me.getType() === exSVG.Pin.PIN_OUT || exLIB.isArrayDataType(me.getDataType()) || !dataType.Editor().Name()){
+		if(me.getType() == exSVG.Pin.PIN_OUT || exLIB.isArrayDataType(me.getDataType()) || !dataType.Editor().Name()){
 			if(me.mGfx.editor){
 				me.mGfx.editor.destroy();
 				me.mGfx.editor = null;
@@ -154,7 +154,7 @@ exSVG.plugin(exSVG.Pin, {
 		else
 			me.mGfx.bg.width(me.mGfx.pin.bbox().w+20);
 		
-		if(me.getType() === exSVG.Pin.PIN_OUT && me.mGfx.label){
+		if(me.getType() == exSVG.Pin.PIN_OUT && me.mGfx.label){
 			me.mGfx.bg.x(-(me.mGfx.label.bbox().w+5));
 		}
 		me.mGfx.bg.back();
@@ -221,7 +221,7 @@ exSVG.plugin(exSVG.Pin, {
 				.addClass('label');
 		}
 		me.mGfx.label.plain(text);
-		if(me.getType() === exSVG.Pin.PIN_OUT){
+		if(me.getType() == exSVG.Pin.PIN_OUT){
 			me.mGfx.label.x(-(me.mGfx.label.bbox().width + 27));
 		}
 		return me;

@@ -3,6 +3,9 @@
 var exGRAPH = {};
 ctx.exGRAPH = exGRAPH;
 
+
+//var typeSelector = ['type', 'class', 'structure', 'interface', 'enum'];
+
 /**************************************************************************************
 	BASE
 **************************************************************************************/
@@ -12,15 +15,17 @@ exGRAPH.Base = exGEN.invent({
 	parent: exGRAPH,
 	extend: {
 		
-		init: function(){},
+		init: function(){
+			return this;
+		},
 		
 		create: function(type, args){
 			this.__CLASS__ = 'test';
 			if(!exGRAPH[type])
-				return console.log('cant create ' + type + ' from exGRAPH', exGRAPH);
+				return console.warn('cant create ' + type + ' from exGRAPH', exGRAPH);
 			var ret = new exGRAPH[type];
 			this.add(ret);
-			if(typeof ret.init === 'function' && args)
+			if(typeof ret.init == 'function' && args)
 				ret.init.apply(ret, args);
 			return ret;		
 		},
@@ -32,7 +37,7 @@ exGRAPH.Base = exGEN.invent({
 		merge: function(src){
 			var me = this;
 			
-			me.mergeAttrs(src, false);
+			me.mergeAttrs(src);
 			src.select('*').each(function(){
 				me.add(this.clone(exGRAPH));
 			});
@@ -50,19 +55,21 @@ exGRAPH.Base = exGEN.invent({
 		HasFlag: function(flag){
 			var flags = parseInt(this.attr('flags') || 0);
 			
-			return flags & flag === flag;
+			return flags & flag == flag;
 		},
 		
 		Id: function(id){
-			var path = (this.parent && this.parent().Id) ? this.parent().Id() : null;
+			var path = (this.parent && this.parent() && this.parent().Id) ? this.parent().Id() : null;
+			
 			if(id){
 				if(path)
 					return this.attr('id', path + '.' + id);
 				else
 					return this.attr('id', id);
 			}
-			else
+			else if(this.attr('id'))
 				return this.attr('id');
+			return '';
 		}
 		
 	}
@@ -73,17 +80,13 @@ exGRAPH.Base = exGEN.invent({
 /**************************************************************************************
 	LIBRARY
 **************************************************************************************/
-
 exGRAPH.Library = exGEN.invent({
     create: 'library',
 	inherit: exGRAPH.Base,
 	
     extend: {
-		init: function(){
-			exGRAPH.Base.prototype.init.apply(this, arguments);
-			this.node.style = 'display:none';
-			document.body.appendChild(this.node);
-			return this;
+		init: function(id){
+			return exGRAPH.Base.prototype.init.apply(this, arguments);
 		},
 		
 		GetNode: function(id, package){
@@ -102,7 +105,8 @@ exGRAPH.Library = exGEN.invent({
 
 		GetNodes: function(selector){
 			var out = new exGEN.Set
-			, parent ,ret;
+				, parent 
+				, ret;
 			
 			this.select(selector).each(function(){
 				ret = this;
@@ -115,11 +119,6 @@ exGRAPH.Library = exGEN.invent({
 			return out;
 		},
 		
-		Package: function(id){
-			var ret = this.querySelector('package[id="' + id + '"]') || this.create('Package');
-			return ret.init.apply(ret, arguments);
-		},
-
 
 
 		
@@ -173,17 +172,14 @@ exGRAPH.Library = exGEN.invent({
 exGRAPH.Package = exGEN.invent({
     create: 'package',
 	inherit: exGRAPH.Base,
+	parent: exGRAPH.Library,
 	
     extend: {
 		init: function(id){
 			exGRAPH.Base.prototype.init.apply(this, arguments);
 			return this.Id(id);
 		},
-			
-		Id: function(id){
-			return this.attr('id', id);
-		},
-		
+
 		Category: function(name){
 			return this.data('category', name);
 		},
@@ -194,123 +190,14 @@ exGRAPH.Package = exGEN.invent({
 						
 		Symbol: function(name){
 			return this.data('symbol', name);
-		},
-
-		Node: function(id, title){
-			var ret = this.querySelector('node[id="' + this.Id() + '.' + id + '"]') || this.create('Node');
-
-			ret.init.apply(ret, arguments);
-			//ret.attr('id', this.attr('id') + '.' + id)
-			ret.Color(this.Color());
-			ret.Symbol(this.Symbol());
-			ret.Category(this.Category());
-			return ret;
-		},
-
-		NodeTpl: function(id, title){
-			var ret = this.querySelector('nodetpl[id="' + this.Id() + '.' + id + '"]') || this.create('Nodetpl');
-
-			ret.init.apply(ret, arguments);
-			//ret.attr('id', this.attr('id') + '.' + id)
-			ret.Color(this.Color());
-			ret.Symbol(this.Symbol());
-			ret.Category(this.Category());
-			return ret;
-		},
-		
-		Type: function(id){
-			var ret = this.querySelector('type[id="' + this.Id() + '.' + id + '"]') || this.create('Type');
-
-			ret.init.apply(ret, arguments);
-			return ret;
-			//return ret.attr('id', this.GetPath() + id);
-		},
-
-		Interface: function(id){
-			var ret = this.querySelector('interface[id="' + this.Id() + '.' + id + '"]') || this.create('Interface');
-
-			ret.init.apply(ret, arguments);
-			//return ret.attr('id', this.GetPath() + id);
-		},
-		
-		Class: function(id, label, callback){
-			var ret = this.querySelector('class[id="' + this.Id() + '.' + id + '"]') || this.create('Class');
-
-			ret.init.apply(ret, arguments);
-			//ret.Id(this.GetPath() + id);
-			if(typeof callback == 'function'){
-				callback.call(ret, ret);
-			}
-			return ret
-		},
-
-		Struct: function(id, label){
-			var ret = this.querySelector('structure[id="' + this.Id() + '.' + id + '"]') || this.create('Structure');
-
-			//ret.attr('id', this.attr('id') + '.' + id);
-			//ret.Inherits('core.type.struct');
-			ret.init.apply(ret, arguments);
-			return ret;
-			//return ret.attr('id', this.GetPath() + id);
-		},
-		
-		Enum: function(id, label){
-			var ret = this.querySelector('enum[id="' + this.Id() + '.' + id + '"]') || this.create('Enum');
-
-			ret.Inherits('core.type.enum');
-			ret.init.apply(ret, arguments);
-			return ret;
-			//return ret.attr('id', this.GetPath() + id);
-		},
-
-		Macro: function(id){
-			var ret = this.querySelector('macro[id="' + this.Id() + '.' + id + '"]') || this.create('Macro');
-
-			ret.init.apply(ret, arguments);
-			//ret.attr('id', this.GetPath() + id);
-			ret.Color(this.Color());
-			ret.Symbol(this.Symbol());
-			ret.Category(this.Category());
-			return ret;
-		},
-		
-		Device: function(id, label){
-			var ret = this.querySelector('device[id="' + this.Id() + '.' + id + '"]') || this.create('Device');
-
-			ret.init.apply(ret, arguments);
-			return ret;
-			//return ret.attr('id', this.attr('id') + '.' + id);			
-		},
-			
-		MakeAccessorNodes: function(data, color){
-			// make
-			var n = this.Node('make', 'Make ' + data.Label())
-				//.Id(data.Id() + '.' + 'make')
-				.Keywords('make ' + data.Label())
-				.Symbol('lib/img/make.png')
-				.Color(color);
-			
-			data.select('pin').each(function(){
-				n.Input(this.Id()).mergeAttrs(this);
-			});
-			n.Output('out', data.Id(), data.Label());
-			this.add(n);
-			
-			// break
-			n = this.Node('break', 'Break ' + data.Label())
-				//.Id(data.Id() + '.' + 'break')
-				.Keywords('break ' + data.Label())
-				.Symbol('lib/img/break.png')
-				.Color(color);
-			
-			n.Input('in', data.Id(), data.Label());
-			this.add(n);
-			data.select('pin').each(function(){
-				n.Output(this.Id()).mergeAttrs(this);
-			});
-			
-			return data;
 		}
+	},
+	
+	construct: {
+		Package: function(id){
+			var ret = this.querySelector('package[id="' + id + '"]') || this.create('Package');
+			return ret.init.apply(ret, arguments);
+		}		
 	}
 });
 
@@ -325,33 +212,18 @@ exGRAPH.Graph = exGEN.invent({
 	
     extend: {
 		init: function(id){
-			exGRAPH.Base.prototype.init.apply(this, arguments);
-			return this.Id(id);
+			return exGRAPH.Base.prototype.init.apply(this, arguments);
+			//return this.Id(id);
 		},
-		
-		Id: function(id){
-			return this.attr('id', id);
-		},
-								
+
 		Node: function(id){
-			//console.log(this.node);
-			var ret = this.querySelector('node[id="' + this.attr('id') + '.' + id + '"]') || this.create('Node');
-
-			ret.init.apply(ret, arguments);
-			ret.attr('id', this.attr('id') + '.' + id)
-			ret.Ctor('Node');
-			return ret;
-		},
-
-		Link: function(){
-			return this.create('Link', arguments);
+			var ret = this.create('Node');
+			return ret.init.apply(ret, arguments);
 		},
 		
 		Macro: function(id){
 			var ret = this.querySelector('macro[id="' + id + '"]') || this.create('Macro');
-
-			ret.init.apply(ret, arguments);
-			return ret;			
+			return ret.init.apply(ret, arguments);
 		},
 		
 		GetNode: function(svgid){
@@ -367,92 +239,95 @@ exGRAPH.Graph = exGEN.invent({
 exGRAPH.Macro = exGEN.invent({
     create: 'macro',
 	inherit: exGRAPH.Graph,
+	parent: exGRAPH.Package,
 	
     extend: {
 		init: function(id, callback){
 			exGRAPH.Graph.prototype.init.apply(this, arguments);
 			this.Id(id);
 			this.Ctor('NodeMacro');
-			if(typeof callback === 'function')
-				callback.apply(this);
+			if(typeof callback == 'function')
+				callback.apply(this, this);
 			return this;
 		},
-		/*
-		Id: function(id){
-			return this.attr('id', id);
-		},
-		*/
+		
 		Keywords: function(name){
-			return this.attr('keywords', name);
+			return exGRAPH.Node.prototype.Keywords.apply(this, arguments);
 		},
 		
 		Subtitle: function(name){
-			return this.attr('subtitle', name);
+			return exGRAPH.Node.prototype.Subtitle.apply(this, arguments);
 		},
 
 		Tooltip: function(name){
-			return this.attr('tooltip', name);
+			return exGRAPH.Node.prototype.Tooltip.apply(this, arguments);
 		},
 
 		Color: function(name){
-			return this.attr('color', name);
+			return exGRAPH.Node.prototype.Color.apply(this, arguments);
 		},
 
 		Title: function(label){
-			return this.attr('title', label);
+			return exGRAPH.Node.prototype.Title.apply(this, arguments);
 		},
 
 		Symbol: function(name){
-			return this.attr('symbol', name);
+			return exGRAPH.Node.prototype.Symbol.apply(this, arguments);
 		},
 
 		Category: function(name){
-			if(name == undefined)
-				return;
-			var ret = this.select('category[name="' + name + '"]').first() || this.create('Category');
-			ret.init.apply(ret, arguments);
-			return this;
+			return exGRAPH.Node.prototype.Category.apply(this, arguments);
 		},
 		
 		Ctor: function(name){
-			return this.attr('ctor', name);
+			return exGRAPH.Node.prototype.Ctor.apply(this, arguments);
 		},
 
 		Input: function(){
-			return this.create('Input', arguments);
+			return exGRAPH.Node.prototype.Input.apply(this, arguments);
+			//return this.create('Input', arguments);
 		},
 		
 		Output: function(){
-			return this.create('Output', arguments);
+			return exGRAPH.Node.prototype.Output.apply(this, arguments);
+			//return this.create('Output', arguments);
 		},
 		
 		GetPackage: function(){
 			return this.parent(exGRAPH.Package);
 		},
 		
-		ImportNode: function(id){
+		Node: function(id){
 			var ret = this.parent(exGRAPH.Library).GetNode(id);
-
-			if(ret){
-				ret = ret.clone();
-				ret.select('category').each(function(){
-					this.remove();
-				});
-				this.add(ret);
-				return ret;
-			}
+			
+			assert(ret instanceof exGRAPH.Node);
+			ret = ret.clone();
+			ret.select('category').each(function(){
+				this.remove();
+			});
+			this.add(ret);
+			return ret;
 		},
-		
-		
+				
 		MakeEntry: function(){
-			this.Input('entry', 'core.exec');
-			return this;
+			return exGRAPH.Node.prototype.MakeEntry.apply(this);
 		},
 		
 		MakeExit: function(){
-			this.Output('exit', 'core.exec');
-			return this;
+			return exGRAPH.Node.prototype.MakeExit.apply(this);
 		}
+	},
+	
+	construct: {
+		Macro: function(id){
+			var ret = this.querySelector('macro[id="' + this.Id() + '.' + id + '"]') || this.create('Macro');
+
+			ret.init.apply(ret, arguments);
+			ret.Color(this.Color());
+			ret.Symbol(this.Symbol());
+			ret.Category(this.Category());
+			return ret;
+		}		
 	}
 });
 
@@ -464,18 +339,16 @@ exGRAPH.Macro = exGEN.invent({
 exGRAPH.Device = exGEN.invent({
     create: 'device',
 	inherit: exGRAPH.Base,
+	parent: exGRAPH.Package,
 	
     extend: {
 		init: function(id, label){
 			exGRAPH.Base.prototype.init.apply(this, arguments);
 			this.Id(id);
-			return this.Label(label);			
+			this.Label(label);
+			return this;
 		},
-		/*
-		Id: function(id){
-			return this.attr('id', id);
-		},
-		*/
+
 		Label: function(name){
 			return this.attr('label', name);
 		},
@@ -496,62 +369,79 @@ exGRAPH.Device = exGEN.invent({
 				ret = this.querySelector('provide[id="' + args[i] + '"]') || this.create('Provide', [args[i]]);
 			return ret;
 		},
-
-		Component: function(id, label){
-			var ret = this.querySelector('component[id="' + this.attr('id') + '.' + id + '"]')
-				|| this.create('Component');
-
-			return ret.init.apply(ret, arguments);
-			//return ret;//.attr('id', this.attr('id') + '.' + id);			
-		},
 		
 		Function: function(name, type){
 			return this.create('Function', arguments);
 		},
 		
-	}
-});
-
-exGRAPH.Provide = exGEN.invent({
-    create: 'provide',
-	inherit: exGRAPH.Base,
+	},
 	
-    extend: {
-		init: function(id){
-			exGRAPH.Base.prototype.init.apply(this, arguments);
-			return this.Id(id);
-		},
+	construct: {
+		Device: function(id, label){
+			var ret = this.querySelector('device[id="' + this.Id() + '.' + id + '"]') || this.create('Device');
 
-		Require: function(){
-			var args = [].slice.call(arguments);
-
-			for (i = 0, il = args.length; i < il; i++)
-				this.querySelector('require[id="' + args[i] + '"]') || this.create('Require', [args[i]]);
-			return this;
-		}
+			ret.init.apply(ret, arguments);
+			return ret;
+			//return ret.attr('id', this.attr('id') + '.' + id);			
+		}		
 	}
 });
 
 exGRAPH.Component = exGEN.invent({
     create: 'component',
-	inherit: exGRAPH.Provide,
+	inherit: exGRAPH.Base,
+	parent: exGRAPH.Device,
 	
     extend: {
 		init: function(id, label){
-			exGRAPH.Provide.prototype.init.apply(this, arguments);
+			exGRAPH.Base.prototype.init.apply(this, arguments);
 			this.Id(id);
 			this.Label(label);
+			//this.Color('#ff0');
 			return this;
 		},
-	
-		Multiple: function(){
-			return this.attr('unique', true);
-		},
 		
+		Color: function(color){
+			return this.attr('color', color);
+		},
+			
 		Label: function(name){
 			return this.attr('label', name);
-		}
+		},
+		
+		Require: function(){
+			var ret = this.querySelector('require') || this.create('Require');
+			ret.init.apply(ret, arguments);
+			return this;
+		},
 
+		Provide: function(id){
+			var ret = this.querySelector('provide[id="' + id + '"]') || this.create('Provide');
+			ret.init.apply(ret, arguments);
+			return this;
+		},
+
+		Component: function(id, label){
+			var ret = this.querySelector('component[id="' + this.Id() + '.' + id + '"]') || this.create('Component');
+
+			return ret.init.apply(ret, arguments);
+		}
+	},
+	
+	construct: {
+		Component: function(id, label, callback){
+			var ret = this.querySelector('component[id="' + this.Id() + '.' + id + '"]') || this.create('Component');
+
+			if(typeof callback === 'function')
+				callback.call(ret, ret);
+			
+			return ret.init.apply(ret, arguments);
+		},
+		
+		Require: function(){
+			var ret = this.create('Require');
+			return ret.init.apply(ret, arguments);
+		}
 	}
 });
 
@@ -561,22 +451,61 @@ exGRAPH.Require = exGEN.invent({
 	
     extend: {
 		init: function(id){
+			var  args = [].slice.call(arguments);
+			
 			exGRAPH.Base.prototype.init.apply(this, arguments);
-			return this.Id(id);
+			
+			if(args[0])
+				assert(this[args[0].capitalize()]);
+			
+			var parent = this[args[0].capitalize()];
+			
+			for(var a=1; a < args.length; a++){
+				var s = args[a].split(',');
+				for(var b=0; b < s.length; b++)
+					parent.call(this, s[b]);
+			}
+			return this; //.Id(id);
+		},
+		
+		Component: function(id){
+			var ret = this.create('Component');
+			ret.init.apply(ret, arguments);
+			return ret;
 		}
 
 	}
 });
 
+exGRAPH.Provide = exGEN.invent({
+    create: 'provide',
+	inherit: exGRAPH.Base,
+	parent: exGRAPH.Component,
+	
+    extend: {
+		init: function(id){
+			exGRAPH.Base.prototype.init.apply(this, arguments);
+			return this.Id(id);
+		},
+		
+		Id: function(id){
+			return this.attr('id', id);
+		}
+	},
+	
+	construct: {
+		
+	}
+});
 
 
 /**************************************************************************************
 	TYPE / CLASS / EDITOR / STRUCTURE / ENUM
 **************************************************************************************/
-
 exGRAPH.Type = exGEN.invent({
     create: 'type',
 	inherit: exGRAPH.Base,
+	parent: exGRAPH.Package,
 	
     extend: {
 		init: function(id, label){
@@ -677,12 +606,6 @@ exGRAPH.Type = exGEN.invent({
 			return n;
 		},
 		
-		Editor: function(editor, deflt){
-			var ret = this.select('editor').first() || this.create('Editor');
-
-			return ret.init.apply(ret, arguments);
-		},
-		
 		Tooltip: function(tip){
 			return this.attr('tooltip', tip);
 		},
@@ -690,6 +613,16 @@ exGRAPH.Type = exGEN.invent({
 		GetPackage: function(){
 			return this.parent(exGRAPH.Package);
 		}
+	},
+	
+	construct: {
+		Type: function(id){
+			var ret = this.querySelector('type[id="' + this.Id() + '.' + id + '"]') || this.create('Type');
+
+			ret.init.apply(ret, arguments);
+			return ret;
+			//return ret.attr('id', this.GetPath() + id);
+		}		
 	}
 });
 
@@ -763,6 +696,7 @@ exGRAPH.Object = exGEN.invent({
 exGRAPH.Editor = exGEN.invent({
     create: 'editor',
 	inherit: exGRAPH.Base,
+	parent: exGRAPH.Type,
 	
     extend: {		
 		init: function(name, deflt){
@@ -779,12 +713,21 @@ exGRAPH.Editor = exGEN.invent({
 		Default: function(value){
 			return this.attr('default', value);
 		}
+	}, 
+	
+	construct: {
+		Editor: function(editor, deflt){
+			var ret = this.select('editor').first() || this.create('Editor');
+
+			return ret.init.apply(ret, arguments);
+		}		
 	}
 });
 
 exGRAPH.Structure = exGEN.invent({
     create: 'structure',
 	inherit: exGRAPH.Type,
+	parent: exGRAPH.Package,
 	
     extend: {
 		
@@ -806,17 +749,55 @@ exGRAPH.Structure = exGEN.invent({
 
 		
 		MakeAccessorNodes: function(package){
-			var pack = this.parent(exGRAPH.Library).Package(package);
-
-			return pack.MakeAccessorNodes(this, '#00f');
+			var me = this
+			, pack = this.parent(exGRAPH.Library).Package(package)
+			, shortId = me.Id().split('.').last()
+			, node;
+			
+			// make
+			node = pack.Node(shortId + '.make', 'Make ' + me.Label())
+				.Keywords('make ' + me.Label())
+				.Symbol('lib/core/img/make.png')
+				.Color('#00f');
+			
+			me.select('pin').each(function(){
+				node.Input(shortId + '-' + this.Id(), this.Type(), this.Label()).mergeAttrs(this);
+			});
+			node.Output('out', me.Id(), me.Label());
+			
+			// break
+			node = pack.Node(shortId + '.break', 'Break ' + me.Label())
+				.Keywords('break ' + me.Label())
+				.Symbol('lib/core/img/break.png')
+				.Color('#00f');
+			
+			node.Input('in', me.Id(), me.Label());
+			me.select('pin').each(function(){
+				node.Output(shortId + '-' + this.Id(), this.Type(), this.Label()).mergeAttrs(this);
+			});
+			
+			return me;			
 		}
 
+	},
+	
+	construct: {
+		Struct: function(id, label){
+			var ret = this.querySelector('structure[id="' + this.Id() + '.' + id + '"]') || this.create('Structure');
+
+			//ret.attr('id', this.attr('id') + '.' + id);
+			//ret.Inherits('core.type.struct');
+			ret.init.apply(ret, arguments);
+			return ret;
+			//return ret.attr('id', this.GetPath() + id);
+		}		
 	}
 });
 
 exGRAPH.Enum = exGEN.invent({
     create: 'enum',
 	inherit: exGRAPH.Type,
+	parent: exGRAPH.Package,
 	
     extend: {
 		
@@ -829,12 +810,24 @@ exGRAPH.Enum = exGEN.invent({
 		Values: function(values){
 			return this.attr('values', Array.isArray(values) ? JSON.stringify(values) : values);
 		}
+	},
+	
+	construct: {
+		Enum: function(id, label){
+			var ret = this.querySelector('enum[id="' + this.Id() + '.' + id + '"]') || this.create('Enum');
+
+			ret.Inherits('core.type.enum');
+			ret.init.apply(ret, arguments);
+			return ret;
+			//return ret.attr('id', this.GetPath() + id);
+		}		
 	}
 });
 
 exGRAPH.Interface = exGEN.invent({
     create: 'interface',
 	inherit: exGRAPH.Object,
+	parent: exGRAPH.Package,
 	
     extend: {
 		
@@ -864,12 +857,22 @@ exGRAPH.Interface = exGEN.invent({
 			ret.Input('target', this.Id()).Required();
 			return ret;
 		}
+	},
+	
+	construct: {
+		Interface: function(id){
+			var ret = this.querySelector('interface[id="' + this.Id() + '.' + id + '"]') || this.create('Interface');
+
+			ret.init.apply(ret, arguments);
+			//return ret.attr('id', this.GetPath() + id);
+		}		
 	}
 });
 
 exGRAPH.Class = exGEN.invent({
     create: 'class',
 	inherit: exGRAPH.Interface,
+	parent: exGRAPH.Package,
 	
     extend: {
 		
@@ -894,7 +897,19 @@ exGRAPH.Class = exGEN.invent({
 			return this.attr('inherits', '|' + interface + ((this.attr('inherits')) ? this.attr('inherits') : '|'));
 		},
 		
+	},
+	
+	construct: {
+		Class: function(id, label, callback){
+			var ret = this.querySelector('class[id="' + this.Id() + '.' + id + '"]') || this.create('Class');
 
+			ret.init.apply(ret, arguments);
+			//ret.Id(this.GetPath() + id);
+			if(typeof callback == 'function'){
+				callback.call(ret, ret);
+			}
+			return ret
+		}		
 	}
 });
 
@@ -906,6 +921,7 @@ exGRAPH.Class = exGEN.invent({
 exGRAPH.Node = exGEN.invent({
     create: 'node',
 	inherit: exGRAPH.Base,
+	parent: exGRAPH.Package,
 	
     extend: {
 		init: function(id, title){
@@ -913,29 +929,9 @@ exGRAPH.Node = exGEN.invent({
 			this.Id(id);
 			this.Title(title);
 			this.Ctor('Node');
-			return this;//.Color('#aaeea0');
+			return this;
 		},
 		
-		Input: function(id, type, label){
-			var package = this.GetPackage()
-				, ret = this.querySelector('input[id="' + id + '"]') || this.create('Input');
-			
-			ret.init.apply(ret, arguments);
-			if(package && package.select('[id="' + package.Id() + '.' + ret.Type() + '"]:not(node)').length() == 1)
-				ret.Type(package.Id() + '.' + ret.Type());
-			return ret;
-		},
-		
-		Output: function(id, type, label){
-			var package = this.GetPackage()
-				, ret = this.querySelector('output[id="' + id + '"]') || this.create('Output');
-			
-			ret.init.apply(ret, arguments);
-			if(package && package.select('[id="' + package.Id() + '.' + ret.Type() + '"]:not(node)').length() == 1)
-				ret.Type(package.Id() + '.' + ret.Type());
-			return ret;
-		},
-
 		Import: function(name){
 			this.ImportAttrs(name);
 			this.ImportPins(name);
@@ -948,7 +944,6 @@ exGRAPH.Node = exGEN.invent({
 				, clone;
 
 	        tpl = this.parent(exGRAPH.Library).GetNodeTpl(tpl);
-
 
 			if(this.Ctor() == 'Node' && tpl.Ctor())
 				this.Ctor(null);
@@ -997,14 +992,6 @@ exGRAPH.Node = exGEN.invent({
 			return this.attr('ctor', name);
 		},
 		
-		Category: function(name){
-			if(name == undefined)
-				return;
-			var ret = this.select('category[name="' + name + '"]').first() || this.create('Category');
-			ret.init.apply(ret, arguments);
-			return this;
-		},
-
 		Keywords: function(name){
 			return this.attr('keywords', name);
 		},
@@ -1036,30 +1023,40 @@ exGRAPH.Node = exGEN.invent({
 		MakeEntry: function(){
 			var ret = this.Input('entry', 'core.exec');
 
-			//console.dir(ret.node.parentNode);
 			ret.node.parentNode.insertBefore(ret.node, ret.node.parentNode.firstChild);
-			//ret.node.parentNode.prepend(ret.node);
 			return this;
 		},
 		
 		MakeExit: function(){
 			var ret = this.Output('exit', 'core.exec');
 
-			//parentNode.insertBefore(newNode, referenceNode);
 			ret.node.parentNode.insertBefore(ret.node, ret.node.parentNode.firstChild);
-			//ret.node.parentNode.prepend(ret.node);
 			return this;
 		},
 		
 		GetPackage: function(){
 			return this.parent(exGRAPH.Package);
 		}
+	},
+	
+	construct: {
+		Node: function(id, title){
+			var ret = this.querySelector('node[id="' + this.Id() + '.' + id + '"]') || this.create('Node');
+
+			ret.init.apply(ret, arguments);
+			//ret.attr('id', this.attr('id') + '.' + id)
+			ret.Color(this.Color());
+			ret.Symbol(this.Symbol());
+			ret.Category(this.Category());
+			return ret;
+		}		
 	}
 });
 
 exGRAPH.Category = exGEN.invent({
     create: 'category',
 	inherit: exGRAPH.Base,
+	parent: exGRAPH.Node,
 	
     extend: {
 		init: function(name){
@@ -1070,18 +1067,42 @@ exGRAPH.Category = exGEN.invent({
 		Name: function(name){
 			return this.attr('name', name);
 		}
+	},
+	
+	construct: {
+		Category: function(name){
+			if(name == undefined)
+				return;
+			var ret = this.select('category[name="' + name + '"]').first() || this.create('Category');
+			ret.init.apply(ret, arguments);
+			return this;
+		}		
 	}
 });
 
 exGRAPH.Nodetpl = exGEN.invent({
     create: 'nodetpl',
 	inherit: exGRAPH.Node,
+	parent: exGRAPH.Package,
 	
     extend: {
 		init: function(id, title){
-			this.Id(id);
-			this.Title(title);
+			exGRAPH.Node.prototype.init.apply(this, arguments);
+			return this
 		}
+	},
+	
+	construct: {
+		NodeTpl: function(id, title){
+			var ret = this.querySelector('nodetpl[id="' + this.Id() + '.' + id + '"]') || this.create('Nodetpl');
+
+			ret.init.apply(ret, arguments);
+			//ret.attr('id', this.attr('id') + '.' + id)
+			ret.Color(this.Color());
+			ret.Symbol(this.Symbol());
+			ret.Category(this.Category());
+			return ret;
+		}		
 	}
 });
 
@@ -1143,12 +1164,44 @@ exGRAPH.Pin = exGEN.invent({
 
 exGRAPH.Output = exGEN.invent({
     create: 'output',
-	inherit: exGRAPH.Pin
+	inherit: exGRAPH.Pin,
+	parent: exGRAPH.Node,
+	
+	construct: {
+		Output: function(id, type, label){
+			var package = this.GetPackage()
+				, ret = this.querySelector('output[id="' + id + '"]') || this.create('Output');
+			
+			ret.init.apply(ret, arguments);
+
+			// check if Pin's dataType name is in current package or outside
+			if(package && package.select('[id="' + package.Id() + '.' + exGRAPH.Library.prototype.removeArrayDataType(ret.Type()) + '"]:not(node)').length() == 1)
+				ret.Type(package.Id() + '.' + ret.Type());
+
+			return ret;
+		}		
+	}
 });
 
 exGRAPH.Input = exGEN.invent({
     create: 'input',
-	inherit: exGRAPH.Pin
+	inherit: exGRAPH.Pin,
+	parent: exGRAPH.Node,
+	
+	construct: {
+		Input: function(id, type, label){
+			var package = this.GetPackage()
+				, ret = this.querySelector('input[id="' + id + '"]') || this.create('Input');
+			
+			ret.init.apply(ret, arguments);
+
+			// check if Pin's dataType name is in current package or outside
+			if(package && package.select('[id="' + package.Id() + '.' + exGRAPH.Library.prototype.removeArrayDataType(ret.Type()) + '"]:not(node)').length() == 1)
+				ret.Type(package.Id() + '.' + ret.Type());
+
+			return ret;
+		}		
+	}
 });
 
 
@@ -1159,20 +1212,31 @@ exGRAPH.Input = exGEN.invent({
 exGRAPH.Link = exGEN.invent({
     create: 'link',
 	inherit: exGRAPH.Base,
+	parent: exGRAPH.Graph,
 	
     extend: {
-		init: function(){
-			return exGRAPH.Base.prototype.init.apply(this, arguments);
+		init: function(startPin, endPin){
+			exGRAPH.Base.prototype.init.apply(this, arguments);
+			//this.Input(startPin);
+			//this.Output(endPin);
+			return this;
 		},
 		
-		Input: function(nodeid, pinid){
-			return this.create('Input').attr('node', nodeid).attr('pin', pinid);
-		},
-		
-		Output: function(nodeid, pinid){
-			return this.create('Output').attr('node', nodeid).attr('pin', pinid);			
+		Pin: function(node, pin){
+			if(typeof node === 'string')
+				return this.create('Pin').attr('node', node).attr('pin', pin);
+
+			assert(node instanceof exGRAPH.Node);
+			assert(pin instanceof exGRAPH.Pin);
 		}
 
+	},
+	
+	construct: {
+		Link: function(){
+			var ret = this.create('Link');
+			return ret.init.apply(ret, arguments);
+		}		
 	}
 });
 

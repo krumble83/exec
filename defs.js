@@ -299,19 +299,11 @@ String.prototype.capitalize = function(firstOnly) {
     return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase();
 }
 
-/*
-Function.prototype.clone = function() {
-    var that = this;
-    var temp = function temporary() { return that.apply(this, arguments); };
-    for(var key in this) {
-        if (this.hasOwnProperty(key)) {
-            temp[key] = this[key];
-        }
-    }
-    return temp;
+if (!Array.prototype.last){
+    Array.prototype.last = function(){
+        return this[this.length - 1];
+    };
 };
-*/
-
 
 if (!Array.prototype.forEach) {
   Array.prototype.forEach = function(callback /*, thisArg*/) {

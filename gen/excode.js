@@ -2,6 +2,11 @@
 "use strict";
 
 
+var exCODE = {};
+ctx.exCODE = exCODE;
+
+
+
 exGEN.extend(exGRAPH.Graph, exGRAPH.Macro, {
 	Generate: function(){
 		var me = this
@@ -13,7 +18,7 @@ exGEN.extend(exGRAPH.Graph, exGRAPH.Macro, {
 		//console.log(entries);
 		entries.each(function(){
 			func = exLIB.getGenerator(this.attr('id'));
-			if(typeof func === 'function')
+			if(typeof func == 'function')
 				func(this, out);
 		});
 		return exprt;
@@ -80,8 +85,7 @@ exGEN.extend(exGRAPH.Link, {
 });
 
 
-var exCODE = {};
-ctx.exCODE = exCODE;
+
 
 
 /**************************************************************************************
@@ -99,7 +103,7 @@ exCODE.Fragment = exGEN.invent({
 		create: function(type, args){
 			var ret = new exCODE[type];
 			this.add(ret);
-			if(typeof ret.init === 'function')
+			if(typeof ret.init == 'function')
 				ret.init.apply(ret, args);
 			return ret;		
 		},
@@ -370,7 +374,7 @@ exCODE.Return = exGEN.invent({
 	
     extend: {
 		init: function(value){
-			if(typeof value === 'string')
+			if(typeof value == 'string')
 				this.attr('value', value);
 			else if(value instanceof exCODE.Fragment)
 				this.add(value);

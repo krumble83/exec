@@ -94,12 +94,12 @@ exSVG.plugin(exSVG.Pin, {
 		menuRoot.clear()
 			.addTitleItem('Pin Actions');
 
-		if(links.length() === 0){
+		if(links.length() == 0){
 			breaq = menuRoot.addItem('Break Link(s)', 'breaklink')
 				.setMeta('Remove link(s) to this pin')
 				.enabled(false);
 		}
-		else if(links.length() === 1){
+		else if(links.length() == 1){
 			var p = links.last().getOtherPin(pin);
 			assert(p instanceof exSVG.Pin, 'instanceof "exSVG.Pin expected" but "' + p.constructor.name + '" found');
 			menuRoot.addItem('Break Link to `' + p.getNode().getData('title') + '`', 'breaklink', function(){

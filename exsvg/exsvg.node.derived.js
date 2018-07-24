@@ -7,8 +7,10 @@ exSVG.NodeMacro = SVG.invent({
     inherit: exSVG.Node,
     extend: {
 		
-		init: function(){
+		init: function(data){
 			var me = this;
+			
+			me.mExportData = data.clone();
 
 			me.addClass('exMacro');
 			exSVG.Node.prototype.init.apply(me, arguments);
@@ -17,8 +19,17 @@ exSVG.NodeMacro = SVG.invent({
 
 		export: function(graph){
 			var me = this
-			    , macro = graph.Macro().attr('svgid', me.id())
-		        , attrs = me.attr();
+			    , macro = (graph && graph.Macro) ? graph.Macro(me.getData('id')) :  false //graph.Macro().attr('svgid', me.id())
+		        , attrs = me.attr()
+				, pos;
+				
+			if(!macro){
+				macro = new exGRAPH.Macro();
+				macro.init(me.getData('id'));
+				if(graph)
+					graph.add(macro);
+			}
+			macro.attr('svgid', me.id());
 
 			for (var key in attrs) {
 				if(!Object.prototype.hasOwnProperty.call(attrs, key) || key.substr(0,5) !== 'data-')
@@ -26,13 +37,34 @@ exSVG.NodeMacro = SVG.invent({
 				macro.attr(key.substr(5), attrs[key]);
 			}
 			
+			if(graph && graph.box)
+				pos = {x: me.x()-graph.box.x, y:me.y()-graph.box.y};
+			else
+				pos = {x: me.x(), y: me.y()};
+			
+			macro.attr('pos', pos.x + ',' + pos.y);
+			
 			me.fire('export', {parent: macro});
-			//return macro;
+			
+			me.mExportData.select(':scope > *:not(input):not(output)').each(function(){
+				console.log(this.node.nodeName);
+				macro.add(this);
+			});
+			
+			return macro;
 		},
 		
 		onz: function(){
 			console.log('zz');
 		}
+	}
+});
+
+
+SVG.extend(exSVG.Worksheet, {
+		
+	importMacro: function(){
+		return this.importNode.apply(this, arguments);
 	}
 });
 
@@ -127,7 +159,7 @@ exSVG.NodeVarGetter = SVG.invent({
                 , grad;
 
 			
-			if(color instanceof SVG.Color === false)
+			if(color instanceof SVG.Color == false)
 				color = new SVG.Color(color);
 			if(!me.mGfx.body){
 				grad = me.gradient('linear', function(stop) {

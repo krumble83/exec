@@ -40,7 +40,7 @@ exSVG.Link = SVG.invent({
 		hasFlag: function(flag){
 			var flags = parseInt(this.data('flags') || 0);
 			
-			return flags & flag === flag;
+			return flags & flag == flag;
 		},
 
 		setStartPin: function(pin){
@@ -67,9 +67,9 @@ exSVG.Link = SVG.invent({
 		},
 		
 		getOtherPin: function(pin){
-			if(this.getInputPin() === pin)
+			if(this.getInputPin() == pin)
 				return this.getOutputPin();
-			else if(this.getOutputPin() === pin)
+			else if(this.getOutputPin() == pin)
 				return this.getInputPin();
 			return false;
 		},
@@ -92,7 +92,7 @@ exSVG.Link = SVG.invent({
 			var me = this
 			, pinIn = me.getInputPin();
 			
-			if(me.mDataType === datatype)
+			if(me.mDataType == datatype)
 				return;
 			
 			me.mDataType = datatype;
@@ -146,13 +146,19 @@ exSVG.Link = SVG.invent({
 		addTo: function(){
 			//console.group('exSVG.Link.addTo()');
 			var me = this
-			, ret = SVG.Path.prototype.addTo.apply(me, arguments);
+			, worksheet = me.parent(exSVG.Worksheet)
+			, ret; 
+			
+			//worksheet.startSequence();
+
+			ret = SVG.Path.prototype.addTo.apply(me, arguments);
 			
 			me.fire('add');
+			//worksheet.stopSequence();
 			SVG.off(document, '.linkStart-link' + me.id());
 			me.off('cancel');
 			
-			// send an event to the main SVG // this event is used by undo/redo
+			// send an event to the main SVG
 			me.doc().fire('link-add', {link: me});
 			return ret;
 		},
@@ -177,7 +183,7 @@ exSVG.Link = SVG.invent({
 			});
 			
 			// register start pin / end pin ids directly in the link node
-			if(endPin.getType() === exSVG.Pin.PIN_IN || startPin.getType() === exSVG.Pin.PIN_OUT){
+			if(endPin.getType() == exSVG.Pin.PIN_IN || startPin.getType() == exSVG.Pin.PIN_OUT){
 				me.data('pinIn', endPin.id());
 				me.data('pinOut', startPin.id());
 			} else {
@@ -233,7 +239,7 @@ exSVG.Link = SVG.invent({
 			else
 				worksheet.select('.exPin:not([data-type="' + type + '"]):not([data-type="' + exLIB.getWildcardsDataType() + '"])').animate(100).opacity(0.2);
 
-			if(startPin.getType() === exSVG.Pin.PIN_IN)
+			if(startPin.getType() == exSVG.Pin.PIN_IN)
 				worksheet.select('.exPin.input:not(.outpout)').animate(100).opacity(0.2);
 			else
 				worksheet.select('.exPin.output:not(.input)').animate(100).opacity(0.2);
@@ -259,8 +265,11 @@ exSVG.Link = SVG.invent({
 			assert(pinIn instanceof exSVG.Pin);
 			assert(pinOut instanceof exSVG.Pin);
 			
-			link.Input(pinIn.getNode().id(), pinIn.getId()).attr('linkref', pinIn.getNode().id() + '-' + pinIn.getId());
-			link.Output(pinOut.getNode().id(), pinOut.getId()).attr('linkref', pinOut.getNode().id() + '-' + pinOut.getId());
+			link.Pin(pinIn.getNode().id(), pinIn.getId());
+			link.Pin(pinOut.getNode().id(), pinOut.getId());
+			
+			//link.Input(pinIn.getNode().id(), pinIn.getId());
+			//link.Output(pinOut.getNode().id(), pinOut.getId());
 			link.attr('datatype', me.getDataType());
 			link.attr('color', me.getColor());
 			
@@ -311,11 +320,11 @@ exSVG.Link = SVG.invent({
 			// check the way of drawing (left to right, right to left, top to bottom ...)
 			var w = (startpos.y > stoppos.y) ? (startpos.y - stoppos.y) / 2 : (stoppos.y - startpos.y) / 2;
 			
-			if(startPin.getType() === exSVG.Pin.PIN_IN || (stopPin && stopPin.getType() === exSVG.Pin.PIN_OUT)){
+			if(startPin.getType() == exSVG.Pin.PIN_IN || (stopPin && stopPin.getType() == exSVG.Pin.PIN_OUT)){
 				cp1 = {x: Math.min(startpos.x - w, startpos.x - smooth), y: startpos.y};
 				cp2 = {x: Math.max(stoppos.x + w, stoppos.x + smooth), y: stoppos.y};
 			}
-			else if(startPin.getType() === exSVG.Pin.PIN_OUT || (stopPin && stopPin.getType() === exSVG.Pin.PIN_IN)){
+			else if(startPin.getType() == exSVG.Pin.PIN_OUT || (stopPin && stopPin.getType() == exSVG.Pin.PIN_IN)){
 				cp1 = {x: Math.max(startpos.x + w, startpos.x + smooth), y: startpos.y};
 				cp2 = {x: Math.min(stoppos.x - w, stoppos.x - smooth), y: stoppos.y};				
 			}
@@ -375,10 +384,16 @@ exSVG.plugin(exSVG.Worksheet, {
 		var me = this
 		, worksheet = me
 		, pinIn
-		, pinOut;
+		, pinOut
+		, pins = linkGraph.select('pin');
 		
-		pinIn = worksheet.select('linkref[node="' + linkGraph.select('input').first().attr('node') + '"][pin="' + linkGraph.select('input').first().attr('pin') + '"]').first().parent(exSVG.Pin);
-		pinOut = worksheet.select('linkref[node="' + linkGraph.select('output').first().attr('node') + '"][pin="' + linkGraph.select('output').first().attr('pin') + '"]').first().parent(exSVG.Pin);
+		console.assert(pins.length() == 2);
+		
+		pinIn = worksheet.select('linkref[node="' + pins.first().attr('node') + '"][pin="' + pins.first().attr('pin') + '"]').first().parent(exSVG.Pin);
+		pinOut = worksheet.select('linkref[node="' + pins.last().attr('node') + '"][pin="' + pins.last().attr('pin') + '"]').first().parent(exSVG.Pin);
+
+		//pinIn = worksheet.select('linkref[node="' + linkGraph.select('input').first().attr('node') + '"][pin="' + linkGraph.select('input').first().attr('pin') + '"]').first().parent(exSVG.Pin);
+		//pinOut = worksheet.select('linkref[node="' + linkGraph.select('output').first().attr('node') + '"][pin="' + linkGraph.select('output').first().attr('pin') + '"]').first().parent(exSVG.Pin);
 
 		pinIn.select('linkref').first().remove();
 		pinOut.select('linkref').first().remove();

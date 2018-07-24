@@ -19,7 +19,7 @@
  <body style="background-color:#262626;padding:0;margin:0; overflow:hidden">
 	<div id="drawing" style="height:870px"></div><a href="javascript: exportGraph()" style="color:#fff">export</a>&nbsp;&nbsp;<a href="javascript:exportTest()" style="color:#fff">generate</a><br />
 	<textarea id="ttest"></textarea><textarea width="10" id="tesfst"></textarea>
-	<img id="drag1" src="img_logo.gif" draggable="true" ondragstart="drag(event)" width="336" height="69">
+	<img id="drag1" src="lib/img/callfunc.png" draggable="true" ondragstart="drag(event)">
 	<script>
 	
 	
@@ -71,51 +71,57 @@ function drop(ev) {
 			var me = this, inp, outp, n1, n2, seq, makearr, forloop;
 			
 			me.setContext('macro');
-						
-			n1 = me.import(exLIB.getNode2('core.entrypoint').attr('pos', '100,100'));
-			n2 = seq = me.import(exLIB.getNode2('core.flow.sequence').attr('pos', '300,200'));
-			n2.getPin('add').addPin();
-			me.createLink(n2.getPin('entry'), n1.getPin('exit'));
-			
-			
-			n1 = me.import(exLIB.getNode2('core.array.set').attr('pos', '1200,200'));
-			me.createLink(n1.getPin('entry'), n2.getPin('then_0'));
+		
+			console.time('draw Graph');
+			setTimeout(function(){
+				n1 = me.import(exLIB.getNode2('core.entrypoint').attr('pos', '100,100'));
 
-			n2 = makearr = me.import(exLIB.getNode2('core.array.make').attr('pos', '700,100'));
-			n2.getPin('add').addPin();
-			me.createLink(n1.getPin('array'), n2.getPin('array'));
+				me.startSequence();
 
-			n1 = me.import(exLIB.getNode2('core.string.makeliteral').attr('pos', '400,100'));
-			me.createLink(n2.getPin('item_1'), n1.getPin('value'));
+				n2 = seq = me.import(exLIB.getNode2('core.flow.sequence').attr('pos', '300,200'));
+				n2.getPin('add').addPin();
+				me.createLink(n2.getPin('entry'), n1.getPin('exit'));
+				
+				
+				n1 = me.import(exLIB.getNode2('core.array.set').attr('pos', '1200,200'));
+				me.createLink(n1.getPin('entry'), n2.getPin('then_0'));
 
-			n1 = forloop = me.import(exLIB.getNode2('core.flow.forloop').attr('pos','500,360'));
-			me.createLink(seq.getPin('then_1'), n1.getPin('entry'));
+				n2 = makearr = me.import(exLIB.getNode2('core.array.make').attr('pos', '700,100'));
+				n2.getPin('add').addPin();
+				me.createLink(n1.getPin('array'), n2.getPin('array'));
 
-			n2 = me.import(exLIB.getNode2('core.int.add').attr('pos','900,450'));
-			me.createLink(n1.getPin('index'), n2.getPin('input'));
+				n1 = me.import(exLIB.getNode2('core.string.makeliteral').attr('pos', '400,100'));
+				me.createLink(n2.getPin('item_1'), n1.getPin('value'));
 
-			n1 = me.import(exLIB.getNode2('core.array.set').attr('pos','1200,360'));
-			me.createLink(n1.getPin('index'), n2.getPin('output'));
-			
-			me.createLink(makearr.getPin('array'), n1.getPin('array'));
-			me.createLink(n1.getPin('entry'), forloop.getPin('loopBody'));
+				n1 = forloop = me.import(exLIB.getNode2('core.flow.forloop').attr('pos','500,360'));
+				me.createLink(seq.getPin('then_1'), n1.getPin('entry'));
 
-			n2 = me.import(exLIB.getNode2('javascript.console.log').attr('pos','900,550'));
-			me.createLink(n2.getPin('entry'), forloop.getPin('completed'));
-			me.createLink(n2.getPin('param_0'), forloop.getPin('index'));
+				n2 = me.import(exLIB.getNode2('core.int.add').attr('pos','900,450'));
+				me.createLink(n1.getPin('index'), n2.getPin('input'));
 
-			me.import(exLIB.getNode2('core.date.break').attr('pos','1500,300'));
-			
-			
-			me.import(exLIB.getNode2('special.reroutenode').attr('pos','850,300'));
+				n1 = me.import(exLIB.getNode2('core.array.set').attr('pos','1200,360'));
+				me.createLink(n1.getPin('index'), n2.getPin('output'));
+				
+				me.createLink(makearr.getPin('array'), n1.getPin('array'));
+				me.createLink(n1.getPin('entry'), forloop.getPin('loopBody'));
 
-			var test = new exGRAPH.Library();
-			test.GetNode('ok');
-			//me.import(exLIB.getNode2('special.rampnode').attr('pos','650,700')).width(800);
-			
-			return;
+				n2 = me.import(exLIB.getNode2('javascript.console.log').attr('pos','900,550'));
+				me.createLink(n2.getPin('entry'), forloop.getPin('completed'));
+				me.createLink(n2.getPin('param_0'), forloop.getPin('index'));
 
+				me.import(exLIB.getNode2('core.date.date.break').attr('pos','1500,300'));
+				
+				me.import(exLIB.getNode2('special.reroutenode').attr('pos','850,300'));
+				
+				me.import(exLIB.getNode2('esp8266.wifi.wificlientconnectmacro').attr('pos','100,600'));
+				
 
+				//me.import(exLIB.getNode2('special.rampnode').attr('pos','650,700')).width(800);
+
+				me.stopSequence();
+				
+				console.timeEnd('draw Graph');
+			});
 		});
 	});
 	</script>

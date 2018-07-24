@@ -62,8 +62,8 @@ exSVG.plugin(exSVG.Worksheet, {
 			
 			
 			SVG.on(document, 'mousemove.library-linkstart-temp', function(e){
-				if(e.target.className.baseVal && (e.target.className.baseVal.trim() === 'grid' ||
-					e.target.className.baseVal.trim() === 'workspace'))
+				if(e.target.className.baseVal && (e.target.className.baseVal.trim() == 'grid' ||
+					e.target.className.baseVal.trim() == 'workspace'))
 						me.showTooltip(e, '<img src="exsvg/img/newnode.png" style="vertical-align:-3px"> Place a new node', 1);
 				else if(!e.target.instance)
 					me.hideTooltip();
@@ -74,7 +74,7 @@ exSVG.plugin(exSVG.Worksheet, {
 				//console.log('menulibrary.mouseup', e.button, e.buttons);
 				var startPin = link.getStartPin()  // Get the startPin of the link to get all nodes with a valid type (input or output) and valid datatype in the library
 				, dataType = link.getDataType()
-				, io = (startPin.getType() === exSVG.Pin.PIN_IN) ? 'output' : 'input'
+				, io = (startPin.getType() == exSVG.Pin.PIN_IN) ? 'output' : 'input'
 				, point = me.point(e)
 				, filters = [];
 				
@@ -100,7 +100,7 @@ exSVG.plugin(exSVG.Worksheet, {
 				// To do this, we check the position of the mouse regarding of the startPin.
 				// So if the startPin is at the left of the mouse cursor, we assume we want a input pin,
 				// and if the mouse cursor is a the right of the link, we assume we want a output pin
-				if(startPin.getType() === exSVG.Pin.PIN_INOUT){
+				if(startPin.getType() == exSVG.Pin.PIN_INOUT){
 					if(startPin.getCenter().x > point.x)
 						io = 'output';
 					else
@@ -131,7 +131,7 @@ exSVG.plugin(exSVG.Worksheet, {
 					, pin;
 					
 					pins.each(function(){
-						if(!pin && this.acceptLink(startPin).code === 0 && startPin.acceptLink(this).code === 0)
+						if(!pin && this.acceptLink(startPin).code == 0 && startPin.acceptLink(this).code == 0)
 							pin = this;
 					});
 					assert(pin);
@@ -275,7 +275,7 @@ exSVG.plugin(exSVG.Worksheet, {
 					return;
 				
 				cats.each(function(){
-					var ul = (this.Name() === '/') ? parent : findUl(this.Name(), parent)
+					var ul = (this.Name() == '/') ? parent : findUl(this.Name(), parent)
 					, li = document.createElement('li');
 					
 					if(!node.Title())
@@ -320,7 +320,7 @@ exSVG.plugin(exSVG.Worksheet, {
 		});
 		
 		SVG.on(document, 'keyup.librarymenu', function(e){
-			if (e.keyCode === 27){ // escape
+			if (e.keyCode == 27){ // escape
 				me.hideMenu();
 			}			
 		});
@@ -335,10 +335,10 @@ exSVG.plugin(exSVG.Worksheet, {
 			, pt
 			, event;
 					
-			if(elem.tagName === 'INPUT')
+			if(elem.tagName == 'INPUT')
 				return;
 			
-			if(elem.tagName === 'SPAN' || elem.tagName === 'IMG')
+			if(elem.tagName == 'SPAN' || elem.tagName == 'IMG')
 				elem = elem.parentNode;
 			if(elem.tagName !== 'LI')
 				return;
@@ -391,7 +391,7 @@ exSVG.plugin(exSVG.Worksheet, {
 		, inp = link.getInputPin().getNode().select('.exPin.exPinExec.input[data-id="entry"]')
 		, out = link.getOutputPin().getNode().select('.exPin.exPinExec.output[data-id="exit"]');
 
-		if(inp.length() === 1 && out.length() === 1 && out.first().getLinks().length() === 0){
+		if(inp.length() == 1 && out.length() == 1 && out.first().getLinks().length() == 0){
 			var l1 = me.createLink(inp.first(), out.first());
 		}
 	}

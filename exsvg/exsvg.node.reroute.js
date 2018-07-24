@@ -123,11 +123,11 @@ exSVG.PinReroute = SVG.invent({
 				link.remove();
 			});
 
-			if(otherPin.getType() === exSVG.Pin.PIN_IN){
+			if(otherPin.getType() == exSVG.Pin.PIN_IN){
 				link.data('pinOut', me.getNode().getPin('out').id());
 				me.getNode().getPin('out').addLink(link);
 			}
-			else if(otherPin.getType() === exSVG.Pin.PIN_OUT){
+			else if(otherPin.getType() == exSVG.Pin.PIN_OUT){
 				link.data('pinIn', me.getNode().getPin('in').id());
 				me.getNode().getPin('in').addLink(link);
 			}
@@ -144,7 +144,7 @@ exSVG.PinReroute = SVG.invent({
 			//console.log('exSVG.PinReroute.removeLink()', link);
 			var me = this;
 
-			if(me.getNode().getLinks().length() === 0)
+			if(me.getNode().getLinks().length() == 0)
 				me.removeClass('linked');
 			link.off('.pinreroute');
 		},
@@ -156,17 +156,17 @@ exSVG.PinReroute = SVG.invent({
 
 			assert(otherPin instanceof exSVG.Pin);
 			
-			if(otherPin.getNode() === me.getNode())
+			if(otherPin.getNode() == me.getNode())
 				return {code: exSVG.Pin.PIN_LINK_ACCEPT_SAME_NODE, label: '<div><img src="exsvg/img/none.png"> Both Pin are on same Node'};
 			
 			if(exLIB.isWildcardsDataType(me.getDataType()))
 				return {code: 0, label: '<img src="exsvg/img/linkok.png"> Place a new Link'};
 			
-			if(otherPin.getType() === exSVG.Pin.PIN_IN
+			if(otherPin.getType() == exSVG.Pin.PIN_IN
 				&& !exLIB.isDataTypeCompatible(otherPin.getDataType(), me.getDataType()))
 					return {code: exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE, label: '<div><img src="exsvg/img/none.png"> Datatype is not compatible'};
 
-			else if(otherPin.getType() === exSVG.Pin.PIN_OUT
+			else if(otherPin.getType() == exSVG.Pin.PIN_OUT
 				&& !exLIB.isDataTypeCompatible(me.getDataType(), otherPin.getDataType()))
 					return {code: exSVG.Pin.PIN_LINK_ACCEPT_DATATYPE, label: '<div><img src="exsvg/img/none.png"> Datatype is not compatible'};
 					
@@ -184,20 +184,20 @@ exSVG.PinReroute = SVG.invent({
 				var links = worksheet.select('.exLinkStart')
 					, accept;
 				
-				if(links.length() === 0 || this === me)
+				if(links.length() == 0 || this == me)
 					return;
 
 				accept = me.acceptLink(this);
 				worksheet.showTooltip(e, accept.label, 10);
 				
-				if(accept.code === 0){
-					me.setType((this.getType() === exSVG.Pin.PIN_IN) ? exSVG.Pin.PIN_OUT : exSVG.Pin.PIN_IN);
+				if(accept.code == 0){
+					me.setType((this.getType() == exSVG.Pin.PIN_IN) ? exSVG.Pin.PIN_OUT : exSVG.Pin.PIN_IN);
 					me.setDataType(this.getDataType());
 				}
 			}, undefined, {capture: true});
 
 			worksheet.select('.exPin.linkable').on('mouseout.reroute', function(e){
-				me.setDataType(exLIB.getWildcardsDataType());
+				me.setDataType(me.getNode().getPin('in').getDataType());
 			}, undefined, {capture: true});
 			
 			worksheet.select('.exPin.linkable').on('mouseup.reroute', function(e){

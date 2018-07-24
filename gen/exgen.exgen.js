@@ -109,7 +109,7 @@ exGEN.Element = exGEN.invent({
 				return parent;
 
 			while(parent && parent instanceof window.exGEN.Element){
-				if(typeof type === 'string' ? parent.matches(type) : parent instanceof type) return parent;
+				if(typeof type == 'string' ? parent.matches(type) : parent instanceof type) return parent;
 				if(!parent.node.parentNode) return null;
 				if(parent.node.parentNode.nodeName == '#document') return null; // #720
 				parent = exGEN.adopt(parent.node.parentNode);
@@ -135,11 +135,11 @@ exGEN.Element = exGEN.invent({
 		},
 		
 		data: function(id, value){
-			if(typeof this._data === 'undefined')
+			if(typeof this._data == 'undefined')
 				this._data = {};
-			if(typeof id === 'undefined')
+			if(typeof id == 'undefined')
 				return this._data;
-			if(typeof value === 'undefined')
+			if(typeof value == 'undefined')
 				return this._data[id];
 			this._data[id] = value;
 			return this;
@@ -152,7 +152,7 @@ exGEN.Element = exGEN.invent({
 		
 		mergeAttrs: function(el, overwrite){
 			for (var i = 0, atts = el.node.attributes, n = atts.length; i < n; i++){
-				if(this.node.getAttribute(atts[i].nodeName) !== null && overwrite !== false)
+				if(this.node.getAttribute(atts[i].nodeName) !== null && overwrite === false)
 					continue;
 				if(['id', 'import'].indexOf(atts[i].nodeName) > -1)
 					continue;
@@ -170,11 +170,11 @@ exGEN.Element = exGEN.invent({
 		},
 		
 		attr: function(name, value){
-			if(typeof name === 'undefined')
+			if(typeof name == 'undefined')
 				return this.node.attributes;
-			else if(name && typeof value === 'undefined' || value === undefined)
+			else if(name && typeof value == 'undefined' || value == undefined)
 				return this.node.getAttribute(name);
-			if(value === null || value === undefined)
+			if(value == null || value == undefined)
 				this.node.removeAttribute(name);
 			else
 				this.node.setAttribute(name, value);
@@ -182,7 +182,7 @@ exGEN.Element = exGEN.invent({
 		},
 
 		attrNS: function(ns, name, value){
-			if(name && typeof value === 'undefined')
+			if(name && typeof value == 'undefined')
 				return this.node.getAttributeNS(ns +':' + name);
 			this.node.setAttributeNS(ns + ':' + name, value);
 			return this;
@@ -193,7 +193,7 @@ exGEN.Element = exGEN.invent({
 			var ret = new exGEN[type]();
 
 			this.add(ret);
-			if(typeof ret.init === 'function')
+			if(typeof ret.init == 'function')
 				ret.init.apply(ret, args);
 			return ret;		
 		},
@@ -217,9 +217,9 @@ exGEN.Element = exGEN.invent({
 		},
 
 		text: function(text){
-			if(typeof text === 'undefined')
+			if(typeof text == 'undefined')
 				return this.node.innerText;
-			this.node.innerText = text;
+			this.node.textContent = text;
 			return this;
 		},
 		
@@ -272,7 +272,7 @@ exGEN.Set = exGEN.invent({
 		
 		each: function(block) {
 			for (var i = 0, il = this.members.length; i < il; i++)
-				if(block.apply(this.members[i], [i, this.members]) === false)
+				if(block.apply(this.members[i], [i, this.members]) == false)
 					break;
 			return this;
 		}, 

@@ -94,7 +94,7 @@ exSVG.PinEditorInput = SVG.invent({
 			};
 
 			SVG.on(me.input, 'keydown', function(e){
-				if(typeof editor.data('keydown') === 'function')
+				if(typeof editor.data('keydown') == 'function')
 					editor.data('keydown').call(me, e, me.input);
 				update.call(me, e);
 			});
