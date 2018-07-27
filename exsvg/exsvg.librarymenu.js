@@ -199,40 +199,16 @@ exSVG.plugin(exSVG.Worksheet, {
 			return s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4();				
 		}
 
-		function insert(parent, el){
-			for(var i=0; i < parent.childElementCount; i++){
-				if(!el.querySelector('label')){
-					if(parent.childNodes[i].querySelector('label'))
-						continue;
-					//console.log(parent.childNodes[i].innerText, el.innerText, parent.childNodes[i].innerText > el.innerText);
-					if(parent.childNodes[i].innerText > el.innerText){
-						parent.insertBefore(el, parent.childNodes[i]);
-						return;
-					}
-				}
-				if(!parent.childNodes[i].querySelector('label')){
-					parent.prepend(el);
-					return;
-				}
-				if(parent.childNodes[i].querySelector('label').innerHTML > el.querySelector('label').innerHTML){
-					parent.insertBefore(el, parent.childNodes[i]);
-					return;
-				}
-			}
-			//console.dir(parent);
-			parent.appendChild(el);
-		}
-		
 		function findUl(id, parent){
 			//console.log('findUl()', id, parent)
 			var el
-			, path = id.split('/')
-			, tid = path.shift()
-			, ul = parent.querySelector('ul[id="' + tid + '"]')
-			, li
-			, input
-			, lab
-			, uid = genuid();
+				, path = id.split('/')
+				, tid = path.shift()
+				, ul = parent.querySelector('ul[id="' + tid + '"]')
+				, li
+				, input
+				, lab
+				, uid = genuid();
 			
 					
 			if(!ul){
@@ -251,7 +227,7 @@ exSVG.plugin(exSVG.Worksheet, {
 				ul = document.createElement('ul');
 				ul.setAttribute('id', tid);
 				li.appendChild(ul);
-				insert(parent, li);
+				parent.appendChild(li);
 			}
 			if(path.length > 0)
 				return findUl(path.join('/'), ul);
@@ -269,14 +245,14 @@ exSVG.plugin(exSVG.Worksheet, {
 
 			nodes.each(function(){
 				var node = this
-				, cats = node.select('category');
+					, cats = node.select('category');
 				
 				if(!cats.first())
 					return;
 				
 				cats.each(function(){
 					var ul = (this.Name() == '/') ? parent : findUl(this.Name(), parent)
-					, li = document.createElement('li');
+						, li = document.createElement('li');
 					
 					if(!node.Title())
 						return console.log('no title for ' + node.Id());
@@ -290,17 +266,40 @@ exSVG.plugin(exSVG.Worksheet, {
 					
 					li.setAttribute('id', 'Node_' + node.Id());
 					li.setAttribute('child', '1');
-					//insert(ul, li);
 					ul.appendChild(li);	
 				});
 			});
 			if(expended || nodes.length() < 100){
 				expended = parent.querySelectorAll('input');
-				for(var a=0; a < expended.length; a++)
-					expended[a].setAttribute('checked', true);
+				expended.forEach(function(el){
+					el.setAttribute('checked', true);
+				});
 			}
 		}
 
+		
+		function sort(node){
+			var stores_li = node.querySelectorAll('li:not([child="1"])');
+
+			[].slice.call(stores_li).sort(function(a, b) {
+				var textA = a.querySelector('label').innerHTML.toLowerCase()
+					, textB = b.querySelector('label').innerHTML.toLowerCase();
+					
+				return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+			})
+			.forEach(function(el) {el.parentNode.appendChild(el)});
+			
+			stores_li = ul.querySelectorAll('li[child="1"]');
+			[].slice.call(stores_li).sort(function(a, b) {
+				var textA = a.innerHTML.toLowerCase()
+					, textB = b.innerHTML.toLowerCase();
+				
+				return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+			})
+			.forEach(function(el) {el.parentNode.appendChild(el)});
+		}
+		
+		
 		div = menuEl;
 		input = div.querySelector('input[type="text"]');	
 		ul = div.querySelector('ul.sortable');
@@ -312,10 +311,12 @@ exSVG.plugin(exSVG.Worksheet, {
 			if(this.value){
 				nodes = exLIB.getNodes(me.getContext(), filters, this.value);
 				fill(ul, nodes, true, this.value);
+				sort(ul);
 			}
 			else{
 				nodes = exLIB.getNodes(me.getContext(), filters);
 				fill(ul, nodes);
+				sort(ul);
 			}
 		});
 		
@@ -328,6 +329,7 @@ exSVG.plugin(exSVG.Worksheet, {
 		input.value = '';
 		nodes = exLIB.getNodes(me.getContext(), filters);
 		fill(ul, nodes);
+		sort(ul);
 		
 		SVG.on(ul, 'click.librarymenu', function(e){
 			//when user click on a menu item, cancel all event listeners of the menu

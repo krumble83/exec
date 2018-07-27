@@ -32,7 +32,7 @@ exSVG.PinEditorBase = SVG.invent({
 		},
 		
 		destroy: function(){
-			return;
+			//return;
 			this.off();
 			this.remove();
 		}
@@ -126,7 +126,7 @@ exSVG.PinEditorInput = SVG.invent({
 		},
 		
 		destroy: function(){
-			return;
+			//return;
 			if(this.input)
 				SVG.off(this.input);
 			SVG.off(this.getChild(0));
@@ -188,7 +188,7 @@ exSVG.PinEditorBool = SVG.invent({
 		},
 		
 		destroy: function(){
-			return;
+			//return;
 			console.warn('TODO: implements exSVG.PinEditorSelect.destroy()');
 			return exSVG.PinEditorBase.prototype.destroy.apply(this, arguments);
 		}
@@ -264,7 +264,7 @@ exSVG.PinEditorSelect = SVG.invent({
 		},
 		
 		destroy: function(){
-			return;
+			//return;
 			console.warn('TODO: implements exSVG.PinEditorSelect.destroy()');
 			return exSVG.PinEditorBase.prototype.destroy.apply(this, arguments);
 		}

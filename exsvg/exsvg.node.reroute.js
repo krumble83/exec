@@ -12,7 +12,13 @@ exSVG.RereouteNode = SVG.invent({
 			exSVG.Node.prototype.init.apply(me, arguments);
 			me.setData('title', 'Reroute Node');
 			me.addClass('exReroute');
-
+			
+			/*
+			var n = new exGRAPH.Input();
+			n.init('inout', 'core.wildcards').Ctor('PinReroute');
+			me.importInput(n);
+			*/
+			
 			me.getPin('out').addClass('hidden');
 			me.getPin('in').addClass('hidden');
 			me.mInputPinGroup.move(15,10);
@@ -83,8 +89,8 @@ exSVG.RereouteNode = SVG.invent({
 		
 		drawPins: function(){
 			var me = this;
-			me.getPin('in').show();
-			me.getPin('out').show();
+			me.getPin('in').hide();
+			me.getPin('out').hide();
 		}
 	}
 });
@@ -99,7 +105,8 @@ exSVG.PinReroute = SVG.invent({
 			//console.log('exSVG.PinReroute.init()');
 			var me = this;
             exSVG.PinWildcards.prototype.init.apply(me, arguments);
-			me.addClass('output');
+			//me.setData('ctor', 'PinReroute');
+			//me.addClass('output');
 			me.mMaxLink = -1;
             return me;
         },
@@ -223,7 +230,8 @@ exSVG.PinReroute = SVG.invent({
 			
 			if(exLIB.isExecDataType(datatypeid)){
 				me.getNode().getPin('in').setMaxLink(-1);
-				me.getNode().getPin('out').setMaxLink(1);
+				if(me.getNode().getPin('out'))
+					me.getNode().getPin('out').setMaxLink(1);
 			}
 			else {
 				me.getNode().getPin('in').setMaxLink(1);

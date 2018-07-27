@@ -7,7 +7,7 @@ ctx.exCODE = exCODE;
 
 
 
-exGEN.extend(exGRAPH.Graph, exGRAPH.Macro, {
+exBASE.extend(exGRAPH.Graph, exGRAPH.Macro, {
 	Generate: function(){
 		var me = this
 		, exprt = new exCODE.Module().init()
@@ -25,7 +25,7 @@ exGEN.extend(exGRAPH.Graph, exGRAPH.Macro, {
 	},
 	
 	GetLinks: function(nodesvgid, pinid){
-		var out = new exGEN.Set;
+		var out = new exBASE.Set;
 		this.select('link output[node="' + nodesvgid + '"][pin="' + pinid + '"], link input[node="' + nodesvgid + '"][pin="' + pinid + '"]').each(function(){
 			out.add(this.parent());
 		});
@@ -34,7 +34,7 @@ exGEN.extend(exGRAPH.Graph, exGRAPH.Macro, {
 	
 });
 
-exGEN.extend(exGRAPH.Node, {
+exBASE.extend(exGRAPH.Node, {
 	GetPin: function(name){
 		console.log(name, this);
 		var set = this.select('input[id="' + name + '"], output[id="' + name + '"]');
@@ -50,7 +50,7 @@ exGEN.extend(exGRAPH.Node, {
 	}
 });
 
-exGEN.extend(exGRAPH.Pin, exGRAPH.Input, exGRAPH.Output, {
+exBASE.extend(exGRAPH.Pin, exGRAPH.Input, exGRAPH.Output, {
 	GetLinks: function(){
 		//console.log(this.parent().attr('svgid'), this.attr('id'));
 		var project = this.parent(exGRAPH.Graph);
@@ -64,7 +64,7 @@ exGEN.extend(exGRAPH.Pin, exGRAPH.Input, exGRAPH.Output, {
 	
 });
 
-exGEN.extend(exGRAPH.Link, {
+exBASE.extend(exGRAPH.Link, {
 	GetInputPin: function(){
 		return this.querySelector('input');
 	},
@@ -91,9 +91,9 @@ exGEN.extend(exGRAPH.Link, {
 /**************************************************************************************
 	FRAGMENT
 **************************************************************************************/
-exCODE.Fragment = exGEN.invent({
+exCODE.Fragment = exBASE.invent({
     create: 'fragment',
-	inherit: exGEN.Element,
+	inherit: exBASE.Element,
 	
     extend: {
 		init: function(){
@@ -139,7 +139,7 @@ exCODE.Fragment = exGEN.invent({
 /**************************************************************************************
 	CONTEXT
 **************************************************************************************/
-exCODE.Context = exGEN.invent({
+exCODE.Context = exBASE.invent({
     create: 'context',
 	inherit: exCODE.Fragment
 });
@@ -147,7 +147,7 @@ exCODE.Context = exGEN.invent({
 /**************************************************************************************
 	MODULE
 **************************************************************************************/
-exCODE.Module = exGEN.invent({
+exCODE.Module = exBASE.invent({
     create: 'module',
 	inherit: exCODE.Context,
 	parent: exCODE.Fragment,
@@ -194,7 +194,7 @@ exCODE.Module = exGEN.invent({
 /**************************************************************************************
 	VALUE
 **************************************************************************************/
-exCODE.Value = exGEN.invent({
+exCODE.Value = exBASE.invent({
     create: 'value', 
     inherit: exCODE.Fragment,
 	
@@ -228,7 +228,7 @@ exCODE.Value = exGEN.invent({
 /**************************************************************************************
 	IMPORT / INCLUDE
 **************************************************************************************/
-exCODE.Import = exGEN.invent({
+exCODE.Import = exBASE.invent({
     create: 'import', 
     inherit: exCODE.Fragment,
 	
@@ -249,7 +249,7 @@ exCODE.Import = exGEN.invent({
 	}
 });
 
-exCODE.Include = exGEN.invent({
+exCODE.Include = exBASE.invent({
     create: 'include', 
     inherit: exCODE.Fragment,
 	
@@ -270,7 +270,7 @@ exCODE.Include = exGEN.invent({
 /**************************************************************************************
 	FUNCTION / LAMBDA
 **************************************************************************************/
-exCODE.Function = exGEN.invent({
+exCODE.Function = exBASE.invent({
     create: 'function', 
     inherit: exCODE.Context,
 	parent: exCODE.Fragment,
@@ -288,7 +288,7 @@ exCODE.Function = exGEN.invent({
 			var args = this.node.querySelector('arguments');
 			
 			if(args)
-				return exGEN.adopt(args);
+				return exBASE.adopt(args);
 			return this.create('Arguments', arguments);
 		},
 		
@@ -300,7 +300,7 @@ exCODE.Function = exGEN.invent({
 			var body = this.node.querySelector('body');
 			
 			if(body)
-				return exGEN.adopt(body);
+				return exBASE.adopt(body);
 			return this.create('Body', arguments);
 		},
 		
@@ -319,7 +319,7 @@ exCODE.Function = exGEN.invent({
 	}
 });
 
-exCODE.Arguments = exGEN.invent({
+exCODE.Arguments = exBASE.invent({
     create: 'arguments', 
     inherit: exCODE.Fragment,
 	
@@ -330,7 +330,7 @@ exCODE.Arguments = exGEN.invent({
 	}
 });
 
-exCODE.Argument = exGEN.invent({
+exCODE.Argument = exBASE.invent({
     create: 'argument', 
     inherit: exCODE.Value,
 	
@@ -359,7 +359,7 @@ exCODE.Argument = exGEN.invent({
 	}
 });
 
-exCODE.Body = exGEN.invent({
+exCODE.Body = exBASE.invent({
     create: 'body', 
     inherit: exCODE.Fragment,
 	
@@ -367,7 +367,7 @@ exCODE.Body = exGEN.invent({
 	}
 });
 
-exCODE.Return = exGEN.invent({
+exCODE.Return = exBASE.invent({
     create: 'return', 
     inherit: exCODE.Value,
 	parent: exCODE.Fragment,
@@ -388,7 +388,7 @@ exCODE.Return = exGEN.invent({
 	}
 });
 
-exCODE.Lambda = exGEN.invent({
+exCODE.Lambda = exBASE.invent({
     create: 'lambda', 
     inherit: exCODE.Function
 });
@@ -399,7 +399,7 @@ exCODE.Lambda = exGEN.invent({
 /**************************************************************************************
 	CALL
 **************************************************************************************/
-exCODE.Call = exGEN.invent({
+exCODE.Call = exBASE.invent({
     create: 'call', 
     inherit: exCODE.Fragment,
 	parent: exCODE.Fragment,
@@ -424,7 +424,7 @@ exCODE.Call = exGEN.invent({
 			var args = this.node.querySelector('arguments');
 			
 			if(args)
-				return exGEN.adopt(args);
+				return exBASE.adopt(args);
 			return this.create('Arguments', arguments);
 		},
 		
@@ -453,7 +453,7 @@ exCODE.Call = exGEN.invent({
 /**************************************************************************************
 	IF
 **************************************************************************************/
-exCODE.If = exGEN.invent({
+exCODE.If = exBASE.invent({
     create: 'if', 
     inherit: exCODE.Fragment,
 	parent: exCODE.Fragment,
@@ -478,7 +478,7 @@ exCODE.If = exGEN.invent({
 			var then = this.node.querySelector('then');
 			
 			if(then)
-				return exGEN.adopt(then);
+				return exBASE.adopt(then);
 			return this.create('Then');
 		},
 		
@@ -490,7 +490,7 @@ exCODE.If = exGEN.invent({
 			var els = this.node.querySelector('else');
 			
 			if(els)
-				return exGEN.adopt(els);
+				return exBASE.adopt(els);
 			return this.create('Else');
 		}
 	}, 
@@ -501,7 +501,7 @@ exCODE.If = exGEN.invent({
 	}
 });
 
-exCODE.Condition = exGEN.invent({
+exCODE.Condition = exBASE.invent({
     create: 'condition', 
     inherit: exCODE.Fragment,
 	
@@ -571,7 +571,7 @@ exCODE.Condition = exGEN.invent({
 	}
 });
 
-exCODE.Then = exGEN.invent({
+exCODE.Then = exBASE.invent({
     create: 'then', 
     inherit: exCODE.Body,
 	
@@ -579,7 +579,7 @@ exCODE.Then = exGEN.invent({
 	}
 });
 
-exCODE.Elseif = exGEN.invent({
+exCODE.Elseif = exBASE.invent({
     create: 'elseif',
     inherit: exCODE.Condition,
 	
@@ -587,7 +587,7 @@ exCODE.Elseif = exGEN.invent({
 	}
 });
 
-exCODE.Else = exGEN.invent({
+exCODE.Else = exBASE.invent({
     create: 'else',
     inherit: exCODE.Then,
 	
@@ -601,7 +601,7 @@ exCODE.Else = exGEN.invent({
 /**************************************************************************************
 	FOR
 **************************************************************************************/
-exCODE.For = exGEN.invent({
+exCODE.For = exBASE.invent({
     create: 'for', 
     inherit: exCODE.Fragment,
 	parent: exCODE.Fragment,
@@ -621,7 +621,7 @@ exCODE.For = exGEN.invent({
 			var body = this.node.querySelector('body');
 			
 			if(body)
-				return exGEN.adopt(body);
+				return exBASE.adopt(body);
 			return this.create('Body');
 		},
 		
@@ -644,7 +644,7 @@ exCODE.For = exGEN.invent({
 	}
 });
 
-exCODE.Break = exGEN.invent({
+exCODE.Break = exBASE.invent({
     create: 'break', 
     inherit: exCODE.Fragment,
 	parent: exCODE.Fragment,
@@ -656,7 +656,7 @@ exCODE.Break = exGEN.invent({
 	}
 });
 
-exCODE.Continue = exGEN.invent({
+exCODE.Continue = exBASE.invent({
     create: 'continue', 
     inherit: exCODE.Fragment,
 	parent: exCODE.Fragment,
@@ -674,7 +674,7 @@ exCODE.Continue = exGEN.invent({
 /**************************************************************************************
 	WHILE
 **************************************************************************************/
-exCODE.While = exGEN.invent({
+exCODE.While = exBASE.invent({
     create: 'while', 
     inherit: exCODE.Fragment,
 	parent: exCODE.Fragment,
@@ -705,7 +705,7 @@ exCODE.While = exGEN.invent({
 	}
 });
 
-exCODE.Do = exGEN.invent({
+exCODE.Do = exBASE.invent({
     create: 'do', 
     inherit: exCODE.Fragment
 });
@@ -716,7 +716,7 @@ exCODE.Do = exGEN.invent({
 /**************************************************************************************
 	DECLARE / ASSIGN
 **************************************************************************************/
-exCODE.Assign = exGEN.invent({
+exCODE.Assign = exBASE.invent({
     create: 'assign', 
     inherit: exCODE.Fragment,
 	parent: exCODE.Fragment,
@@ -760,12 +760,12 @@ exCODE.Assign = exGEN.invent({
 	}
 });
 
-exCODE.Index = exGEN.invent({
+exCODE.Index = exBASE.invent({
     create: 'index', 
     inherit: exCODE.Value
 });
 
-exCODE.Declare = exGEN.invent({
+exCODE.Declare = exBASE.invent({
     create: 'declare', 
     inherit: exCODE.Assign,
 	parent: exCODE.Fragment,

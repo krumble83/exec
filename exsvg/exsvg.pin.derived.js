@@ -34,7 +34,7 @@ exSVG.PinWildcards = SVG.invent({
 		test: 'titi',
 	
 		init: function(data){
-			//console.log('exSVG.PinWildcards.init()', this.titi);
+			//console.log('exSVG.PinWildcards.init()');
 			var me = this;
 			
 			exSVG.Pin.prototype.init.apply(this, arguments);
@@ -111,7 +111,7 @@ exSVG.PinWildcards = SVG.invent({
 					if(this.checkDataTypeChange)
 						this.checkDataTypeChange(datatype, set);
 					else if(this.getDataType() !== datatype && exLIB.swapArrayDataType(me.getDataType()) !== datatype){
-						console.log('Prevented 1');
+						console.log('Prevented 1 ' + me.getNode().id() + ' ' + me.getId());
 						set.preventDefault(this.getDataType());
 					}
 				});
@@ -151,14 +151,6 @@ exSVG.PinWildcards = SVG.invent({
 				datatypeid = exLIB.swapArrayDataType(datatypeid);
 			
 			exSVG.Pin.prototype.setDataType.call(this, datatypeid);
-		},
-		
-		zexport: function(graph){
-			var me = this
-				, pin = exSVG.Pin.prototype.export.apply(this, arguments);
-			
-			//pin.Type(exLIB.getWildcardsDataType(exLIB.isArrayDataType(pin.Type())));
-			return pin;
 		}
 	}
 });
@@ -241,7 +233,7 @@ exSVG.PinStructure = SVG.invent({
 				pin = importer.call(node, this);
 				pin.setType(me.getType());
 				pin.move(0, pos);							
-				node.off('.pin-' + pin.getId());
+				//node.off('.pin-' + pin.getId());
 				
 				pin.on('menu', function(ev){
 					var cmenu = ev.detail.menu
@@ -253,6 +245,7 @@ exSVG.PinStructure = SVG.invent({
 							return false;
 						
 						node.select('.exPin[data-id^="' + me.getId() + '-"]').each(function(){
+							//node.off('.pin-' + this.getId());
 							this.remove();
 							this.destroy();
 						});
@@ -263,10 +256,12 @@ exSVG.PinStructure = SVG.invent({
 					if(node.select('.exPin.linked[data-id^="' + me.getId() + '-"]').length() > 0)
 						menuEl.enabled(false);
 				});
-				
+				console.log('TODO fix this :');
+					//pin.paint();
+					
 				pos += pin.bbox().height+4;
 			});
-			
+			me.getNode().paint();
 			me.setData('expanded', '1');
 			me.hide();
 		}
@@ -430,10 +425,9 @@ exSVG.PinAdd = SVG.invent({
 				e.preventDefault();
 			});
 			
-			setTimeout(function(){
-				var p = me.parent();
-				me.remove().addTo(p);
-			}, 2000);
+			//var p = me.parent();
+			//console.log(me);
+			//me.remove().addTo(p);
 			
 			return me;
 		},
@@ -461,6 +455,7 @@ exSVG.PinAdd = SVG.invent({
 			newPin.on('menu', function(e){
 				pinAddContextMenu.call(me, e, this)
 			});
+
 			me.getNode().paint();
 			return me;
 		},

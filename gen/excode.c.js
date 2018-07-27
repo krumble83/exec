@@ -12,7 +12,7 @@ function getIdent(ident){
 /**************************************************************************************
 	FRAGMENT
 **************************************************************************************/
-exGEN.extend(exCODE.Fragment, {
+exBASE.extend(exCODE.Fragment, {
 	ExportC: function(ident, args){
 		var ret = getIdent(ident)
 		, el;
@@ -21,7 +21,7 @@ exGEN.extend(exCODE.Fragment, {
 			return '';
 
 		for(var a=0; a < this.node.childElementCount; a++){
-			el = exGEN.adopt(this.node.childNodes[a]);
+			el = exBASE.adopt(this.node.childNodes[a]);
 			if(el.attr('ns') && el.attr('ns') != 'c')
 				continue;
 			ret += el.ExportC(ident, args);
@@ -43,7 +43,7 @@ exGEN.extend(exCODE.Fragment, {
 /**************************************************************************************
 	MODULE
 **************************************************************************************/
-exGEN.extend(exCODE.Module, {
+exBASE.extend(exCODE.Module, {
 	ExportC: function(){
 		return exCODE.Fragment.prototype.ExportC.call(this, 0, arguments);
 	}
@@ -55,7 +55,7 @@ exGEN.extend(exCODE.Module, {
 /**************************************************************************************
 	INCLUDE
 **************************************************************************************/
-exGEN.extend(exCODE.Include, {
+exBASE.extend(exCODE.Include, {
 	ExportC: function(ident, args){
 		return getIdent(ident) + '#include ' + this.attr('value') + ';\r\n';
 	}
@@ -67,7 +67,7 @@ exGEN.extend(exCODE.Include, {
 /**************************************************************************************
 	CONDITION
 **************************************************************************************/
-exGEN.extend(exCODE.Condition, {
+exBASE.extend(exCODE.Condition, {
 	ExportC: function(ident, args){
 		var ret = getIdent(ident);
 		ret += this.attr('var') || '';
@@ -86,7 +86,7 @@ exGEN.extend(exCODE.Condition, {
 /**************************************************************************************
 	VALUE
 **************************************************************************************/
-exGEN.extend(exCODE.Value, {
+exBASE.extend(exCODE.Value, {
 	ExportC: function(ident, args){
 		var ret = '';
 		
@@ -113,7 +113,7 @@ exGEN.extend(exCODE.Value, {
 /**************************************************************************************
 	DECLARE / ASSIGN
 **************************************************************************************/
-exGEN.extend(exCODE.Declare, {
+exBASE.extend(exCODE.Declare, {
 	ExportC: function(ident, args){
 		var call = this.select('call')
 		, value = this.attr('value')
@@ -147,7 +147,7 @@ exGEN.extend(exCODE.Declare, {
 /**************************************************************************************
 	CALL
 **************************************************************************************/
-exGEN.extend(exCODE.Call, {
+exBASE.extend(exCODE.Call, {
 	ExportC: function(ident, args){
 		var ret = getIdent(ident);
 		
@@ -170,7 +170,7 @@ exGEN.extend(exCODE.Call, {
 /**************************************************************************************
 	FOR
 **************************************************************************************/
-exGEN.extend(exCODE.For, {
+exBASE.extend(exCODE.For, {
 	ExportC: function(ident, args){
 		var ret = getIdent(ident) + 'for(';
 		
@@ -186,7 +186,7 @@ exGEN.extend(exCODE.For, {
 /**************************************************************************************
 	FUNCTION
 **************************************************************************************/
-exGEN.extend(exCODE.Function, {
+exBASE.extend(exCODE.Function, {
 	ExportC: function(ident, args){
 		var ret = ''
 		, el
@@ -198,7 +198,7 @@ exGEN.extend(exCODE.Function, {
 		ret += '(';
 
 		for(var a=0; a < this.node.childElementCount; a++){
-			el = exGEN.adopt(this.node.childNodes[a]);
+			el = exBASE.adopt(this.node.childNodes[a]);
 			if(el instanceof exCODE.Body)
 				body = el.ExportC(ident, args);
 			else
@@ -208,12 +208,12 @@ exGEN.extend(exCODE.Function, {
 	}
 });
 
-exGEN.extend(exCODE.Body, {
+exBASE.extend(exCODE.Body, {
 	ExportC: function(ident, args){
 		var ret = '{\r\n';
 		
 		for(var a=0; a < this.node.childElementCount; a++){
-			ret += exGEN.adopt(this.node.childNodes[a]).ExportC(ident + 1) + ';';
+			ret += exBASE.adopt(this.node.childNodes[a]).ExportC(ident + 1) + ';';
 		}
 
 		return ret + '\r\n}';
@@ -226,12 +226,12 @@ exGEN.extend(exCODE.Body, {
 /**************************************************************************************
 	ARGUMENTS
 **************************************************************************************/
-exGEN.extend(exCODE.Arguments, {
+exBASE.extend(exCODE.Arguments, {
 	ExportC: function(ident, args){
 		var ret = '';
 		
 		for(var a=0; a < this.node.childElementCount; a++){
-			ret += exGEN.adopt(this.node.childNodes[a]).ExportC() + ', ';
+			ret += exBASE.adopt(this.node.childNodes[a]).ExportC() + ', ';
 		}
 		if(ret.length > 0)
 			ret = ret.substr(0, ret.length-2);
@@ -239,7 +239,7 @@ exGEN.extend(exCODE.Arguments, {
 	}
 });
 
-exGEN.extend(exCODE.Argument, {
+exBASE.extend(exCODE.Argument, {
 	ExportC: function(ident, args){
 		var ret = '';
 		
@@ -266,7 +266,7 @@ exGEN.extend(exCODE.Argument, {
 /**************************************************************************************
 	WHILE
 **************************************************************************************/
-exGEN.extend(exCODE.While, {
+exBASE.extend(exCODE.While, {
 	ExportC: function(ident, args){
 		var ret = 'while('
 		, el
@@ -274,7 +274,7 @@ exGEN.extend(exCODE.While, {
 		, body;
 
 		for(var a=0; a < this.node.childElementCount; a++){
-			el = exGEN.adopt(this.node.childNodes[a]);
+			el = exBASE.adopt(this.node.childNodes[a]);
 			if(el instanceof exCODE.Do)
 				body = el.ExportC(ident, args);
 			else if(el instanceof exCODE.Condition)
@@ -285,7 +285,7 @@ exGEN.extend(exCODE.While, {
 	}
 });
 
-exGEN.extend(exCODE.Do, {
+exBASE.extend(exCODE.Do, {
 	ExportC: function(ident, args){
 		return exCODE.Body.prototype.ExportC.call(this, ident, args);
 	}
@@ -297,7 +297,7 @@ exGEN.extend(exCODE.Do, {
 /**************************************************************************************
 	IF
 **************************************************************************************/
-exGEN.extend(exCODE.If, {
+exBASE.extend(exCODE.If, {
 	ExportC: function(ident, args){
 		var ret = 'If('
 		, el
@@ -306,7 +306,7 @@ exGEN.extend(exCODE.If, {
 		, elsee
 
 		for(var a=0; a < this.node.childElementCount; a++){
-			el = exGEN.adopt(this.node.childNodes[a]);
+			el = exBASE.adopt(this.node.childNodes[a]);
 			if(el instanceof exCODE.Else)
 				elsee = el.ExportC(ident, args);
 			else if(el instanceof exCODE.Then)
@@ -327,21 +327,21 @@ exGEN.extend(exCODE.If, {
 /**************************************************************************************
 	RETURN / BREAK / CONTINUE
 **************************************************************************************/
-exGEN.extend(exCODE.Return, {
+exBASE.extend(exCODE.Return, {
 	ExportC: function(ident, args){
 		var ret = getIdent(ident);
 		return 'return';
 	}
 });
 
-exGEN.extend(exCODE.Break, {
+exBASE.extend(exCODE.Break, {
 	ExportC: function(ident, args){
 		var ret = getIdent(ident);
 		return 'break';
 	}
 });
 
-exGEN.extend(exCODE.Continue, {
+exBASE.extend(exCODE.Continue, {
 	ExportC: function(ident, args){
 		var ret = getIdent(ident);
 		return 'continue';

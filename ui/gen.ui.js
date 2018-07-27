@@ -1,7 +1,7 @@
 ;(function(ctx){
 
 
-exGRAPH.Project = exGEN.invent({
+exGRAPH.Project = exBASE.invent({
     create: 'project',
 	inherit: exGRAPH.Base,
 	
@@ -70,7 +70,7 @@ exGRAPH.Project = exGEN.invent({
 });
 
 
-exGRAPH.Function = exGEN.invent({
+exGRAPH.Function = exBASE.invent({
     create: 'function', 
     inherit: exGRAPH.Graph,
 	
@@ -99,7 +99,7 @@ exGRAPH.Function = exGEN.invent({
 
 
 
-exGRAPH.Property = exGEN.invent({
+exGRAPH.Property = exBASE.invent({
     create: 'property',
 	inherit: exGRAPH.Base,
 	
@@ -122,7 +122,7 @@ exGRAPH.Property = exGEN.invent({
 
 
 
-exGEN.extend(exGRAPH.Node, {
+exBASE.extend(exGRAPH.Node, {
 	Property: function(name, type, deflt){
 		var ret = this.select('property[id="' +  + '"]').first() || this.create('Property');
 		ret.init.apply(ret, arguments);

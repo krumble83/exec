@@ -65,6 +65,12 @@ exSVG.Node = SVG.invent({
 				pos = {x: me.x(), y: me.y()};
 
 			node.attr('pos', pos.x + ',' + pos.y);
+			
+			me.select('g > *').each(function(){
+				if(this.export)
+					this.export(node);
+			});
+			
 			me.fire('export', {parent: node});
 			return node;
 		},

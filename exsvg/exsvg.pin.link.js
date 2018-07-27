@@ -67,7 +67,11 @@ exSVG.plugin(exSVG.Pin, {
 				link.last().remove();
 				return;
 			}
+			
+			// We need to start sequence in case of the current link replace an existing link (maxlink reached on pin)
+			me.parent(exSVG.Worksheet).startSequence();
 			me.endLink(link.last(), e);
+			me.parent(exSVG.Worksheet).stopSequence();
 		});
 		
 		me.on('export.pinlink', function(e){

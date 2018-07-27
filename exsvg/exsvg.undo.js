@@ -9,7 +9,7 @@ var UndoManager = function() {
 		isExecuting = false,
 		callback,
 		sequences = [],
-		isSequence = false,
+		isSequence = 0,
 		execute;
 
 	execute = function(command, action) {
@@ -39,8 +39,8 @@ var UndoManager = function() {
 
 			//console.log('added');
 			//if we are in a sequence, push the current action 
-			if(isSequence){
-				sequences.push(command);
+			if(isSequence > 0){
+				sequences[isSequence].push(command);
 				return;
 			}
 
@@ -61,15 +61,16 @@ var UndoManager = function() {
 		},
 		
 		startSequence: function(name){
-			isSequence = true;
+			isSequence++;
+			sequences[isSequence] = [];
 		},
 		
 		stopSequence: function(name){
-			isSequence = false;
+			isSequence--;
 
-			if(sequences.length == 0)
+			if(sequences[isSequence+1].length == 0)
 				return;
-			var seqs = sequences;
+			var seqs = sequences[isSequence+1];
 			
 			undoManager.add({
 				undo: function(){
@@ -95,7 +96,7 @@ var UndoManager = function() {
 						execute(seqs[a], 'destroy');					
 				}
 			});
-			sequences = [];
+			sequences[isSequence+1] = undefined;
 		},
 
 		undo: function () {

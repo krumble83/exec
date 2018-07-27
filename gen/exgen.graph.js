@@ -4,14 +4,12 @@ var exGRAPH = {};
 ctx.exGRAPH = exGRAPH;
 
 
-//var typeSelector = ['type', 'class', 'structure', 'interface', 'enum'];
-
 /**************************************************************************************
 	BASE
 **************************************************************************************/
-exGRAPH.Base = exGEN.invent({
+exGRAPH.Base = exBASE.invent({
     create: 'base',
-	inherit: exGEN.Element,
+	inherit: exBASE.Element,
 	parent: exGRAPH,
 	extend: {
 		
@@ -31,7 +29,7 @@ exGRAPH.Base = exGEN.invent({
 		},
 		
 		select: function(query){
-			return exGEN.Element.prototype.select.call(this, query, exGRAPH);
+			return exBASE.Element.prototype.select.call(this, query, exGRAPH);
 		},
 
 		merge: function(src){
@@ -45,7 +43,7 @@ exGRAPH.Base = exGEN.invent({
 		},
 		
 		clone: function(){
-			return exGEN.Element.prototype.clone.call(this, exGRAPH);
+			return exBASE.Element.prototype.clone.call(this, exGRAPH);
 		},
 		
 		Flags: function(flags){
@@ -80,7 +78,7 @@ exGRAPH.Base = exGEN.invent({
 /**************************************************************************************
 	LIBRARY
 **************************************************************************************/
-exGRAPH.Library = exGEN.invent({
+exGRAPH.Library = exBASE.invent({
     create: 'library',
 	inherit: exGRAPH.Base,
 	
@@ -104,7 +102,7 @@ exGRAPH.Library = exGEN.invent({
 		},
 
 		GetNodes: function(selector){
-			var out = new exGEN.Set
+			var out = new exBASE.Set
 				, parent 
 				, ret;
 			
@@ -169,7 +167,7 @@ exGRAPH.Library = exGEN.invent({
 /**************************************************************************************
 	PACKAGE
 **************************************************************************************/
-exGRAPH.Package = exGEN.invent({
+exGRAPH.Package = exBASE.invent({
     create: 'package',
 	inherit: exGRAPH.Base,
 	parent: exGRAPH.Library,
@@ -190,6 +188,10 @@ exGRAPH.Package = exGEN.invent({
 						
 		Symbol: function(name){
 			return this.data('symbol', name);
+		},
+		
+		Require: function(){
+			//console.log('toto');
 		}
 	},
 	
@@ -206,7 +208,7 @@ exGRAPH.Package = exGEN.invent({
 /**************************************************************************************
 	GRAPH / MACRO
 **************************************************************************************/
-exGRAPH.Graph = exGEN.invent({
+exGRAPH.Graph = exBASE.invent({
     create: 'graph',
 	inherit: exGRAPH.Base,
 	
@@ -236,7 +238,7 @@ exGRAPH.Graph = exGEN.invent({
 	}
 });
 
-exGRAPH.Macro = exGEN.invent({
+exGRAPH.Macro = exBASE.invent({
     create: 'macro',
 	inherit: exGRAPH.Graph,
 	parent: exGRAPH.Package,
@@ -336,7 +338,7 @@ exGRAPH.Macro = exGEN.invent({
 /**************************************************************************************
 	DEVICE / PROVIDE / REQUIRE / COMPONENT / FUNCTION
 **************************************************************************************/
-exGRAPH.Device = exGEN.invent({
+exGRAPH.Device = exBASE.invent({
     create: 'device',
 	inherit: exGRAPH.Base,
 	parent: exGRAPH.Package,
@@ -362,12 +364,15 @@ exGRAPH.Device = exGEN.invent({
 		},
 
 		Provide: function(){
-			var args = [].slice.call(arguments)
-				, ret;
-
-			for (i = 0, il = args.length; i < il; i++)
-				ret = this.querySelector('provide[id="' + args[i] + '"]') || this.create('Provide', [args[i]]);
-			return ret;
+			var  args = [].slice.call(arguments)
+			, parent;
+						
+			for(var a=1; a < args.length; a++){
+				var s = args[a].split(',');
+				for(var b=0; b < s.length; b++)
+					this.create('Provide').init().attr(args[0], s[b]);
+			}
+			return this;
 		},
 		
 		Function: function(name, type){
@@ -382,12 +387,11 @@ exGRAPH.Device = exGEN.invent({
 
 			ret.init.apply(ret, arguments);
 			return ret;
-			//return ret.attr('id', this.attr('id') + '.' + id);			
 		}		
 	}
 });
 
-exGRAPH.Component = exGEN.invent({
+exGRAPH.Component = exBASE.invent({
     create: 'component',
 	inherit: exGRAPH.Base,
 	parent: exGRAPH.Device,
@@ -410,14 +414,26 @@ exGRAPH.Component = exGEN.invent({
 		},
 		
 		Require: function(){
-			var ret = this.querySelector('require') || this.create('Require');
-			ret.init.apply(ret, arguments);
+			var  args = [].slice.call(arguments)
+			, parent;
+						
+			for(var a=1; a < args.length; a++){
+				var s = args[a].split(',');
+				for(var b=0; b < s.length; b++)
+					this.create('Require').init().attr(args[0], s[b]);
+			}
 			return this;
 		},
 
 		Provide: function(id){
-			var ret = this.querySelector('provide[id="' + id + '"]') || this.create('Provide');
-			ret.init.apply(ret, arguments);
+			var  args = [].slice.call(arguments)
+			, parent;
+						
+			for(var a=1; a < args.length; a++){
+				var s = args[a].split(',');
+				for(var b=0; b < s.length; b++)
+					this.create('Provide').init().attr(args[0], s[b]);
+			}
 			return this;
 		},
 
@@ -445,27 +461,14 @@ exGRAPH.Component = exGEN.invent({
 	}
 });
 
-exGRAPH.Require = exGEN.invent({
+exGRAPH.Require = exBASE.invent({
     create: 'require',
 	inherit: exGRAPH.Base,
 	
     extend: {
 		init: function(id){
-			var  args = [].slice.call(arguments);
-			
 			exGRAPH.Base.prototype.init.apply(this, arguments);
-			
-			if(args[0])
-				assert(this[args[0].capitalize()]);
-			
-			var parent = this[args[0].capitalize()];
-			
-			for(var a=1; a < args.length; a++){
-				var s = args[a].split(',');
-				for(var b=0; b < s.length; b++)
-					parent.call(this, s[b]);
-			}
-			return this; //.Id(id);
+			return this;
 		},
 		
 		Component: function(id){
@@ -477,7 +480,7 @@ exGRAPH.Require = exGEN.invent({
 	}
 });
 
-exGRAPH.Provide = exGEN.invent({
+exGRAPH.Provide = exBASE.invent({
     create: 'provide',
 	inherit: exGRAPH.Base,
 	parent: exGRAPH.Component,
@@ -485,7 +488,8 @@ exGRAPH.Provide = exGEN.invent({
     extend: {
 		init: function(id){
 			exGRAPH.Base.prototype.init.apply(this, arguments);
-			return this.Id(id);
+			this.Id(id);
+			return this;
 		},
 		
 		Id: function(id){
@@ -499,10 +503,11 @@ exGRAPH.Provide = exGEN.invent({
 });
 
 
+
 /**************************************************************************************
 	TYPE / CLASS / EDITOR / STRUCTURE / ENUM
 **************************************************************************************/
-exGRAPH.Type = exGEN.invent({
+exGRAPH.Type = exBASE.invent({
     create: 'type',
 	inherit: exGRAPH.Base,
 	parent: exGRAPH.Package,
@@ -527,58 +532,30 @@ exGRAPH.Type = exGEN.invent({
 			return this.attr('ctor', name);
 		},
 
-		Inherits: function(){
+		Inherits: function(fromType){
+			//console.log(this.Id(), fromType);
 			var me = this
-				, args = [].slice.call(arguments)
 				, orgTitle = this.Label()
-				, parent
+				, parent = me.GetPackage()
 				, found;
 
-			//console.log(this.Id(), me.type.toLowerCase(), arguments[0]);
-			
 			// first, search in current package
-			parent = me.GetPackage();
-			args.forEach(function(val){
-				found = parent.select(me.type.toLowerCase() + '[id="' + parent.Id() + '.' + val + '"]');
-				switch(found.length()){
-					case 0:
-						return;
-						break;
-					case 1:
-						//console.log('found 1');
-						me.merge(found.first());
-						me.attr('inherits', '|' + val + ((me.attr('inherits')) ? me.attr('inherits') : '|'));
-						found = true;
-						return false;
-						break;
-					default:
-						console.error('error');
-				}
-			});
-			if(found !== true){
-				// now, search in all library
-				parent = me.parent(exGRAPH.Library);
-				args.forEach(function(val){
-					found = parent.select(me.type.toLowerCase() + '[id="' + val + '"]');
-					switch(found.length()){
-						case 0:
-							return;
-							break;
-						case 1:
-							//console.log('found 2');
-							me.merge(found.first());
-							me.attr('inherits', '|' + val + ((me.attr('inherits')) ? me.attr('inherits') : '|'));
-							return;
-							break;
-						default:
-							console.error('error');
-					}
-				});
-			}
-			//console.log('-----------------');
+			found = parent.select(me.type.toLowerCase() + '[id="' + parent.Id() + '.' + fromType + '"]');
 
-			if(orgTitle)
-				me.Label(orgTitle);
+			if(found.length() == 0){
+				parent = me.parent(exGRAPH.Library);
+				found = parent.select(me.type.toLowerCase() + '[id="' + fromType + '"]');
+			}
+			
+			if(found.length() == 1){
+				me.merge(found.first());
+				me.attr('inherits', '|' + fromType + ((me.attr('inherits')) ? me.attr('inherits') : '|'));
+				if(orgTitle)
+					me.Label(orgTitle + ' ' + (found.first().Label() || ''));
+			} else {
+				console.log('can\'t inherits of type "' + fromType + '" (' + this.Id() + ')');
+			}
+
 			return this;
 		},
 		
@@ -626,74 +603,23 @@ exGRAPH.Type = exGEN.invent({
 	}
 });
 
-exGRAPH.Object = exGEN.invent({
+exGRAPH.Object = exBASE.invent({
     create: 'object',
 	inherit: exGRAPH.Type,
 	
     extend: {
 		init: function(id, label){
 			exGRAPH.Type.prototype.init.apply(this, arguments);
-			this.Id(id);
-			this.Label(label);
+			//this.Inherits('core.object');
+			//this.Id(id);
+			//this.Label(label);
+			//return this;
 			return this.Ctor('Pin').Color('#55f');
-		},
-
-		Inherits: function(){
-			var me = this
-				, args = [].slice.call(arguments)
-				, orgTitle = this.Label()
-				, parent
-				, found;
-
-			// first, search in current package
-			parent = me.GetPackage();
-			args.forEach(function(val){
-				found = parent.select(me.type.toLowerCase() + '[id="' + parent.Id() + '.' + val + '"]');
-				switch(found.length()){
-					case 0:
-						return;
-						break;
-					case 1:
-						//console.log('found 1');
-						me.merge(found.first());
-						me.attr('inherits', '|' + val + ((me.attr('inherits')) ? me.attr('inherits') : '|'));
-						found = true;
-						return false;
-						break;
-					default:
-						console.error('error');
-				}
-			});
-			if(found !== true){
-				// now, search in all library
-				parent = me.parent(exGRAPH.Library);
-				args.forEach(function(val){
-					found = parent.select(me.type.toLowerCase() + '[id="' + val + '"]');
-					switch(found.length()){
-						case 0:
-							return;
-							break;
-						case 1:
-							//console.log('found 2');
-							me.merge(found.first());
-							me.attr('inherits', '|' + val + ((me.attr('inherits')) ? me.attr('inherits') : '|'));
-							return;
-							break;
-						default:
-							console.error('error');
-					}
-				});
-			}
-			//console.log('-----------------');
-
-			if(orgTitle)
-				me.Label(orgTitle);
-			return this;
 		}
 	}
 });
 
-exGRAPH.Editor = exGEN.invent({
+exGRAPH.Editor = exBASE.invent({
     create: 'editor',
 	inherit: exGRAPH.Base,
 	parent: exGRAPH.Type,
@@ -724,7 +650,7 @@ exGRAPH.Editor = exGEN.invent({
 	}
 });
 
-exGRAPH.Structure = exGEN.invent({
+exGRAPH.Structure = exBASE.invent({
     create: 'structure',
 	inherit: exGRAPH.Type,
 	parent: exGRAPH.Package,
@@ -785,16 +711,13 @@ exGRAPH.Structure = exGEN.invent({
 		Struct: function(id, label){
 			var ret = this.querySelector('structure[id="' + this.Id() + '.' + id + '"]') || this.create('Structure');
 
-			//ret.attr('id', this.attr('id') + '.' + id);
-			//ret.Inherits('core.type.struct');
 			ret.init.apply(ret, arguments);
 			return ret;
-			//return ret.attr('id', this.GetPath() + id);
 		}		
 	}
 });
 
-exGRAPH.Enum = exGEN.invent({
+exGRAPH.Enum = exBASE.invent({
     create: 'enum',
 	inherit: exGRAPH.Type,
 	parent: exGRAPH.Package,
@@ -824,7 +747,7 @@ exGRAPH.Enum = exGEN.invent({
 	}
 });
 
-exGRAPH.Interface = exGEN.invent({
+exGRAPH.Interface = exBASE.invent({
     create: 'interface',
 	inherit: exGRAPH.Object,
 	parent: exGRAPH.Package,
@@ -869,7 +792,7 @@ exGRAPH.Interface = exGEN.invent({
 	}
 });
 
-exGRAPH.Class = exGEN.invent({
+exGRAPH.Class = exBASE.invent({
     create: 'class',
 	inherit: exGRAPH.Interface,
 	parent: exGRAPH.Package,
@@ -918,7 +841,7 @@ exGRAPH.Class = exGEN.invent({
 /**************************************************************************************
 	NODE / CATEGORY / NODETPL
 **************************************************************************************/
-exGRAPH.Node = exGEN.invent({
+exGRAPH.Node = exBASE.invent({
     create: 'node',
 	inherit: exGRAPH.Base,
 	parent: exGRAPH.Package,
@@ -969,7 +892,7 @@ exGRAPH.Node = exGEN.invent({
 			var base = this.parent(exGRAPH.Library).GetNode(name, this.parent(exGRAPH.Package).Id());
 			
 			if(!base)
-				return console.log('can\'t find node ' + name);
+				return console.log('can\'t find node "' + name + '"');
 			
 			return this.mergeAttrs(base);
 		},
@@ -980,9 +903,9 @@ exGRAPH.Node = exGEN.invent({
 			, clone;
 			
 			if(!base)
-				return console.log('can\'t find node ' + name);
+				return console.log('can\'t find node "' + name + '"');
 			base.select('input,output').each(function(){
-				clone = exGEN.adopt(this.node.cloneNode(true), exGRAPH);
+				clone = exBASE.adopt(this.node.cloneNode(true), exGRAPH);
 				me.add(clone);
 			});
 			return this;
@@ -1053,7 +976,7 @@ exGRAPH.Node = exGEN.invent({
 	}
 });
 
-exGRAPH.Category = exGEN.invent({
+exGRAPH.Category = exBASE.invent({
     create: 'category',
 	inherit: exGRAPH.Base,
 	parent: exGRAPH.Node,
@@ -1080,7 +1003,7 @@ exGRAPH.Category = exGEN.invent({
 	}
 });
 
-exGRAPH.Nodetpl = exGEN.invent({
+exGRAPH.Nodetpl = exBASE.invent({
     create: 'nodetpl',
 	inherit: exGRAPH.Node,
 	parent: exGRAPH.Package,
@@ -1111,7 +1034,7 @@ exGRAPH.Nodetpl = exGEN.invent({
 /**************************************************************************************
 	PIN / INPUT / OUTPUT
 **************************************************************************************/
-exGRAPH.Pin = exGEN.invent({
+exGRAPH.Pin = exBASE.invent({
     create: 'pin',
 	inherit: exGRAPH.Base,
 	
@@ -1162,7 +1085,7 @@ exGRAPH.Pin = exGEN.invent({
 	}
 });
 
-exGRAPH.Output = exGEN.invent({
+exGRAPH.Output = exBASE.invent({
     create: 'output',
 	inherit: exGRAPH.Pin,
 	parent: exGRAPH.Node,
@@ -1183,7 +1106,7 @@ exGRAPH.Output = exGEN.invent({
 	}
 });
 
-exGRAPH.Input = exGEN.invent({
+exGRAPH.Input = exBASE.invent({
     create: 'input',
 	inherit: exGRAPH.Pin,
 	parent: exGRAPH.Node,
@@ -1209,7 +1132,7 @@ exGRAPH.Input = exGEN.invent({
 /**************************************************************************************
 	LINK / LINKREF
 **************************************************************************************/
-exGRAPH.Link = exGEN.invent({
+exGRAPH.Link = exBASE.invent({
     create: 'link',
 	inherit: exGRAPH.Base,
 	parent: exGRAPH.Graph,
@@ -1240,7 +1163,7 @@ exGRAPH.Link = exGEN.invent({
 	}
 });
 
-exGRAPH.Linkref = exGEN.invent({
+exGRAPH.Linkref = exBASE.invent({
     create: 'linkref',
 	inherit: exGRAPH.Base,
 	

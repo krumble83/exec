@@ -16,10 +16,10 @@ function map(array, block) {
 	return result;
 }
 
-var exGEN = {'xml': (new DOMParser()).parseFromString("<library/>", 'text/xml')};
-ctx.exGEN = exGEN;
+var exBASE = {'xml': (new DOMParser()).parseFromString("<library/>", 'text/xml')};
+ctx.exBASE = exBASE;
 
-exGEN.extend = function() {
+exBASE.extend = function() {
   var modules
 	  , methods
 	  , key
@@ -35,35 +35,35 @@ exGEN.extend = function() {
 
 };
 
-exGEN.invent = function(config) {
+exBASE.invent = function(config) {
   var initializer = typeof config.create == 'function' ?
     config.create :
     function() {
-      this.constructor.call(this, exGEN.create(config.create));
+      this.constructor.call(this, exBASE.create(config.create));
     };
 
   if(config.inherit)
     initializer.prototype = new config.inherit();
 
   if(config.extend)
-    exGEN.extend(initializer, config.extend);
+    exBASE.extend(initializer, config.extend);
 
   if(config.construct)
-    exGEN.extend(config.parent || exGEN.Fragment, config.construct);
+    exBASE.extend(config.parent || exBASE.Fragment, config.construct);
 
   return initializer;
 };
 
-exGEN.create = function(name) {
-	return exGEN.xml.createElement(name);
+exBASE.create = function(name) {
+	return exBASE.xml.createElement(name);
 };
 
-exGEN.adopt = function(node, parent) {
+exBASE.adopt = function(node, parent) {
 	//console.log(node, parent);
 	if (!node) 
 		return null;
 
-	parent = parent || exGEN;
+	parent = parent || exBASE;
 	
 	if(node.instance) 
 		return node.instance;
@@ -83,12 +83,12 @@ exGEN.adopt = function(node, parent) {
 
 
 // Select elements by query string
-exGEN.select = function(query, parent) {
-  return new exGEN.Set(map((parent || document).querySelectorAll(query), function(node){return exGEN.adopt(node);}));
+exBASE.select = function(query, parent) {
+  return new exBASE.Set(map((parent || document).querySelectorAll(query), function(node){return exBASE.adopt(node);}));
 };
 
 
-exGEN.Element = exGEN.invent({
+exBASE.Element = exBASE.invent({
 	create: function(node) {
 		// create circular reference
 		if(this.node = node) {
@@ -103,16 +103,16 @@ exGEN.Element = exGEN.invent({
 
 			if(!parent.node.parentNode) 
 				return null;
-			parent = exGEN.adopt(parent.node.parentNode);
+			parent = exBASE.adopt(parent.node.parentNode);
 
 			if(!type) 
 				return parent;
 
-			while(parent && parent instanceof window.exGEN.Element){
+			while(parent && parent instanceof window.exBASE.Element){
 				if(typeof type == 'string' ? parent.matches(type) : parent instanceof type) return parent;
 				if(!parent.node.parentNode) return null;
 				if(parent.node.parentNode.nodeName == '#document') return null; // #720
-				parent = exGEN.adopt(parent.node.parentNode);
+				parent = exBASE.adopt(parent.node.parentNode);
 			}
 		},
 		
@@ -162,11 +162,11 @@ exGEN.Element = exGEN.invent({
 		},
 		
 		select: function(query, parent){
-			return new exGEN.Set(map((this.node || document).querySelectorAll(query), function(node){return exGEN.adopt(node, parent);}));
+			return new exBASE.Set(map((this.node || document).querySelectorAll(query), function(node){return exBASE.adopt(node, parent);}));
 		},
 		
 		querySelector: function(query){
-			return exGEN.adopt(this.node.querySelector(query));
+			return exBASE.adopt(this.node.querySelector(query));
 		},
 		
 		attr: function(name, value){
@@ -190,7 +190,7 @@ exGEN.Element = exGEN.invent({
 		
 		create: function(type, args){
 			//console.log(args);
-			var ret = new exGEN[type]();
+			var ret = new exBASE[type]();
 
 			this.add(ret);
 			if(typeof ret.init == 'function')
@@ -225,7 +225,7 @@ exGEN.Element = exGEN.invent({
 		
 		clone: function(parent){
 			//console.log(capitalize(this.node.nodeName));
-			parent = parent || exGEN;
+			parent = parent || exBASE;
 
 			var element = new parent[this.node.nodeName.capitalize()]();
 			element.type  = this.node.nodeName;
@@ -246,7 +246,7 @@ exGEN.Element = exGEN.invent({
 
 
 
-exGEN.Set = exGEN.invent({
+exBASE.Set = exBASE.invent({
 	// Initialize
 	create: function(members) {
 		// Set initial state
@@ -313,7 +313,7 @@ exGEN.Set = exGEN.invent({
 	
 	construct: {
 		set: function(members) {
-			return new exGEN.Set(members);
+			return new exBASE.Set(members);
 		}
 	}
 });

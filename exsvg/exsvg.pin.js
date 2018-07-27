@@ -17,15 +17,16 @@ exSVG.Pin = SVG.invent({
 					continue;
 				me.setData(atts[i].nodeName, atts[i].value);
 			}
-			me.setId(data.Id());
 			me.addClass('exPin');
+			me.setId(data.Id());
 			me.setType(data.type);
 
+			/*
 			this.getNode().on('export.pin-' + me.getId(), function(e){
-				//console.log('export');
+				//console.dir('export', me.constructor);
 				me.export(e.detail.parent);
 			});
-		
+			*/
 			data.select(':scope > *').each(function(){
 				if(me['import' + this.type.capitalize()])
 					me['import' + this.type.capitalize()](this, me);
@@ -118,11 +119,13 @@ exSVG.Pin = SVG.invent({
 		setType: function(type){
 			if(type == 'INPUT' || type == 'input' || type == exSVG.Pin.PIN_IN){
 				this.addClass('input')
-				.setMaxLink(1);
+					.removeClass('output')
+					.setMaxLink(1);
 			}
 			if(type == 'OUTPUT' || type == 'output' || type == exSVG.Pin.PIN_OUT){
 				this.addClass('output')
-				.setMaxLink(-1);
+					.removeClass('input')
+					.setMaxLink(-1);
 			}
 			return this;
 		},
