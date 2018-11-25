@@ -47,7 +47,7 @@ exSVG.NodeMacro = SVG.invent({
 			me.fire('export', {parent: macro});
 			
 			me.mExportData.select(':scope > *:not(input):not(output)').each(function(){
-				console.log(this.node.nodeName);
+				//console.log(this.node.nodeName);
 				macro.add(this);
 			});
 			

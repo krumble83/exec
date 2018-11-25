@@ -209,7 +209,7 @@ exBASE.Element = exBASE.invent({
 					this.node.removeChild(this.node.firstChild);
 			}
 			else{
-				this.select(query).each(function(){
+				this.select(':scope > ' + query).each(function(){
 					this.remove();
 				});
 			}

@@ -9,43 +9,21 @@
 	<script type="text/javascript" src="exsvg/exsvg.worksheet.js"></script>
 	<script type="text/javascript" src="lib/library.base.js"></script>
 
-	<script type="text/javascript" src="gen/exgen.exgen.js"></script>
-	<script type="text/javascript" src="gen/exgen.graph.js"></script>
-	<script type="text/javascript" src="gen/excode.js"></script>
-	<script type="text/javascript" src="gen/excode.c.js"></script>
+	<script type="text/javascript" src="exgen/exgen.base.js"></script>
+	<script type="text/javascript" src="exgen/exgen.graph.js"></script>
+	<script type="text/javascript" src="exgen/exgen.code.js"></script>
+	<script type="text/javascript" src="exgen/exgen.code.c.js"></script>
 	
  </head>
 
  <body style="background-color:#262626;padding:0;margin:0; overflow:hidden">
 	<div id="drawing" style="height:870px"></div><a href="javascript: exportGraph()" style="color:#fff">export</a>&nbsp;&nbsp;<a href="javascript:exportTest()" style="color:#fff">generate</a><br />
-	<textarea id="ttest"></textarea><textarea width="10" id="tesfst"></textarea>
+	<textarea id="ttest"></textarea></textarea>
 	<img id="drag1" src="lib/img/callfunc.png" draggable="true" ondragstart="drag(event)">
 	<script>
 	
-	
-function allowDrop(ev) {
-    ev.preventDefault();
-}
-
-function drag(ev) {
-	var ex = new exGRAPH.Graph()
-	var n = ex.Node('test', 'Caca');
-	n.Input('test', 'core.type.string');
-    ev.dataTransfer.setData("application/xml", ex.node.outerHTML);
-}
-
-function drop(ev) {
-    ev.preventDefault();
-    var data = ev.dataTransfer.getData("text");
-    ev.target.appendChild(document.getElementById(data));
-}	
-	
-	
-	
 	var format = require('xml-formatter');
-/*	
-	console.log(document.querySelectorAll('textarea[width="10"],textarea:not([width])'));
- */ 
+
 	function exportGraph(){
 		var g = new exGRAPH.Graph;
 		draw.exportGraph(g);
@@ -59,10 +37,11 @@ function drop(ev) {
 	}
 	
 	function exportTest(){
-		var g = new exGRAPH.Graph().init()
+		var g = new exGRAPH.Graph().init();
 		draw.exportGraph(g);
 		var exprt = g.Generate();
-		document.body.querySelector('#exClipboardData').innerHTML = exprt.ExportC();
+		var xmlText = new XMLSerializer().serializeToString(exprt.node);
+		document.getElementById('ttest').value = xmlText;
 	}
 	
 	var draw;
@@ -121,6 +100,7 @@ function drop(ev) {
 				me.stopSequence();
 				
 				console.timeEnd('draw Graph');
+				//exportTest();
 			});
 		});
 	});

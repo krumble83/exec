@@ -18,7 +18,6 @@ exGRAPH.Base = exBASE.invent({
 		},
 		
 		create: function(type, args){
-			this.__CLASS__ = 'test';
 			if(!exGRAPH[type])
 				return console.warn('cant create ' + type + ' from exGRAPH', exGRAPH);
 			var ret = new exGRAPH[type];
@@ -805,6 +804,7 @@ exGRAPH.Class = exBASE.invent({
 			ret.init.apply(ret, arguments);
 			
 			//make getter/setter
+			/*
 			var getset = this.Method(id + '.get', 'Get ' + title);
 			getset.init();
 			getset.Output('out', type, title);
@@ -812,8 +812,8 @@ exGRAPH.Class = exBASE.invent({
 			getset = this.Method(id + '.set', 'Set ' + title);
 			getset.init();
 			getset.Input('in', type, title);
-
-			return this;
+			*/
+			return ret;
 		},
 		
 		Implements: function(interface){
@@ -1090,6 +1090,17 @@ exGRAPH.Output = exBASE.invent({
 	inherit: exGRAPH.Pin,
 	parent: exGRAPH.Node,
 	
+    extend: {
+		
+		Getter: function(){
+			return this.attr('get', true);
+		},
+		
+		Setter: function(){
+			return this.attr('set', true);
+		}
+	},
+	
 	construct: {
 		Output: function(id, type, label){
 			var package = this.GetPackage()
@@ -1146,13 +1157,16 @@ exGRAPH.Link = exBASE.invent({
 		},
 		
 		Pin: function(node, pin){
-			if(typeof node === 'string')
-				return this.create('Pin').attr('node', node).attr('pin', pin);
+			return this.create('Pin').attr('node', node).attr('pin', pin);
+		},
+		
+		Input: function(node, pin){
+			return this.querySelector('input') || this.create('Input').init(pin).attr('node', node);
+		},
 
-			assert(node instanceof exGRAPH.Node);
-			assert(pin instanceof exGRAPH.Pin);
+		Output: function(node, pin){
+			return this.querySelector('output') || this.create('Output').init(pin).attr('node', node);
 		}
-
 	},
 	
 	construct: {

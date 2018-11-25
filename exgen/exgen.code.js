@@ -5,86 +5,90 @@
 var exCODE = {};
 ctx.exCODE = exCODE;
 
-
+var uid = 1000;
 
 exBASE.extend(exGRAPH.Graph, exGRAPH.Macro, {
 	Generate: function(){
 		var me = this
 		, exprt = new exCODE.Module().init()
-		, out = exprt.Function('setup').Type('void').Body()
-		, entries = this.select('node[ctor="NodeEntryPoint"]')
+		, out = exprt.Function('setup').Type('void')
+		, enter = this.querySelector('node[id="core.entrypoint"]')
 		, func;
 
-		//console.log(entries);
-		entries.each(function(){
-			func = exLIB.getGenerator(this.attr('id'));
-			if(typeof func == 'function')
-				func(this, out);
+		this.select(':scope > *').each(function(){
+			//console.log(this.Prepare());
+			if(this.Prepare && typeof this.Prepare() == 'function')
+				this.Prepare().call(this);
 		});
-		return exprt;
-	},
-	
-	GetLinks: function(nodesvgid, pinid){
-		var out = new exBASE.Set;
-		this.select('link output[node="' + nodesvgid + '"][pin="' + pinid + '"], link input[node="' + nodesvgid + '"][pin="' + pinid + '"]').each(function(){
-			out.add(this.parent());
+		this.select('node[id="core.entrypoint"]').each(function(){
+			this.Output('exit').Eval().call(this.Output('exit'), exprt);
 		});
-		return out;
-	},
-	
+		//exLIB.getNode2('core.entrypoint').Generator().call(exprt, enter);
+		return exprt;		
+	}
+});
+
+exBASE.extend(exGRAPH.Link, {
+	Eval: function(pin){
+		var graph = pin.parent(exGRAPH.Graph)
+		, node = graph.GetNode(pin.attr('node'))
+		, generator = exLIB.getNode2(node.Id()).Generator();
+		
+		if(!generator){
+			console.log('cant find generator for "' + node.Id() + '"');
+			return;
+		}
+				
+		return generator.call(this, node);
+	}
 });
 
 exBASE.extend(exGRAPH.Node, {
-	GetPin: function(name){
-		console.log(name, this);
-		var set = this.select('input[id="' + name + '"], output[id="' + name + '"]');
-		assert(set.length() == 1);
-		return set.first();
+	GetLinks: function(pin){
+		var graph = this.parent(exGRAPH.Graph)
+		, ret = new exBASE.Set();
+		
+		assert(pin instanceof exGRAPH.Pin);
+		
+		if(pin instanceof exGRAPH.Input){
+			graph.select('link > input[node="' + this.attr('svgid') + '"][id="' + pin.Id() + '"]').each(function(){
+				ret.add(this.parent(exGRAPH.Link));
+			});
+		}
+		else if(pin instanceof exGRAPH.Output){
+			graph.select('link > output[node="' + this.attr('svgid') + '"][id="' + pin.Id() + '"]').each(function(){
+				ret.add(this.parent(exGRAPH.Link));
+			});
+		}
+		return ret;
 	},
 	
-	GetLinks: function(pin){
-		var graph = this.parent(exGRAPH.Graph);
-		if(pin instanceof exGRAPH.Pin)
-			pin = pin.attr('id');
-		return graph.GetLinks(this.attr('svgid'), pin);
+	Generator: function(callback){
+		return this.data('generator', callback);
+	},
+	
+	Prepare: function(callback){
+		return this.data('prepare', callback);
 	}
 });
 
 exBASE.extend(exGRAPH.Pin, exGRAPH.Input, exGRAPH.Output, {
 	GetLinks: function(){
 		//console.log(this.parent().attr('svgid'), this.attr('id'));
-		var project = this.parent(exGRAPH.Graph);
-		return project.GetLinks(this.parent().attr('svgid'), this.attr('id'));
+		var node = this.parent(exGRAPH.Node);
+		return node.GetLinks(this);
 		
 	},
 	
 	GetNode: function(){
 		return this.parent(exGRAPH.Node);
+	},
+	
+	Eval: function(callback){
+		return this.data('eval', callback);
 	}
 	
 });
-
-exBASE.extend(exGRAPH.Link, {
-	GetInputPin: function(){
-		return this.querySelector('input');
-	},
-	
-	GetOutputPin: function(){
-		return this.querySelector('output');
-	},
-
-	GetInputNode: function(){
-		var project = this.parent(exGRAPH.Graph);
-		return project.GetNode(this.GetInputPin().attr('node'));
-	},
-	
-	GetOutputNode: function(){
-		var project = this.parent(exGRAPH.Graph);
-		return project.GetNode(this.GetOutputPin().attr('node'));			
-	}
-});
-
-
 
 
 
@@ -94,6 +98,7 @@ exBASE.extend(exGRAPH.Link, {
 exCODE.Fragment = exBASE.invent({
     create: 'fragment',
 	inherit: exBASE.Element,
+	parent: exCODE,
 	
     extend: {
 		init: function(){
@@ -103,25 +108,13 @@ exCODE.Fragment = exBASE.invent({
 		create: function(type, args){
 			var ret = new exCODE[type];
 			this.add(ret);
-			if(typeof ret.init == 'function')
+			if(typeof ret.init == 'function' && args)
 				ret.init.apply(ret, args);
 			return ret;		
-		},
-
-		Target: function(value){
-			return this.attr('target', value);
 		},
 		
 		Module: function(){
 			return this.Parent(exCODE.Module);
-		},
-
-		Prefix: function(value){
-			return this.attr('prefix', value);
-		},
-
-		Suffix: function(value){
-			return this.attr('suffix', value);
 		},
 		
 		Context: function(){
@@ -141,7 +134,17 @@ exCODE.Fragment = exBASE.invent({
 **************************************************************************************/
 exCODE.Context = exBASE.invent({
     create: 'context',
-	inherit: exCODE.Fragment
+	inherit: exCODE.Fragment,
+	
+	extend: {
+		init: function(){
+			this.uid = 1000;
+		},
+		
+		GetUID: function(prefix){
+			return prefix + (this.uid++);
+		}
+	}
 });
 
 /**************************************************************************************
@@ -154,8 +157,9 @@ exCODE.Module = exBASE.invent({
 	
     extend: {
 		init: function(){
+			exCODE.Context.prototype.init.apply(this, arguments);
 			document.body.appendChild(this.node);
-			this._names = {};
+			//this._names = {};
 			return this;
 		},
 		
@@ -179,6 +183,14 @@ exCODE.Module = exBASE.invent({
 			this._names[prefix]++;
 			console.log(this._names);
 			return prefix + '_' + (this._names[prefix]-1);
+		},
+		
+		Body: function(){
+			var body = this.node.querySelector('body');
+			
+			if(body)
+				return exBASE.adopt(body);
+			return this.create('Body', arguments);
 		}
 	}, 
 	construct: {
@@ -200,17 +212,11 @@ exCODE.Value = exBASE.invent({
 	
     extend: {
 		init: function(value, type){
-			if(typeof value !== 'undefined')
-				this.Value(value);
-			if(typeof type !== 'undefined')
-				this.Type(type);
+			this.Value(value);
+			this.Type(type);
 			return this;
 		},
-		
-		Operator: function(value){
-			return this.attr('operator', value);
-		},
-		
+
 		Type: function(value){
 			return this.attr('type', value);
 		},
@@ -277,6 +283,7 @@ exCODE.Function = exBASE.invent({
 	
     extend: {
 		init: function(name, type){
+			exCODE.Context.prototype.init.apply(this, arguments);			
 			if(typeof name !== 'undefined')
 				this.node.setAttribute('name', name);
 			if(typeof type !== 'undefined')
@@ -295,7 +302,7 @@ exCODE.Function = exBASE.invent({
 		Argument: function(name, value, type){
 			return this.Arguments().create('Argument', arguments);
 		},
-		
+		/*
 		Body: function(){
 			var body = this.node.querySelector('body');
 			
@@ -303,7 +310,7 @@ exCODE.Function = exBASE.invent({
 				return exBASE.adopt(body);
 			return this.create('Body', arguments);
 		},
-		
+		*/
 		Type: function(value){
 			return this.attr('type', value);
 		},
@@ -359,14 +366,6 @@ exCODE.Argument = exBASE.invent({
 	}
 });
 
-exCODE.Body = exBASE.invent({
-    create: 'body', 
-    inherit: exCODE.Fragment,
-	
-    extend: {
-	}
-});
-
 exCODE.Return = exBASE.invent({
     create: 'return', 
     inherit: exCODE.Value,
@@ -394,6 +393,17 @@ exCODE.Lambda = exBASE.invent({
 });
 
 
+
+/**************************************************************************************
+	BODY
+**************************************************************************************/
+exCODE.Body = exBASE.invent({
+    create: 'body', 
+    inherit: exCODE.Context,
+	
+    extend: {
+	}
+});
 
 
 /**************************************************************************************
@@ -451,16 +461,17 @@ exCODE.Call = exBASE.invent({
 
 
 /**************************************************************************************
-	IF
+	IF / THEN / ELSEIF / ELSE
 **************************************************************************************/
 exCODE.If = exBASE.invent({
     create: 'if', 
-    inherit: exCODE.Fragment,
+    inherit: exCODE.Context,
 	parent: exCODE.Fragment,
 	
     extend: {
 		
 		init: function(name, operator, value){		
+			exCODE.Context.prototype.init.apply(this, arguments);
 			if(typeof name !== 'undefined')
 				this.Condition(name, operator, value);
 		},
@@ -501,6 +512,35 @@ exCODE.If = exBASE.invent({
 	}
 });
 
+exCODE.Then = exBASE.invent({
+    create: 'then', 
+    inherit: exCODE.Body,
+	
+    extend: {
+	}
+});
+
+exCODE.Elseif = exBASE.invent({
+    create: 'elseif',
+    inherit: exCODE.Condition,
+	
+    extend: {
+	}
+});
+
+exCODE.Else = exBASE.invent({
+    create: 'else',
+    inherit: exCODE.Then,
+	
+    extend: {
+	}
+});
+
+
+
+/**************************************************************************************
+	CONDITION
+**************************************************************************************/
 exCODE.Condition = exBASE.invent({
     create: 'condition', 
     inherit: exCODE.Fragment,
@@ -571,31 +611,6 @@ exCODE.Condition = exBASE.invent({
 	}
 });
 
-exCODE.Then = exBASE.invent({
-    create: 'then', 
-    inherit: exCODE.Body,
-	
-    extend: {
-	}
-});
-
-exCODE.Elseif = exBASE.invent({
-    create: 'elseif',
-    inherit: exCODE.Condition,
-	
-    extend: {
-	}
-});
-
-exCODE.Else = exBASE.invent({
-    create: 'else',
-    inherit: exCODE.Then,
-	
-    extend: {
-	}
-});
-
-
 
 
 /**************************************************************************************
@@ -603,12 +618,13 @@ exCODE.Else = exBASE.invent({
 **************************************************************************************/
 exCODE.For = exBASE.invent({
     create: 'for', 
-    inherit: exCODE.Fragment,
+    inherit: exCODE.Context,
 	parent: exCODE.Fragment,
 	
     extend: {
 		
 		init: function(declare, condition, step){
+			exCODE.Context.prototype.init.apply(this, arguments);
 			if(typeof declare !== 'undefined')
 				this.Declare(declare);
 			if(typeof condition !== 'undefined')
@@ -676,7 +692,7 @@ exCODE.Continue = exBASE.invent({
 **************************************************************************************/
 exCODE.While = exBASE.invent({
     create: 'while', 
-    inherit: exCODE.Fragment,
+    inherit: exCODE.Context,
 	parent: exCODE.Fragment,
 	
     extend: {
@@ -780,8 +796,8 @@ exCODE.Declare = exBASE.invent({
 			return this.attr('new', true);
 		},
 		
-		Array: function(size){
-			return this.attr('array', size || 1);
+		Size: function(size){
+			return this.attr('size', size);
 		},
 		
 		Value: function(){
@@ -795,5 +811,36 @@ exCODE.Declare = exBASE.invent({
 	}
 });
 
+
+
+/**************************************************************************************
+	Arithmetic
+**************************************************************************************/
+exCODE.Arithmetic = exBASE.invent({
+    create: 'arithmetic', 
+    inherit: exCODE.Fragment,
+	parent: exCODE.Fragment,
+	
+    extend: {
+		
+		init: function(name){
+			this.Name(name);
+			return this;
+		},
+		
+		Name: function(value){
+			return this.attr('name', value);	
+		},
+		
+		Value: function(value, type){
+			return this.create('Value', arguments);
+		}
+	},
+	construct: {
+		Arithmetic: function(name){
+			return this.create('Arithmetic', arguments);
+		}
+	}
+});
 
 })(this);

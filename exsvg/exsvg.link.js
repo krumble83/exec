@@ -265,9 +265,12 @@ exSVG.Link = SVG.invent({
 			assert(pinIn instanceof exSVG.Pin);
 			assert(pinOut instanceof exSVG.Pin);
 			
-			link.Pin(pinIn.getNode().id(), pinIn.getId());
-			link.Pin(pinOut.getNode().id(), pinOut.getId());
+			//link.Pin(pinIn.getNode().id(), pinIn.getId());
+			//link.Pin(pinOut.getNode().id(), pinOut.getId());
 			
+			link.Input(pinIn.getNode().id(), pinIn.getId());
+			link.Output(pinOut.getNode().id(), pinOut.getId());
+
 			//link.Input(pinIn.getNode().id(), pinIn.getId());
 			//link.Output(pinOut.getNode().id(), pinOut.getId());
 			link.attr('datatype', me.getDataType());
@@ -385,15 +388,12 @@ exSVG.plugin(exSVG.Worksheet, {
 		, worksheet = me
 		, pinIn
 		, pinOut
-		, pins = linkGraph.select('pin');
+		, pins = linkGraph.select('input,output');
 		
 		console.assert(pins.length() == 2);
 		
-		pinIn = worksheet.select('linkref[node="' + pins.first().attr('node') + '"][pin="' + pins.first().attr('pin') + '"]').first().parent(exSVG.Pin);
-		pinOut = worksheet.select('linkref[node="' + pins.last().attr('node') + '"][pin="' + pins.last().attr('pin') + '"]').first().parent(exSVG.Pin);
-
-		//pinIn = worksheet.select('linkref[node="' + linkGraph.select('input').first().attr('node') + '"][pin="' + linkGraph.select('input').first().attr('pin') + '"]').first().parent(exSVG.Pin);
-		//pinOut = worksheet.select('linkref[node="' + linkGraph.select('output').first().attr('node') + '"][pin="' + linkGraph.select('output').first().attr('pin') + '"]').first().parent(exSVG.Pin);
+		pinIn = worksheet.select('linkref[node="' + pins.first().attr('node') + '"][pin="' + pins.first().attr('id') + '"]').first().parent(exSVG.Pin);
+		pinOut = worksheet.select('linkref[node="' + pins.last().attr('node') + '"][pin="' + pins.last().attr('id') + '"]').first().parent(exSVG.Pin);
 
 		pinIn.select('linkref').first().remove();
 		pinOut.select('linkref').first().remove();

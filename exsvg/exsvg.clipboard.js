@@ -47,7 +47,8 @@ exSVG.plugin(exSVG.Worksheet, {
 		//console.log('Clipboard.copy()', data);
 		var me = this
 		, expt
-		, clipboardData;
+		, clipboardData
+		, xmlText;
 		
 		if(data instanceof ClipboardEvent){
 			if(!me.hasFocus() || !me.getSelection)
@@ -67,9 +68,11 @@ exSVG.plugin(exSVG.Worksheet, {
 				this.export(expt);
 		});			
 
+		xmlText = new XMLSerializer().serializeToString(expt.node);
+
 		clipboardData = document.createElement('textarea');
 		document.body.appendChild(clipboardData);
-		clipboardData.value = expt.node.outerHTML;
+		clipboardData.value = xmlText;
 		clipboardData.select();
 		document.execCommand('copy');
 		document.body.removeChild(clipboardData);

@@ -1,0 +1,68 @@
+
+
+<document>
+	<include></include>
+	<head></head>
+	<body></body>
+	<footer></footer>
+</document>
+
+<include>
+	<name></name>
+	<path></path>
+	<alias></alias>
+</include>
+
+<function name="">
+	<params>
+		<var/>
+	</params>
+	<body/>
+</function>
+
+
+<var name="" [reference="false|true" pointer="false|true"]>
+	<type></type>
+	[<value></value>]
+</var>
+
+<for>
+	<init></init>
+	<condition></condition>
+	<step></step>
+	<body></body>
+</for>
+
+<assign>
+	<var></var>
+	<value></value>
+</assign>
+
+<condition>
+	<var></var>
+	<operator></operator>
+	<value></value>
+	[<then></then>]
+	[<elseif></elseif>]
+	[<else></else>]
+</condition>
+
+<loop [type="while|do"]>
+	<var></var>
+	<operator></operator>
+	<value></value>
+	<body></body>
+</loop>
+
+<switch name="">
+	<case>
+		<value></value>
+		<body></body>
+	</case>
+	<default>
+		<body></body>
+	</default>
+</switch>
+
+<value [literal="true|false"]></value>
+
