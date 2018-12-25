@@ -552,7 +552,7 @@ exGRAPH.Type = exBASE.invent({
 				if(orgTitle)
 					me.Label(orgTitle + ' ' + (found.first().Label() || ''));
 			} else {
-				console.log('can\'t inherits of type "' + fromType + '" (' + this.Id() + ')');
+				console.trace('can\'t inherits of type "' + fromType + '" (' + this.Id() + ')');
 			}
 
 			return this;
@@ -892,7 +892,7 @@ exGRAPH.Node = exBASE.invent({
 			var base = this.parent(exGRAPH.Library).GetNode(name, this.parent(exGRAPH.Package).Id());
 			
 			if(!base)
-				return console.log('can\'t find node "' + name + '"');
+				return console.trace('can\'t find node "' + name + '"');
 			
 			return this.mergeAttrs(base);
 		},
@@ -903,7 +903,7 @@ exGRAPH.Node = exBASE.invent({
 			, clone;
 			
 			if(!base)
-				return console.log('can\'t find node "' + name + '"');
+				return console.trace('can\'t find node "' + name + '"');
 			base.select('input,output').each(function(){
 				clone = exBASE.adopt(this.node.cloneNode(true), exGRAPH);
 				me.add(clone);
@@ -1081,6 +1081,14 @@ exGRAPH.Pin = exBASE.invent({
 		
 		Required: function(){
 			return this.Flags(this.Flags() || 0 || F_REQUIRED);
+		},
+		
+		Array: function(){
+			return this.attr('type', this.attr('type') + '[]');
+		},
+		
+		IsArray: function(){
+			return ;
 		}
 	}
 });

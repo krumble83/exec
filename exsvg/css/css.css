@@ -9,6 +9,10 @@
 	stroke: #009;
 }
 
+.worksheet.blur{
+	opacity: 0.7;
+}
+
 .worksheet.blur .focusrect{
 	stroke: #333;
 }
@@ -71,10 +75,21 @@
 	user-select: none; /* Standard */
 }
 
-.zzzzworksheet .exNode rect{
-	-webkit-filter: drop-shadow( 15px 15px 15px #000 ); 
-    filter: drop-shadow( 5px 5px 5px #000 );
-	-webkit-svg-shadow: 0 0 7px #53BE12;
+.worksheet .exNode .exTitle{
+	fill: #fff;
+	font-size: 12px;
+	stroke-width: 0;
+}
+
+.worksheet .exNode .exSubtitle{
+	fill: #bbb;
+	font-size: 13;
+	font-style: italic;
+	stroke-width: 0;
+}
+
+.worksheet .exNode .exHeader{
+	stroke: none;
 }
 
 .worksheet .exNode .tooltip{
@@ -113,11 +128,11 @@
 	stroke-width: 1;
 }
 
-.worksheet .blur .exNode,
-.worksheet .blur .exNode .exPin,
-.worksheet .blur .exNode .exPin .textarea,
-.worksheet .blur .exNode .expand,
-.worksheet .blur .exLink{
+.worksheet.blur .exNode,
+.worksheet.blur .exNode .exPin,
+.worksheet.blur .exNode .exPin .textarea,
+.worksheet.blur .exNode .expand,
+.worksheet.blur .exLink{
 	pointer-events : none;
 }
 

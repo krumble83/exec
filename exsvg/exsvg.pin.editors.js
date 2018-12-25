@@ -83,6 +83,11 @@ exSVG.PinEditorInput = SVG.invent({
 			me.input.setAttribute('contenteditable', 'true');
 			me.input.setAttribute('class', 'textarea');
 			
+			SVG.on(me.input, 'mouseup', function(){
+				me.parent(exSVG.Worksheet).removeClass('blur');
+				
+			});
+			
 			me.input.onfocus = function(e) {
 				requestAnimationFrame(function() {
 					var range = document.createRange();

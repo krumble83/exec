@@ -164,7 +164,6 @@ exSVG.Pin = SVG.invent({
 				, attrs = me.attr()
 				, pin;
 			
-			
 			if(me.getType() == exSVG.Pin.PIN_IN){
 				pin = (graph && graph.Input) ? graph.Input() : false;
 				if(!pin){
@@ -213,16 +212,46 @@ define(exSVG.Pin, 'PIN_LINK_ACCEPT_DATATYPE', 4);
 define(exSVG.Pin, 'PIN_LINK_ACCEPT_DATATYPE_ARRAY', 8);
 
 
+exSVG.PinGroup = SVG.invent({
+    create: 'g', 
+    inherit: SVG.G,
+	
+    extend: {
+		init: function(data){},
+		
+		draw: function(){
+			var me = this
+			, offset = 0;
+			
+			// place visibles input pins
+			me.select('.exPin').each(function(){
+				if(!this.visible())
+					return;
+				this.move(0, offset);
+				offset += this.bbox().height+6;
+			});
+
+			
+			// place hidden input pins
+			me.select('.exPin').each(function(){
+				if(this.visible())
+					return;
+				this.move(0, offset);
+				offset += this.bbox().height+6;
+			});
+			
+		}
+	}
+});
+
+
 SVG.extend(exSVG.Node, {
 	
 	importPin: function(data){
 		//console.log('exSVG.Node.importPin()', data);
 		var me = this;
 		
-		if(!me.mInputPinGroup)
-			me.mInputPinGroup = me.group();
-		if(!me.mOutputPinGroup)
-			me.mOutputPinGroup = me.group();
+		this.createPinsGroups();
 		
 		if(data.type.toLowerCase() == 'input')
 			return me.createPin(data, me.mInputPinGroup);
@@ -238,11 +267,7 @@ SVG.extend(exSVG.Node, {
 		//console.log('exSVG.Node.importInput()', data);
 		var me = this;
 
-		if(!me.mInputPinGroup)
-			me.mInputPinGroup = me.group();
-		if(!me.mOutputPinGroup)
-			me.mOutputPinGroup = me.group();
-
+		this.createPinsGroups();
 		return me.createPin(data, me.mInputPinGroup);
 	},
 	
@@ -250,12 +275,18 @@ SVG.extend(exSVG.Node, {
 		//console.log('exSVG.Node.importOutput()', data);
 		var me = this;
 
-		if(!me.mInputPinGroup)
-			me.mInputPinGroup = me.group();
-		if(!me.mOutputPinGroup)
-			me.mOutputPinGroup = me.group();
-
+		this.createPinsGroups();
 		return me.createPin(data, me.mOutputPinGroup);
+	},
+	
+	createPinsGroups: function(){
+		var me = this;
+		
+		if(!me.mInputPinGroup)
+			me.mInputPinGroup = new exSVG.PinGroup().addTo(me).attr('type', 'inputs').addClass('exInputs');
+		if(!me.mOutputPinGroup)
+			me.mOutputPinGroup = new exSVG.PinGroup().addTo(me).attr('type', 'outputs').addClass('exOutputs');
+		
 	},
 	
 	createPin: function(data, parent){

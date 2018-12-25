@@ -32,7 +32,8 @@ exSVG.NodeMacro = SVG.invent({
 			macro.attr('svgid', me.id());
 
 			for (var key in attrs) {
-				if(!Object.prototype.hasOwnProperty.call(attrs, key) || key.substr(0,5) !== 'data-')
+				if(!Object.prototype.hasOwnProperty.call(attrs, key) 
+					|| key.substr(0,5) !== 'data-')
 					continue;
 				macro.attr(key.substr(5), attrs[key]);
 			}
@@ -43,14 +44,20 @@ exSVG.NodeMacro = SVG.invent({
 				pos = {x: me.x(), y: me.y()};
 			
 			macro.attr('pos', pos.x + ',' + pos.y);
+						
+			me.select('g > *').each(function(){
+				if(this.export)
+					this.export(macro);
+			});
 			
 			me.fire('export', {parent: macro});
 			
+			/*
 			me.mExportData.select(':scope > *:not(input):not(output)').each(function(){
 				//console.log(this.node.nodeName);
 				macro.add(this);
 			});
-			
+			*/
 			return macro;
 		},
 		
@@ -98,7 +105,9 @@ exSVG.NodeOp = SVG.invent({
 					.attr('font-weight', 'bolder')
 					.stroke({width:0});
 					
-				me.mGfx.header = me.rect(1,1).opacity(0);
+				me.mGfx.header = me.rect(1,1)
+					.opacity(0)
+					.addClass('exHeader');
 			}
 			inpBox = me.mInputPinGroup.bbox();
 			outBox = me.mOutputPinGroup.bbox();

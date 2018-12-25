@@ -53,7 +53,8 @@ exSVG.plugin(exSVG.Worksheet, {
 				//console.log('terminate')
 				SVG.off(document, '.library-linkstart-temp');
 				link.off('.library-linkstart-temp'); // not needed ?
-				SVG.off(menu, '.mmenu');
+				if(menu)
+					SVG.off(menu, '.mmenu');
 			}
 			
 			link.on('remove.library-linkstart-temp', terminate);

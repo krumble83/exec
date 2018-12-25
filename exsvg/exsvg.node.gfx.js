@@ -70,6 +70,7 @@ exSVG.plugin(exSVG.Node, {
 
 			me.mGfx.body = me.rect(1, 1)
 				.fill(grad)
+				.addClass('exBody')
 				.radius(10)
 				.back();
 			
@@ -122,20 +123,22 @@ exSVG.plugin(exSVG.Node, {
 
 			me.mGfx.header = me.path()
 				.fill(grad)
-				.stroke('none');
+				.addClass('exHeader');
 
 			if(me.getData('symbol')){
-				me.image(me.getData('symbol')).move(10,4)
-				.on('mousemove', function(e){
-					if(!me.getData('tooltip'))
-						return;
-					me.parent(exSVG.Worksheet).showTooltip(e, me.getData('id') + '<br /><br />' + me.getData('tooltip'), 10);
-					e.stopPropagation();
-					e.stopImmediatePropagation();
-				})
-				.on('mouseleave', function(){
-					me.parent(exSVG.Worksheet).hideTooltip();
-				});
+				me.image(me.getData('symbol'))
+					.move(10,4)
+					.addClass('exSymbol')
+					.on('mousemove', function(e){
+						if(!me.getData('tooltip'))
+							return;
+						me.parent(exSVG.Worksheet).showTooltip(e, me.getData('id') + '<br /><br />' + me.getData('tooltip'), 10);
+						e.stopPropagation();
+						e.stopImmediatePropagation();
+					})
+					.on('mouseleave', function(){
+						me.parent(exSVG.Worksheet).hideTooltip();
+					});
 			}
 			me.on('data-change.nodegfx', function(e){
 				if(e.detail.name == 'title')
@@ -145,19 +148,16 @@ exSVG.plugin(exSVG.Node, {
 
 		if(!me.mGfx.title){
 			me.mGfx.title = me.plain(me.getData('title'))
-				.fill('#fff')
 				.translate(offset, 17)
-				.font({size:12})
-				.stroke({width:0})
+				.addClass('exTitle')
 		}
 		me.mGfx.title.plain(me.getData('title'));
 		
 		if(!me.mGfx.subtitle && me.getData('subtitle')){
 			me.mGfx.subtitle = me.plain(me.getData('subtitle'))
-				.fill('#bbb')
 				.translate(offset, 35)
-				.font({size:13, 'font-style': 'italic'})
-				.stroke({width:0});
+				.addClass('exSubtitle')
+
 			if(me.mGfx.subtitle.bbox().w + offset + 15 > width)
 				width = me.mGfx.subtitle.bbox().w + 15 + offset;
 		}
@@ -184,52 +184,17 @@ exSVG.plugin(exSVG.Node, {
 	},
 	
 	drawPins: function(startpos){
+		//console.log('exSVG.Node.drawPins()', startpos);
 		var me = this
-            , optionals = []
-            , offset = 0;
+		, header = me.select('.exHeader');
 
-		if(me.mGfx.header){
-			me.mInputPinGroup.move(10, me.mGfx.header.bbox().height + 15);
-			me.mOutputPinGroup.move(0, me.mGfx.header.bbox().height + 15);
+		me.select('.exInputs').draw();
+		me.select('.exOutputs').draw();
+		
+		if(header.length() > 0){
+			me.select('.exInputs').move(10, header.first().bbox().height + 15);
+			me.select('.exOutputs').move(header.first().bbox().w-21, header.first().bbox().height + 15);		
 		}
-		
-		// place visibles input pins
-		me.select('.exPin.input').each(function(){
-			if(!this.visible())
-				return;
-			this.move(0, offset);
-			offset += this.bbox().height+6;
-		});
-
-		
-		// place hidden input pins
-		me.select('.exPin.input').each(function(){
-			if(this.visible())
-				return;
-			this.move(0, offset);
-			offset += this.bbox().height+6;
-		});
-
-		
-		offset = 0;
-		// place visibles output pins
-		me.select('.exPin.output').each(function(){
-			if(!this.visible())
-				return;
-			this.move(0, offset);
-			offset += this.bbox().height+4;
-		});
-
-		// place hidden output pins
-		me.select('.exPin.output').each(function(){
-			if(this.visible())
-				return;
-			this.move(0, offset);
-			offset += this.bbox().height+4;
-		});
-		if(me.mGfx.header)
-			me.mOutputPinGroup.move(me.mGfx.header.bbox().w-21);
-		
 		return me;
 	},
 	
